@@ -35,7 +35,13 @@ export default function Index() {
     return 1;
   };
 
-  const sortedHabits = [...habits].sort(
+  const today = new Date().toDateString();
+  const habitsWithCompleted = habits.map(habit => ({
+    ...habit,
+    completed: habit.lastCompletedDate ? new Date(habit.lastCompletedDate).toDateString() === today : false,
+  }));
+
+  const sortedHabits = [...habitsWithCompleted].sort(
     (a, b) => priorityRank(b.priority) - priorityRank(a.priority),
   );
 
@@ -163,6 +169,7 @@ const handleOpenDetails = (id: string) => {
     item,
   }: {
     item: {
+      completed: boolean;
       id: string;
       title: string;
       streak: number;
@@ -172,9 +179,11 @@ const handleOpenDetails = (id: string) => {
     return (
 
       <Pressable
-        onPress={() => completeHabit(item.id)}
+        
         onPressIn={() => handleOpenDetails(item.id)}
         className={`flex-row justify-between items-center px-4 py-2 mb-3 rounded-[24px] border ${
+          item.completed
+            ? "bg-gray-100 border-gray-200":
           isStudy
             ? "bg-white border-study-primary/10"
             : "bg-white border-coding-primary/10"
@@ -186,23 +195,26 @@ const handleOpenDetails = (id: string) => {
           shadowRadius: 10,
         }}
       >
-        {/* 1. أيقونة العادة (مثل شكل أيقونة المهمة) */}
-        <View
-          className={`w-10 h-10 rounded-full items-center justify-center ${
-            isStudy ? "bg-study-primary/10" : "bg-coding-primary/10"
-          }`}
-        >
-          {/* حطينا نار رمز للسلسلة أو تقدر تحط أي إيموجي */}
-          <Text className="text-lg">🔥</Text>
-        </View>
+
+        {/* أيقونة الحالة */}
+          <View
+            className={`w-10 h-10 rounded-full items-center justify-center ${
+              item.completed
+                ? "bg-gray-200"
+                : isStudy
+                  ? "bg-study-primary/10"
+                  : "bg-coding-primary/10"
+            }`}
+          >
+            <View
+              className={`w-3 h-3 rounded-full ${item.completed ? "bg-gray-400" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+            />
+          </View>
 
         {/* 2. النصوص (العنوان والسلسلة) */}
         <View className="mx-3 ml-3 flex-1">
-          <Text className="font-bold text-base text-gray-800">
+          <Text className={`font-bold text-base text-gray-800 ${item.completed ? "line-through text-gray-500" : ""}`}>
             {item.title}
-          </Text>
-          <Text className="text-gray-400 text-xs mb-1">
-            سلسلة النجاح: {item.streak} يوم
           </Text>
           <View className="self-start rounded-full px-3 py-1 border border-gray-200 bg-gray-50">
             <Text className="text-[8px] font-black uppercase text-gray-600">
@@ -214,21 +226,27 @@ const handleOpenDetails = (id: string) => {
             </Text>
           </View>
         </View>
-
-        {/* 3. زر تفاعلي صغير (اختياري: لتسجيل العادة لليوم) */}
-        <View
-          className={`py-1 px-3 rounded-lg ${
-            isStudy ? "bg-study-primary/10" : "bg-coding-primary/10"
+        <Pressable
+          onPress={() => completeHabit(item.id)}
+          className={`flex-row items-center ${            item.completed
+              ? "bg-white border-gray-200"
+              : isStudy
+                ? "bg-white"
+                : "bg-white"
           }`}
-        >
-          <Text
-            className={`text-[10px] font-black text-left ${
-              isStudy ? "text-study-primary" : "text-coding-primary"
-            }`}
           >
-            تم اليوم
-          </Text>
-        </View>
+
+            <View
+              className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? "bg-green-500 border-green-500" : "border-gray-100"}`}
+            >
+              {item.completed && (
+                <Text className="text-white text-xs font-bold text-center">
+                  ✓
+                </Text>
+              )}
+            </View>
+          
+        </Pressable>
 
         {/* زر الحذف */}
         <Pressable
@@ -359,7 +377,7 @@ const handleOpenDetails = (id: string) => {
             showsVerticalScrollIndicator={false}
           />
         </View>
-        <View className="flex-row justify-between items-center px-1">
+        <View className="flex-row justify-between items-center px-1 mb-3">
           {/* عنوان الفلاش ليست للعادات */}
           <Text className="text-lg font-bold text-gray-800">عاداتي</Text>
           <Pressable

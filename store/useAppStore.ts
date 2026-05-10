@@ -76,7 +76,7 @@ const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
 
 export const useAppStore = create<AppState>((set, get) => {
   return {
-    mode: (storage.getString("app_mode") as "study" | "coding") || "coding",
+    mode: (storage.getString("app_mode") as "study" | "coding") || "study",
     toggleMode: () =>
       set((state) => {
         const nextMode = state.mode === "study" ? "coding" : "study";
@@ -206,11 +206,21 @@ export const useAppStore = create<AppState>((set, get) => {
               ? new Date(habit.lastCompletedDate).toDateString()
               : null;
 
-            return {
-              ...habit,
-              streak: lastCompleted === today ? habit.streak : habit.streak + 1,
-              lastCompletedDate: Date.now(),
-            };
+            if (lastCompleted === today) {
+              // If already completed today, uncomplete it
+              return {
+                ...habit,
+                streak: Math.max(0, habit.streak - 1),
+                lastCompletedDate: undefined,
+              };
+            } else {
+              // Complete it
+              return {
+                ...habit,
+                streak: habit.streak + 1,
+                lastCompletedDate: Date.now(),
+              };
+            }
           }
           return habit;
         });

@@ -16,6 +16,7 @@ import {
 import { useAppStore } from "../../store/useAppStore"; // تأكد من مسار الستور
 import { Ionicons } from "@expo/vector-icons";
 import { Clock } from "lucide-react-native";
+import DateClockSheet from "../../components/DateClockSheet";
 
 interface DetailsSheetProps {
   itemId: string | null;
@@ -44,6 +45,8 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
     const item = task || habit;
     const isHabit = !!habit;
     const themeColor = isHabit ? "#22C55E" : "#3B82F6"; // لون مميز لكل نوع
+
+    const clockSheetRef = React.useRef<BottomSheetModal>(null);
 
     // 2. إعدادات الشيت (Snap Points)
     const snapPoints = useMemo(() => ["85%"], []);
@@ -129,7 +132,9 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
           </View>
           {/* قسم تغيير وقت التذكير (مش مفعل حالياً) */}
           <View>
-            <Pressable className="bg-blue-50 gap-2 p-4 rounded-2xl flex-row items-center justify-center relative mb-6">
+            <Pressable 
+              onPress={() => clockSheetRef.current?.present()}
+            className="bg-blue-50 gap-2 p-4 rounded-2xl flex-row items-center justify-center relative mb-6">
               <Text className="text-blue-500 font-bold text-center">
                 تغيير وقت التذكير
               </Text>
@@ -163,6 +168,16 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
             <Ionicons name="trash-outline" size={20} color="#EF4444" />
           </TouchableOpacity>
         </BottomSheetView>
+        <DateClockSheet
+          ref={clockSheetRef}
+          initialDate={item.reminderTime ? new Date(item.reminderTime) : new Date()}
+          onSave={(date) => {
+            const isoString = date.toISOString();
+            isHabit
+              ? updateHabit(item.id, { reminderTime: isoString })
+              : updateTask(item.id, { reminderTime: isoString });
+          }}
+        />
       </BottomSheetModal>
     );
   },

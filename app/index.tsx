@@ -361,7 +361,7 @@ const handleOpenDetails = (id: string) => {
             مهام اليوم
           </Text>
           <Pressable
-            onPress={() => alert("عرض كل المهام")}
+            onPress={() => router.push("./view-all")}
             className="px-3 py-1 rounded-lg"
           >
             <Text className="text-sm font-bold text-gray-600">عرض الكل</Text>
@@ -381,7 +381,7 @@ const handleOpenDetails = (id: string) => {
           {/* عنوان الفلاش ليست للعادات */}
           <Text className="text-lg font-bold text-gray-800">عاداتي</Text>
           <Pressable
-            onPress={() => alert("عرض كل العادات")}
+            onPress={() => router.push("./view-all")}
             className="px-3 py-1 rounded-lg"
           >
             <Text className="text-sm font-bold text-gray-600">عرض الكل</Text>

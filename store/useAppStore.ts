@@ -74,9 +74,14 @@ const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
   }
 };
 
+const initialMode = (storage.getString("app_mode") as "study" | "coding") || "study";
+
 export const useAppStore = create<AppState>((set, get) => {
+  const allTasks = loadFromStorage<Task>("tasks");
+  const allHabits = loadFromStorage<Habit>("habits");
+
   return {
-    mode: (storage.getString("app_mode") as "study" | "coding") || "study",
+    mode: initialMode,
     toggleMode: () =>
       set((state) => {
         const nextMode = state.mode === "study" ? "coding" : "study";
@@ -94,16 +99,12 @@ export const useAppStore = create<AppState>((set, get) => {
     },
 
     // ============ All Data (unfiltered) ============
-    allTasks: loadFromStorage<Task>("tasks"),
-    allHabits: loadFromStorage<Habit>("habits"),
+    allTasks,
+    allHabits,
 
     // ============ Filtered Data (by current mode) ============
-    tasks: loadFromStorage<Task>("tasks").filter(
-      (task) => task.mode === "study",
-    ),
-    habits: loadFromStorage<Habit>("habits").filter(
-      (habit) => habit.mode === "study",
-    ),
+    tasks: allTasks.filter((task) => task.mode === initialMode),
+    habits: allHabits.filter((habit) => habit.mode === initialMode),
 
     // ============ Tasks Management ============
     addTask: (task) =>

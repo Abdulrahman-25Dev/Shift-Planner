@@ -1,35 +1,284 @@
-import { View, Text } from "react-native";
-import React from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  TouchableOpacity,
+  I18nManager,
+} from "react-native";
+import React, { useRef, useState } from "react";
 import { FlashList } from "@shopify/flash-list";
-import { useAppStore } from "../store/useAppStore";
+import { Task, Habit, useAppStore } from "../store/useAppStore";
+import {
+  CheckCircle2,
+  RefreshCw,
+  Trash2,
+  ChevronLeft,
+} from "lucide-react-native";
+import { router } from "expo-router";
+import { DetailsSheet } from "./tasks/taskDetails";
+import BottomSheetModal from "@gorhom/bottom-sheet/lib/typescript/components/bottomSheetModal/BottomSheetModal";
 
 const ShowAll = () => {
-  const { tasks } = useAppStore();
+  const {
+    tasks,
+    removeTask,
+    removeHabit,
+    habits,
+    toggleTaskComplete,
+    mode,
+    completeHabit,
+  } = useAppStore();
+  const [type, setType] = useState<"task" | "habit">("task");
+  const detailsSheetRef = useRef<BottomSheetModal>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const handleOpenDetails = (id: string) => {
+    setSelectedId(id);
+    detailsSheetRef.current?.present();
+  };
+
+  const isStudy = mode === "study";
+
+  const renderTasks = ({ item }: { item: Task }) => {
+    const dueDateLabel = item.dueDate
+      ? new Date(item.dueDate).toLocaleDateString(
+          I18nManager.isRTL ? "ar-SA" : "en-US",
+          {
+            day: "numeric",
+            month: "short",
+          },
+        )
+      : "بدون تاريخ";
+
+    return (
+      <Pressable onPress={() => handleOpenDetails(item.id)}>
+        <View
+          className={`flex-row items-center justify-between mb-3 p-3 rounded-[30px] border ${
+            item.completed
+              ? "bg-gray-100 border-gray-200"
+              : isStudy
+                ? "bg-white border-study-primary/20"
+                : "bg-white border-coding-primary/20"
+          }`}
+          style={{
+            elevation: 2,
+            shadowColor: "#000",
+            shadowOpacity: 0.05,
+            shadowRadius: 10,
+          }}
+        >
+          {/* أيقونة الحالة */}
+          <View
+            className={`w-10 h-10 rounded-full items-center justify-center ${
+              item.completed
+                ? "bg-gray-200"
+                : isStudy
+                  ? "bg-study-primary/10"
+                  : "bg-coding-primary/10"
+            }`}
+          >
+            <View
+              className={`w-3 h-3 rounded-full ${item.completed ? "bg-gray-400" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+            />
+          </View>
+
+          <View className="flex-1 ml-3">
+            <Text
+              className={`font-bold text-base ${item.completed ? "line-through text-gray-500" : "text-gray-800"}`}
+            >
+              {item.title}
+            </Text>
+            <Text className="text-gray-600 text-xs">{dueDateLabel}</Text>
+          </View>
+
+          {/* زر إتمام سريع */}
+          <Pressable
+            onPress={() => toggleTaskComplete(item.id)}
+            className={`flex-row items-center p-1 mb-2 rounded-[24px] ${
+              item.completed
+                ? "bg-gray-100 border-gray-200"
+                : isStudy
+                  ? "bg-white"
+                  : "bg-white"
+            }`}
+          >
+            <View
+              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : "border-gray-200"}`}
+            >
+              {item.completed && (
+                <Text className="text-white text-xs font-bold text-center">
+                  ✓
+                </Text>
+              )}
+            </View>
+          </Pressable>
+
+          {/* زر الحذف */}
+          <TouchableOpacity
+            onPress={() => removeTask(item.id)}
+            className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
+          >
+            <Trash2 color="white" size={20} />
+          </TouchableOpacity>
+        </View>
+      </Pressable>
+    );
+  };
+
+  const renderHabits = ({ item }: { item: Habit }) => {
+    const completed = item.lastCompletedDate
+      ? new Date(item.lastCompletedDate).toDateString() ===
+        new Date().toDateString()
+      : false;
+
+    return (
+      <Pressable
+        onPressIn={() => handleOpenDetails(item.id)}
+        className={`flex-row justify-between items-center px-4 py-2 mb-3 rounded-[24px] border ${
+          completed
+            ? "bg-gray-100 border-gray-200"
+            : isStudy
+              ? "bg-white border-study-primary/10"
+              : "bg-white border-coding-primary/10"
+        }`}
+        style={{
+          elevation: 2,
+          shadowColor: "#000",
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+        }}
+      >
+        {/* أيقونة الحالة */}
+        <View
+          className={`w-10 h-10 rounded-full items-center justify-center ${
+            completed
+              ? "bg-gray-200"
+              : isStudy
+                ? "bg-study-primary/10"
+                : "bg-coding-primary/10"
+          }`}
+        >
+          <View
+            className={`w-3 h-3 rounded-full ${completed ? "bg-gray-400" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+          />
+        </View>
+
+        {/* 2. النصوص (العنوان والسلسلة) */}
+        <View className="mx-3 ml-3 flex-1">
+          <Text
+            className={`font-bold text-base text-gray-800 ${completed ? "line-through text-gray-500" : ""}`}
+          >
+            {item.title}
+          </Text>
+          <View className="self-start rounded-full px-3 py-1 border border-gray-200 bg-gray-50">
+            <Text className="text-[8px] font-black uppercase text-gray-600">
+              {item.priority === "high"
+                ? "عالية"
+                : item.priority === "medium"
+                  ? "متوسطة"
+                  : "منخفضة"}
+            </Text>
+          </View>
+        </View>
+        <Pressable
+          onPress={() => completeHabit(item.id)}
+          className={`flex-row items-center ${
+            completed
+              ? "bg-white border-gray-200"
+              : isStudy
+                ? "bg-white"
+                : "bg-white"
+          }`}
+        >
+          <View
+            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${completed ? "bg-green-700 border-green-700" : "border-gray-100"}`}
+          >
+            {completed && (
+              <Text className="text-white text-xs font-bold text-center">
+                ✓
+              </Text>
+            )}
+          </View>
+        </Pressable>
+
+        {/* زر الحذف */}
+        <Pressable
+          onPress={() => removeHabit(item.id)}
+          className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
+        >
+          <Trash2 color="white" size={20} />
+        </Pressable>
+      </Pressable>
+    );
+  };
 
   return (
     <View className="flex-1 px-4 py-6 bg-white">
-      <Text className="text-2xl font-bold mb-4">جميع المهام</Text>
+      <View className="flex-row items-center justify-center mb-6">
+        <Text className="text-xl font-bold my-6 mlr-3 text-center">
+          جميع المهام والعادات
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="absolute right-4 p-2 rounded-full bg-gray-200"
+        >
+          <ChevronLeft color="black" size={24} />
+        </TouchableOpacity>
+      </View>
 
-      {tasks.length === 0 ? (
+      {/* 1. السويتش (مبدل مهمة/عادة) */}
+      <View className="flex-row bg-gray-100 p-1.5 rounded-2xl mb-6">
+        <TouchableOpacity
+          onPress={() => setType("task")}
+          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
+        >
+          <Text
+            className={`font-bold ${type === "task" ? "text-white" : "text-gray-500"}`}
+          >
+            قيد الإنجاز
+          </Text>
+          <CheckCircle2
+            size={20}
+            color={type === "task" ? "white" : "#9CA3AF"}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setType("habit")}
+          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-3 ${type === "habit" ? (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
+        >
+          <Text
+            className={`font-bold ${type === "habit" ? "text-white" : "text-gray-500"}`}
+          >
+            الروتين اليومي
+          </Text>
+          <RefreshCw size={20} color={type === "habit" ? "white" : "#9CA3AF"} />
+        </TouchableOpacity>
+      </View>
+
+      {type === "task" ? (
+        tasks.length === 0 ? (
+          <View className="flex-1 items-center justify-center">
+            <Text className="text-gray-500">لا توجد مهام حالياً.</Text>
+          </View>
+        ) : (
+          <FlashList
+            data={tasks}
+            renderItem={renderTasks}
+            keyExtractor={(item) => item.id}
+          />
+        )
+      ) : habits.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          <Text className="text-gray-500">لا توجد مهام حالياً.</Text>
+          <Text className="text-gray-500">لا توجد عادات حالياً.</Text>
         </View>
       ) : (
         <FlashList
-          data={tasks}
-          renderItem={({ item }) => (
-            <View className="bg-white p-4 rounded-lg mb-3 w-full">
-              <Text className="text-lg font-bold mb-2">{item.title}</Text>
-              {item.description ? (
-                <Text className="text-gray-500">{item.description}</Text>
-              ) : null}
-            </View>
-          )}
+          data={habits}
+          renderItem={renderHabits}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 24 }}
-          className="w-full"
         />
       )}
+      <DetailsSheet ref={detailsSheetRef} itemId={selectedId} />
     </View>
   );
 };

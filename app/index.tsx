@@ -18,8 +18,6 @@ export default function Index() {
   const {
     mode,
     toggleMode,
-    selectDay,
-    setSelectDay,
     tasks,
     habits,
     toggleTaskComplete,
@@ -36,47 +34,58 @@ export default function Index() {
   };
 
   const today = new Date().toDateString();
-  const habitsWithCompleted = habits.map(habit => ({
+  const habitsWithCompleted = habits.map((habit) => ({
     ...habit,
-    completed: habit.lastCompletedDate ? new Date(habit.lastCompletedDate).toDateString() === today : false,
+    completed: habit.lastCompletedDate
+      ? new Date(habit.lastCompletedDate).toDateString() === today
+      : false,
   }));
 
-  const sortedHabits = [...habitsWithCompleted].sort(
-    (a, b) => priorityRank(b.priority) - priorityRank(a.priority),
+  // حسابات التقدم للداشبورد (Progress Dashboard calculations)
+  const totalItems = tasks.length + habitsWithCompleted.length;
+  const completedTasksCount = tasks.filter((task) => task.completed).length;
+  const completedHabitsCount = habitsWithCompleted.filter(
+    (habit) => habit.completed,
+  ).length;
+  const completedItems = completedTasksCount + completedHabitsCount;
+  const progressRatio = totalItems === 0 ? 0 : completedItems / totalItems;
+  const progressPercentage = Math.round(progressRatio * 100);
+  const progressLabel = isStudy
+    ? progressPercentage >= 70
+      ? "الجاهزية الدراسية"
+      : "الهدف اليومي"
+    : progressPercentage >= 70
+      ? "تقدم البناء"
+      : "استقرار النظام";
+  const streakCount = habits.reduce(
+    (max, habit) => Math.max(max, habit.streak),
+    0,
   );
 
-  const bottomSheetRef = React.useRef<BottomSheet>(null);
+  // ترتيب العادات حسب الاكتمال ثم الاولوية (Sort habits by completion then priority)
+  const sortedHabits = [...habitsWithCompleted].sort((a, b) => {
+    if (a.completed !== b.completed) {
+      return Number(a.completed) - Number(b.completed);
+    }
+    return priorityRank(b.priority) - priorityRank(a.priority);
+  });
+
+  // ترتيب المهام حسب الاكتمال (Sort tasks by completion)
+  const sortedTasks = [...tasks].sort(
+    (a, b) => Number(a.completed) - Number(b.completed),
+  );
+
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const detailsSheetRef = useRef<BottomSheetModal>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const openAddTaskSheet = () => {
     bottomSheetRef.current?.snapToIndex(0);
   };
 
-  const detailsSheetRef = useRef<BottomSheetModal>(null);
-const [selectedId, setSelectedId] = useState<string | null>(null);
-
-const handleOpenDetails = (id: string) => {
-  setSelectedId(id);
-  detailsSheetRef.current?.present();
-};
-
-  const generateMonthDays = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth(); // الشهر الحالي (0-11)
-
-    // عدد الأيام في الشهر الحالي
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    const days = [];
-    for (let i = 1; i <= daysInMonth; i++) {
-      const date = new Date(year, month, i);
-      days.push({
-        id: i.toString(),
-        // 'short' تعطيك (Sat, Sun..)، لو تبيها بالعربي تقدر تغير 'en-US' لـ 'ar-SA'
-        name: date.toLocaleDateString("en-US", { weekday: "short" }),
-      });
-    }
-    return days;
+  const handleOpenDetails = (id: string) => {
+    setSelectedId(id);
+    detailsSheetRef.current?.present();
   };
 
   const renderTasks = ({ item }: { item: Task }) => {
@@ -89,6 +98,9 @@ const handleOpenDetails = (id: string) => {
           },
         )
       : "بدون تاريخ";
+    {
+      /* No Date */
+    }
 
     return (
       <Pressable onPress={() => handleOpenDetails(item.id)}>
@@ -107,7 +119,6 @@ const handleOpenDetails = (id: string) => {
             shadowRadius: 10,
           }}
         >
-          {/* أيقونة الحالة */}
           <View
             className={`w-10 h-10 rounded-full items-center justify-center ${
               item.completed
@@ -131,19 +142,14 @@ const handleOpenDetails = (id: string) => {
             <Text className="text-gray-600 text-xs">{dueDateLabel}</Text>
           </View>
 
-          {/* زر إتمام سريع */}
           <Pressable
             onPress={() => toggleTaskComplete(item.id)}
             className={`flex-row items-center p-1 mb-2 rounded-[24px] ${
-              item.completed
-                ? "bg-gray-100 border-gray-200"
-                : isStudy
-                  ? "bg-white"
-                  : "bg-white"
+              item.completed ? "bg-gray-100 border-gray-200" : "bg-white"
             }`}
           >
             <View
-              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-500 border-green-500" : "border-gray-200"}`}
+              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : "border-gray-200"}`}
             >
               {item.completed && (
                 <Text className="text-white text-xs font-bold text-center">
@@ -153,7 +159,6 @@ const handleOpenDetails = (id: string) => {
             </View>
           </Pressable>
 
-          {/* زر الحذف */}
           <TouchableOpacity
             onPress={() => removeTask(item.id)}
             className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
@@ -177,16 +182,14 @@ const handleOpenDetails = (id: string) => {
     };
   }) => {
     return (
-
       <Pressable
-        
         onPressIn={() => handleOpenDetails(item.id)}
         className={`flex-row justify-between items-center px-4 py-2 mb-3 rounded-[24px] border ${
           item.completed
-            ? "bg-gray-100 border-gray-200":
-          isStudy
-            ? "bg-white border-study-primary/10"
-            : "bg-white border-coding-primary/10"
+            ? "bg-gray-100 border-gray-200"
+            : isStudy
+              ? "bg-white border-study-primary/10"
+              : "bg-white border-coding-primary/10"
         }`}
         style={{
           elevation: 2,
@@ -195,60 +198,53 @@ const handleOpenDetails = (id: string) => {
           shadowRadius: 10,
         }}
       >
-
-        {/* أيقونة الحالة */}
+        <View
+          className={`w-10 h-10 rounded-full items-center justify-center ${
+            item.completed
+              ? "bg-gray-200"
+              : isStudy
+                ? "bg-study-primary/10"
+                : "bg-coding-primary/10"
+          }`}
+        >
           <View
-            className={`w-10 h-10 rounded-full items-center justify-center ${
-              item.completed
-                ? "bg-gray-200"
-                : isStudy
-                  ? "bg-study-primary/10"
-                  : "bg-coding-primary/10"
-            }`}
-          >
-            <View
-              className={`w-3 h-3 rounded-full ${item.completed ? "bg-gray-400" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
-            />
-          </View>
+            className={`w-3 h-3 rounded-full ${item.completed ? "bg-gray-400" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+          />
+        </View>
 
-        {/* 2. النصوص (العنوان والسلسلة) */}
         <View className="mx-3 ml-3 flex-1">
-          <Text className={`font-bold text-base text-gray-800 ${item.completed ? "line-through text-gray-500" : ""}`}>
+          <Text
+            className={`font-bold text-base text-gray-800 ${item.completed ? "line-through text-gray-500" : ""}`}
+          >
             {item.title}
           </Text>
           <View className="self-start rounded-full px-3 py-1 border border-gray-200 bg-gray-50">
             <Text className="text-[8px] font-black uppercase text-gray-600">
               {item.priority === "high"
-                ? "عالية"
+                ? "عالية" /* High */
                 : item.priority === "medium"
-                  ? "متوسطة"
-                  : "منخفضة"}
+                  ? "متوسطة" /* Medium */
+                  : "منخفضة"}{" "}
+              {/* Low */}
             </Text>
           </View>
         </View>
+
         <Pressable
           onPress={() => completeHabit(item.id)}
-          className={`flex-row items-center ${            item.completed
-              ? "bg-white border-gray-200"
-              : isStudy
-                ? "bg-white"
-                : "bg-white"
-          }`}
+          className="flex-row items-center"
+        >
+          <View
+            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : "border-gray-100"}`}
           >
-
-            <View
-              className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? "bg-green-500 border-green-500" : "border-gray-100"}`}
-            >
-              {item.completed && (
-                <Text className="text-white text-xs font-bold text-center">
-                  ✓
-                </Text>
-              )}
-            </View>
-          
+            {item.completed && (
+              <Text className="text-white text-xs font-bold text-center">
+                ✓
+              </Text>
+            )}
+          </View>
         </Pressable>
 
-        {/* زر الحذف */}
         <Pressable
           onPress={() => removeHabit(item.id)}
           className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
@@ -259,40 +255,61 @@ const handleOpenDetails = (id: string) => {
     );
   };
 
-  const daysData = generateMonthDays();
+  // داشبورد التقدم بدلاً من شريط الأيام (Progress Dashboard replacing Days Row)
+  const ProgressDashboard = () => (
+    <View
+      className={`mb-4 rounded-3xl px-4 py-4 ${isStudy ? "bg-violet-400" : "bg-green-200"}`}
+      style={{ minHeight: 128 }}
+    >
+      <View className="flex-row justify-between items-start">
+        <View className="flex-1 pr-3">
+          <Text
+            className={`text-xs font-bold uppercase ${isStudy ? "text-violet-500" : "text-green-600"}`}
+          >
+            {progressLabel}
+          </Text>
+          <Text
+            className={`mt-2 text-3xl font-black ${isStudy ? "text-violet-900" : "text-green-800 font-mono"}`}
+          >
+            {progressPercentage}%
+          </Text>
+          <Text
+            className={`mt-1 text-sm ${isStudy ? "text-violet-700" : "text-green-700"}`}
+          >
+            {completedItems} / {totalItems || 1} مكتملة {/* completed */}
+          </Text>
+        </View>
 
-  const renderDays = ({ item }: { item: { id: string; name: string } }) => {
-    // الحين بيطلع لك الـ Auto-complete لـ selectedDay
-    const isSelected = selectDay === parseInt(item.id);
-
-    return (
-      <View className="py-4">
-        <Pressable
-          onPress={() => setSelectDay(parseInt(item.id))}
-          className={`items-center justify-center w-16 h-24 rounded-3xl ${
-            isSelected
-              ? mode === "study"
-                ? "border-4 border-study-primary bg-study-primary/10"
-                : "border-4 border-coding-primary bg-coding-primary/10"
-              : "bg-white border border-gray-600"
-          }`}
+        <View
+          className={`justify-center rounded-full px-4 py-3 ${isStudy ? "bg-violet-100" : "bg-green-100"}`}
         >
           <Text
-            className={`text-xl font-black ${isSelected ? (mode === "study" ? "text-study-primary" : "text-coding-primary") : "text-gray-800"}`}
+            className={`text-[10px] text-center uppercase font-bold ${isStudy ? "text-violet-500" : "text-green-500 font-mono"}`}
           >
-            {item.id}
+            السلسلة
           </Text>
           <Text
-            className={`text-[10px] font-bold uppercase ${isSelected ? (mode === "study" ? "text-study-primary" : "text-coding-primary") : "text-gray-600"}`}
+            className={`mt-1 text-center text-2xl font-black ${isStudy ? "text-violet-900" : "text-green-800 font-mono"}`}
           >
-            {item.name}
+            {streakCount}
           </Text>
-        </Pressable>
+          <Text
+            className={`text-[10px] text-center ${isStudy ? "text-violet-600" : "text-green-600"}`}
+          >
+            أيام متصلة {/* consecutive days */}
+          </Text>
+        </View>
       </View>
-    );
-  };
 
-  // --- مكون الهيدر (مكتوب هنا لسهولة التعديل) ---
+      <View className="mt-4 h-3 w-full overflow-hidden rounded-full bg-white/20">
+        <View
+          className={`h-full rounded-full ${isStudy ? "bg-violet-700" : "bg-green-500"}`}
+          style={{ width: `${progressPercentage}%` }}
+        />
+      </View>
+    </View>
+  );
+
   const HeaderSection = () => (
     <View
       className={`pt-12 pb-5 px-6 shadow-2xl ${
@@ -300,7 +317,6 @@ const handleOpenDetails = (id: string) => {
       }`}
     >
       <View className="flex-row justify-between items-center">
-        {/* زر الإعدادات/المود */}
         <TouchableOpacity
           onPress={toggleMode}
           className="bg-white/20 p-3 rounded-2xl"
@@ -312,7 +328,6 @@ const handleOpenDetails = (id: string) => {
           )}
         </TouchableOpacity>
 
-        {/* عنوان المود */}
         <View className="flex-1 items-center">
           <Text className="text-white/70 text-xs font-bold mb-1">
             {isStudy ? "STUDY MODE" : "DEV MODE"}
@@ -321,13 +336,12 @@ const handleOpenDetails = (id: string) => {
             {isStudy ? "بيئة الدراسة" : "بيئة البرمجة"}
           </Text>
         </View>
-        {/* زر الإعدادات*/}
+
         <View>
           <Pressable
             onPress={() => router.push("./settings")}
             className="bg-white/20 p-3 rounded-2xl"
           >
-            {/* أيقونة للزر */}
             <Settings color="white" size={26} />
           </Pressable>
         </View>
@@ -336,50 +350,39 @@ const handleOpenDetails = (id: string) => {
   );
 
   return (
-    // الـ View "العم" - وظيفته فقط الخلفية وتوزيع العناصر الكبيرة
-
     <View className={`flex-1 ${isStudy ? "bg-study-bg" : "bg-coding-bg"}`}>
-      {/* استدعاء الهيدر كقطعة واحدة */}
       <HeaderSection />
 
-      {/* باقي محتويات الصفحة */}
       <View className="flex-1 px-4 mt-2">
-        {/* هنا سيأتي صف الأيام والفلاش ليست */}
-        <FlashList
-          horizontal
-          data={daysData} // بيانات الأيام
-          renderItem={renderDays} // طريقة عرض كل يوم
-          keyExtractor={(item) => item.id.toString()} // مفتاح فريد لكل يوم
-          initialScrollIndex={selectDay - 3} // لتحديد اليوم المختار عند البداية
-          showsHorizontalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View className="w-4" />}
-        />
+        <ProgressDashboard />
+
         <View className="flex-row justify-between items-center mt-6 mb-3 px-1">
           <Text
             className={`text-lg font-bold ${isStudy ? "text-indigo-900" : "text-emerald-900"}`}
           >
-            مهام اليوم
+            مهام اليوم {/* ترجمة عربية: Today's Tasks */}
           </Text>
           <Pressable
             onPress={() => router.push("./view-all")}
             className="px-3 py-1 rounded-lg"
           >
             <Text className="text-sm font-bold text-gray-600">عرض الكل</Text>
+            {/* View All */}
           </Pressable>
         </View>
 
-        {/* مكان الـ FlashList */}
         <View className="h-56">
           <FlashList
-            data={tasks.slice(0, 2)} // عرض فقط أول 2 مهام
-            renderItem={renderTasks} // طريقة عرض كل مهمة
+            data={sortedTasks.slice(0, 2)}
+            renderItem={renderTasks}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
           />
         </View>
+
         <View className="flex-row justify-between items-center px-1 mb-3">
-          {/* عنوان الفلاش ليست للعادات */}
           <Text className="text-lg font-bold text-gray-800">عاداتي</Text>
+          {/* My Habits */}
           <Pressable
             onPress={() => router.push("./view-all")}
             className="px-3 py-1 rounded-lg"
@@ -387,15 +390,16 @@ const handleOpenDetails = (id: string) => {
             <Text className="text-sm font-bold text-gray-600">عرض الكل</Text>
           </Pressable>
         </View>
+
         <View className="h-64">
           <FlashList
-            data={sortedHabits.slice(0, 2)} // عرض فقط أول 2 عادات مرتبة حسب الأولوية
-            renderItem={renderHabits} // طريقة عرض كل عادة
+            data={sortedHabits.slice(0, 2)}
+            renderItem={renderHabits}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
           />
         </View>
-        {/* زر إضافة مهمة/عادة جديد */}
+
         <TouchableOpacity
           onPress={openAddTaskSheet}
           className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
@@ -405,9 +409,8 @@ const handleOpenDetails = (id: string) => {
         >
           <Text className="text-white text-3xl font-bold">+</Text>
         </TouchableOpacity>
-
-        {/* --- مكون الـ Bottom Sheet لإضافة مهمة/عادة جديدة --- */}
       </View>
+
       <AddTaskSheet ref={bottomSheetRef} mode={mode} />
       <DetailsSheet ref={detailsSheetRef} itemId={selectedId} />
     </View>

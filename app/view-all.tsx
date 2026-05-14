@@ -14,10 +14,10 @@ import {
   Trash2,
   ChevronLeft,
 } from "lucide-react-native";
+import { AddTaskSheet } from "../components/AddTaskSheet";
 import { router } from "expo-router";
 import { DetailsSheet } from "./tasks/taskDetails";
 import BottomSheetModal from "@gorhom/bottom-sheet/lib/typescript/components/bottomSheetModal/BottomSheetModal";
-
 const ShowAll = () => {
   const {
     tasks,
@@ -35,6 +35,12 @@ const ShowAll = () => {
   const handleOpenDetails = (id: string) => {
     setSelectedId(id);
     detailsSheetRef.current?.present();
+  };
+
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+
+  const openAddTaskSheet = () => {
+    bottomSheetRef.current?.snapToIndex(0);
   };
 
   const isStudy = mode === "study";
@@ -159,7 +165,7 @@ const ShowAll = () => {
           }`}
         >
           <View
-            className={`w-3 h-3 rounded-full ${completed ? "bg-gray-400" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+            className={`w-3 h-3 rounded-full ${item.priority === "high" ? "bg-red-500" : item.priority === "medium" ? "bg-yellow-500" : item.priority === "low" ? "bg-green-600" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
           />
         </View>
 
@@ -259,6 +265,16 @@ const ShowAll = () => {
         tasks.length === 0 ? (
           <View className="flex-1 items-center justify-center">
             <Text className="text-gray-500">لا توجد مهام حالياً.</Text>
+            <Text className="text-gray-500">قم بانشاء مهمة جديدة.</Text>
+            <TouchableOpacity
+              onPress={openAddTaskSheet}
+              className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
+                isStudy ? "bg-study-primary" : "bg-coding-primary"
+              }`}
+              style={{ elevation: 5 }}
+            >
+              <Text className="text-white text-3xl font-bold">+</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <FlashList
@@ -270,6 +286,16 @@ const ShowAll = () => {
       ) : habits.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           <Text className="text-gray-500">لا توجد عادات حالياً.</Text>
+          <Text className="text-gray-500">قم بانشاء عادة جديدة.</Text>
+          <TouchableOpacity
+            onPress={openAddTaskSheet}
+            className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
+              isStudy ? "bg-study-primary" : "bg-coding-primary"
+            }`}
+            style={{ elevation: 5 }}
+          >
+            <Text className="text-white text-3xl font-bold">+</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlashList
@@ -278,6 +304,7 @@ const ShowAll = () => {
           keyExtractor={(item) => item.id}
         />
       )}
+      <AddTaskSheet ref={bottomSheetRef} />
       <DetailsSheet ref={detailsSheetRef} itemId={selectedId} />
     </View>
   );

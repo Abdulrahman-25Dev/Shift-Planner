@@ -1,46 +1,29 @@
 import React, { useCallback, useMemo, useState, forwardRef } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Pressable,
-} from "react-native";
+import { View, Text, TouchableOpacity, Pressable } from "react-native";
 import { CheckCircle2, Clock1, RefreshCw } from "lucide-react-native";
 import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,
   BottomSheetTextInput,
+  BottomSheetModal,
 } from "@gorhom/bottom-sheet";
 import { useAppStore } from "../store/useAppStore";
+import DateClockSheet from "./DateClockSheet";
 
 export const AddTaskSheet = forwardRef(
-  (props: any, ref: React.Ref<BottomSheet>) => {
+  (props: any, ref: React.Ref<BottomSheetModal>) => {
     const [type, setType] = useState<"task" | "habit">("task"); // التحكم بنوع الإضافة
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState<"low" | "medium" | "high">(
       "medium",
     );
+
+    const clockSheetRef = React.useRef<BottomSheetModal>(null);
     const [selectedDate, setSelectedDate] = useState<string>(
       new Date().toISOString().split("T")[0],
     );
     const isStudy = props.mode === "study";
-    const calendarColor = isStudy ? "#818CF8" : "#10B981";
-    const calendarTheme = useMemo(
-      () =>
-        ({
-          selectedDayBackgroundColor: calendarColor,
-          selectedDayTextColor: "#FFFFFF",
-          arrowColor: calendarColor,
-          todayTextColor: calendarColor,
-          monthTextColor: "#111827",
-          textDayFontWeight: "700",
-          textMonthFontWeight: "700",
-          textDayFontSize: 16,
-          textMonthFontSize: 18,
-        }) as any,
-      [calendarColor],
-    );
     const AddTask = useAppStore((state) => state.addTask);
     const AddHabit = useAppStore((state) => state.addHabit);
 
@@ -170,7 +153,10 @@ export const AddTaskSheet = forwardRef(
           {type === "task" ? (
             <View className="mb-3">
               <View className="rounded-3xl overflow-hidden bg-white border border-gray-100">
-                <Pressable onPress={() => {}} className={`p-4 items-center flex-row gap-2 justify-center bg-blue-100 rounded-2xl mb-4`}>
+                <Pressable
+                  onPress={() => clockSheetRef.current?.present()}
+                  className={`p-4 items-center flex-row gap-2 justify-center bg-blue-100 rounded-2xl mb-4`}
+                >
                   <Text className="text-blue-600 font-bold text-center">
                     اختيار وقت المهمة
                   </Text>
@@ -180,7 +166,10 @@ export const AddTaskSheet = forwardRef(
             </View>
           ) : (
             <View>
-              <Pressable onPress={() => {}} className={`p-4 items-center flex-row gap-2 justify-center bg-blue-100 rounded-2xl mb-4`}>
+              <Pressable
+                onPress={() => {}}
+                className={`p-4 items-center flex-row gap-2 justify-center bg-blue-100 rounded-2xl mb-4`}
+              >
                 <Text className="text-blue-600 font-bold text-center">
                   اختيار وقت العادة
                 </Text>
@@ -223,6 +212,13 @@ export const AddTaskSheet = forwardRef(
             </Text>
           </TouchableOpacity>
         </BottomSheetView>
+        <DateClockSheet
+          ref={clockSheetRef}
+          initialDate={new Date(selectedDate)}
+          onSave={(date) => {
+            setSelectedDate(date.toISOString().split("T")[0]);
+          }}
+        />
       </BottomSheet>
     );
   },

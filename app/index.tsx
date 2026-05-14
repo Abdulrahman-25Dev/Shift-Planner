@@ -11,7 +11,7 @@ import { GraduationCap, Code2, Settings, Trash2 } from "lucide-react-native";
 import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
 import { AddTaskSheet } from "../components/AddTaskSheet";
-import BottomSheet, { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { DetailsSheet } from "./tasks/taskDetails";
 
 export default function Index() {
@@ -42,21 +42,19 @@ export default function Index() {
   }));
 
   // حسابات التقدم للداشبورد (Progress Dashboard calculations)
-  const totalItems = tasks.length + habitsWithCompleted.length;
+  const totalItems = tasks.length;
   const completedTasksCount = tasks.filter((task) => task.completed).length;
-  const completedHabitsCount = habitsWithCompleted.filter(
-    (habit) => habit.completed,
-  ).length;
-  const completedItems = completedTasksCount + completedHabitsCount;
+  const completedItems = completedTasksCount;
   const progressRatio = totalItems === 0 ? 0 : completedItems / totalItems;
   const progressPercentage = Math.round(progressRatio * 100);
   const progressLabel = isStudy
-    ? progressPercentage >= 70
-      ? "الجاهزية الدراسية"
+    ? progressPercentage === 100
+      ? "هدفك اليومي مكتمل!"
       : "الهدف اليومي"
-    : progressPercentage >= 70
-      ? "تقدم البناء"
+    : progressPercentage === 100
+      ? "كل مهامك مكتملة!"
       : "استقرار النظام";
+      
   const streakCount = habits.reduce(
     (max, habit) => Math.max(max, habit.streak),
     0,
@@ -75,7 +73,7 @@ export default function Index() {
     (a, b) => Number(a.completed) - Number(b.completed),
   );
 
-  const bottomSheetRef = useRef<BottomSheet>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
   const detailsSheetRef = useRef<BottomSheetModal>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -208,7 +206,7 @@ export default function Index() {
           }`}
         >
           <View
-            className={`w-3 h-3 rounded-full ${item.completed ? "bg-gray-400" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+            className={`w-3 h-3 rounded-full ${item.priority === "high" ? "bg-red-500" : item.priority === "medium" ? "bg-yellow-500" : item.priority === "low" ? "bg-green-600" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
           />
         </View>
 

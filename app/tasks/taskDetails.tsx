@@ -30,6 +30,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
       updateHabit,
       removeTask,
       removeHabit,
+      mode
     } = useAppStore();
 
     // 1. جلب البيانات والتعرف على النوع
@@ -45,6 +46,8 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
     const item = task || habit;
     const isHabit = !!habit;
     const themeColor = isHabit ? "#22C55E" : "#3B82F6"; // لون مميز لكل نوع
+
+    const isStudy = mode === "study";
 
     const clockSheetRef = React.useRef<BottomSheetModal>(null);
 
@@ -90,8 +93,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                     ? updateHabit(item.id, { title: text })
                     : updateTask(item.id, { title: text })
                 }
-                className="text-lg font-black text-right bg-gray-100 px-4 rounded-2xl"
-                style={{ color: themeColor }}
+                className={`text-lg font-black text-right bg-gray-100 px-4 rounded-2xl ${isStudy ? "text-study-secondary" : "text-coding-secondary"}`}
                 placeholder="العنوان..."
               />
             </View>
@@ -126,7 +128,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                   : updateTask(item.id, { description: text })
               }
               placeholder="اكتب تفاصيل إضافية هنا..."
-              className="bg-gray-50 p-4 rounded-2xl text-right font-semibold text-gray-700 min-h-[120px]"
+              className={`bg-gray-50 p-4 rounded-2xl text-right font-semibold text-gray-700 min-h-[120px] ${isStudy ? "text-study-primarr" : "text-coding-primary"}`}
               textAlignVertical="top"
             />
           </View>
@@ -134,8 +136,8 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
           <View>
             <Pressable 
               onPress={() => clockSheetRef.current?.present()}
-            className="bg-blue-50 gap-2 p-4 rounded-2xl flex-row items-center justify-center relative mb-6">
-              <Text className="text-blue-500 font-bold text-center">
+              className={`bg-blue-50 gap-2 p-4 rounded-2xl flex-row items-center justify-center relative mb-6`}>
+              <Text className={`text-${isHabit ? "green" :  "blue"}-500 font-bold text-center`}>
                 تغيير وقت التذكير
               </Text>
               <Clock
@@ -155,7 +157,11 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                   text: "حذف",
                   style: "destructive",
                   onPress: () => {
-                    isHabit ? removeHabit(item.id) : removeTask(item.id);
+                    if (isHabit) {
+                      removeHabit(item.id);
+                    } else {
+                      removeTask(item.id);
+                    }
                     // @ts-ignore
                     ref.current?.dismiss();
                   },
@@ -173,9 +179,11 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
           initialDate={item.reminderTime ? new Date(item.reminderTime) : new Date()}
           onSave={(date) => {
             const isoString = date.toISOString();
-            isHabit
-              ? updateHabit(item.id, { reminderTime: isoString })
-              : updateTask(item.id, { reminderTime: isoString });
+            if (isHabit) {
+              updateHabit(item.id, { reminderTime: isoString });
+            } else {
+              updateTask(item.id, { reminderTime: isoString });
+            }
           }}
         />
       </BottomSheetModal>

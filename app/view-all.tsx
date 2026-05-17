@@ -46,14 +46,17 @@ const ShowAll = () => {
   const isStudy = mode === "study";
 
   const renderTasks = ({ item }: { item: Task }) => {
-    const dueDateLabel = item.dueDate
-      ? new Date(item.dueDate).toLocaleDateString(
-          I18nManager.isRTL ? "ar-SA" : "en-US",
-          {
-            day: "numeric",
-            month: "short",
-          },
-        )
+    const dateSource = item.dueDate
+      ? new Date(item.dueDate)
+      : item.reminderTime
+        ? new Date(item.reminderTime)
+        : null;
+
+    const dueDateLabel = dateSource
+      ? dateSource.toLocaleDateString(I18nManager.isRTL ? "ar-SA" : "en-US", {
+          day: "numeric",
+          month: "short",
+        })
       : "بدون تاريخ";
 
     return (

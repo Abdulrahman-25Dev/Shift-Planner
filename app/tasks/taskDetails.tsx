@@ -11,12 +11,13 @@ import {
   BottomSheetModal,
   BottomSheetView,
   BottomSheetBackdrop,
-  BottomSheetTextInput
+  BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import { useAppStore } from "../../store/useAppStore"; // تأكد من مسار الستور
+import { Task, useAppStore } from "../../store/useAppStore"; // تأكد من مسار الستور
 import { Ionicons } from "@expo/vector-icons";
 import { Clock } from "lucide-react-native";
-import DateClockSheet from "../../components/DateClockSheet";
+import DateSheet from "../../components/DateSheet";
+import TimeSheet from "../../components/TimeSheet";
 
 interface DetailsSheetProps {
   itemId: string | null;
@@ -30,7 +31,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
       updateHabit,
       removeTask,
       removeHabit,
-      mode
+      mode,
     } = useAppStore();
 
     // 1. جلب البيانات والتعرف على النوع
@@ -45,11 +46,11 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
 
     const item = task || habit;
     const isHabit = !!habit;
-    const themeColor = isHabit ? "#22C55E" : "#3B82F6"; // لون مميز لكل نوع
 
     const isStudy = mode === "study";
 
-    const clockSheetRef = React.useRef<BottomSheetModal>(null);
+    const dateSheetRef = React.useRef<BottomSheetModal>(null);
+    const timeSheetRef = React.useRef<BottomSheetModal>(null);
 
     // 2. إعدادات الشيت (Snap Points)
     const snapPoints = useMemo(() => ["85%"], []);
@@ -67,6 +68,9 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
     );
 
     if (!item) return null;
+
+    const taskDueDate = !isHabit ? (item as Task).dueDate : undefined;
+    const taskReminderTime = item.reminderTime;
 
     return (
       <BottomSheetModal
@@ -133,11 +137,20 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
             />
           </View>
           {/* قسم تغيير وقت التذكير (مش مفعل حالياً) */}
-          <View>
-            <Pressable 
-              onPress={() => clockSheetRef.current?.present()}
-              className={`bg-blue-50 gap-2 p-4 rounded-2xl flex-row items-center justify-center relative mb-6`}>
-              <Text className={`text-${isHabit ? "green" :  "blue"}-500 font-bold text-center`}>
+          <View className="mb-6">
+            <Pressable
+              onPress={() => dateSheetRef.current?.present()}
+              className={`bg-blue-50 gap-2 p-4 rounded-2xl flex-row items-center justify-center relative mb-3`}
+            >
+              <Text className={`text-blue-500 font-bold text-center`}>
+                تغيير تاريخ التذكير
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => timeSheetRef.current?.present()}
+              className={`bg-blue-50 gap-2 p-4 rounded-2xl flex-row items-center justify-center relative`}
+            >
+              <Text className={`text-blue-500 font-bold text-center`}>
                 تغيير وقت التذكير
               </Text>
               <Clock
@@ -174,15 +187,62 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
             <Ionicons name="trash-outline" size={20} color="#EF4444" />
           </TouchableOpacity>
         </BottomSheetView>
-        <DateClockSheet
-          ref={clockSheetRef}
-          initialDate={item.reminderTime ? new Date(item.reminderTime) : new Date()}
+        <DateSheet
+          ref={dateSheetRef}
+          initialDate={
+            taskDueDate !== undefined
+              ? new Date(taskDueDate)
+              : taskReminderTime
+                ? new Date(taskReminderTime)
+                : new Date()
+          }
           onSave={(date) => {
-            const isoString = date.toISOString();
+            const fixedDate = new Date(date);
             if (isHabit) {
+              const isoString = fixedDate.toISOString();
               updateHabit(item.id, { reminderTime: isoString });
             } else {
-              updateTask(item.id, { reminderTime: isoString });
+              updateTask(item.id, { dueDate: fixedDate.getTime() });
+            }
+          }}
+        />
+        <TimeSheet
+          ref={timeSheetRef}
+          initialTimeValue={
+            taskDueDate !== undefined
+              ? new Date(taskDueDate).toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : taskReminderTime
+                ? new Date(taskReminderTime).toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : ""
+          }
+          initialIsDuration={false}
+          onSave={(timeValue, isDuration) => {
+            const existingDate =
+              taskDueDate !== undefined
+                ? new Date(taskDueDate)
+                : taskReminderTime
+                  ? new Date(taskReminderTime)
+                  : new Date();
+            const nextDate = new Date(existingDate);
+            if (!isDuration && timeValue) {
+              const [hourText, minuteText] = timeValue.split(":");
+              const hour = parseInt(hourText, 10);
+              const minute = parseInt(minuteText, 10);
+              if (!Number.isNaN(hour) && !Number.isNaN(minute)) {
+                nextDate.setHours(hour, minute, 0, 0);
+              }
+            }
+            if (isHabit) {
+              const isoString = nextDate.toISOString();
+              updateHabit(item.id, { reminderTime: isoString });
+            } else {
+              updateTask(item.id, { dueDate: nextDate.getTime() });
             }
           }}
         />

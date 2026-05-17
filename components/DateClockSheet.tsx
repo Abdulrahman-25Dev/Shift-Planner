@@ -6,7 +6,6 @@ import {
   BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
 import { Calendar } from "react-native-calendars";
-import WheelTimePicker from "./WheelTimePicker";
 import { useAppStore } from "../store/useAppStore"; // تأكد من مسار الستور
 
 interface DateClockSheetProps {
@@ -101,11 +100,8 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
                   todayTextColor: isStudy ? "#4F46E5" : "#047857",
                 }}
               />
-            ) : (
-              <WheelTimePicker
-                initialTime={tempDate}
-                onTimeChange={handleTimeChange}
-              />
+            ): (
+              <View></View>
             )}
           </View>
 

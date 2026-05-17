@@ -54,7 +54,7 @@ export default function Index() {
     : progressPercentage === 100
       ? "كل مهامك مكتملة!"
       : "استقرار النظام";
-      
+
   const streakCount = habits.reduce(
     (max, habit) => Math.max(max, habit.streak),
     0,
@@ -87,18 +87,26 @@ export default function Index() {
   };
 
   const renderTasks = ({ item }: { item: Task }) => {
-    const dueDateLabel = item.dueDate
-      ? new Date(item.dueDate).toLocaleDateString(
-          I18nManager.isRTL ? "ar-SA" : "en-US",
-          {
-            day: "numeric",
-            month: "short",
-          },
-        )
+    const dateSource = item.dueDate
+      ? new Date(item.dueDate)
+      : item.reminderTime
+        ? new Date(item.reminderTime)
+        : null;
+
+    const dueDateLabel = dateSource
+      ? dateSource.toLocaleDateString(I18nManager.isRTL ? "ar-SA" : "en-US", {
+          day: "numeric",
+          month: "short",
+        })
       : "بدون تاريخ";
-    {
-      /* No Date */
-    }
+
+    const dueTimeLabel = dateSource
+      ? dateSource.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+      : "";
 
     return (
       <Pressable onPress={() => handleOpenDetails(item.id)}>
@@ -137,7 +145,14 @@ export default function Index() {
             >
               {item.title}
             </Text>
-            <Text className="text-gray-600 text-xs">{dueDateLabel}</Text>
+            <View className="flex-row justify-between items-center mt-1">
+              <Text className="text-gray-600 text-xs">
+                {dueDateLabel}-
+                {dueTimeLabel ? (
+                  <Text className="text-gray-600 text-xs">{dueTimeLabel}</Text>
+                ) : null}
+              </Text>
+            </View>
           </View>
 
           <Pressable

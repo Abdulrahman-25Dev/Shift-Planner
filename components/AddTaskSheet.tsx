@@ -8,7 +8,8 @@ import BottomSheet, {
   BottomSheetModal,
 } from "@gorhom/bottom-sheet";
 import { useAppStore } from "../store/useAppStore";
-import DateClockSheet from "./DateClockSheet";
+import DateSheet from "../components/DateSheet";
+import TimeSheet from "../components/TimeSheet";
 
 export const AddTaskSheet = forwardRef(
   (props: any, ref: React.Ref<BottomSheetModal>) => {
@@ -19,10 +20,18 @@ export const AddTaskSheet = forwardRef(
       "medium",
     );
 
-    const clockSheetRef = React.useRef<BottomSheetModal>(null);
-    const [selectedDate, setSelectedDate] = useState<string>(
-      new Date().toISOString().split("T")[0],
+    const dateSheetRef = React.useRef<BottomSheetModal>(null);
+    const timeSheetRef = React.useRef<BottomSheetModal>(null);
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [selectedTime, setSelectedTime] = useState<string>(
+      new Date().toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
     );
+    const [selectedIsDuration, setSelectedIsDuration] =
+      useState<boolean>(false);
     const isStudy = props.mode === "study";
     const AddTask = useAppStore((state) => state.addTask);
     const AddHabit = useAppStore((state) => state.addHabit);
@@ -99,6 +108,7 @@ export const AddTaskSheet = forwardRef(
             placeholderTextColor="#9CA3AF"
           />
 
+
           {/* 3. القسم المتغير (وصف المهمة | وصف العادة) */}
           <Text className="text-gray-400 font-bold mb-1 ml-1">
             وصف {type === "task" ? "المهمة" : "العادة"} (اختياري)
@@ -108,13 +118,33 @@ export const AddTaskSheet = forwardRef(
             onChangeText={setDescription}
             placeholder={
               type === "task"
-                ? "مثلاً: مذاكرة شابتر 1"
-                : "مثلاً: شرب لتر ماء يومياً"
+              ? "مثلاً: مذاكرة شابتر 1"
+              : "مثلاً: شرب لتر ماء يومياً"
             }
             className="bg-white p-3 rounded-2xl border border-gray-100 text-right font-bold text-gray-800 mb-4"
             placeholderTextColor="#9CA3AF"
-          />
+            />
 
+            {type === "task" && (
+              <View className="flex-row justify-between items-center bg-white border border-gray-100 rounded-2xl p-3 mb-4">
+                <View className="flex-1 pr-2">
+                  <Text className="text-gray-400 text-xs mb-1">التاريخ</Text>
+                  <Text className="font-bold text-center text-gray-800">
+                    {selectedDate.toLocaleDateString("en-US", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </Text>
+                </View>
+                <View className="flex-1 pl-2 border-l border-gray-200">
+                  <Text className="text-gray-400 text-xs mb-1">الوقت المحدد</Text>
+                  <Text className="font-bold text-center text-gray-800">
+                    {selectedIsDuration ? `مدة: ${selectedTime}` : selectedTime}
+                  </Text>
+                </View>
+              </View>
+            )}
           {/* 3. اختيار الأولوية */}
           {type === "habit" && (
             <View className="mb-3">
@@ -154,11 +184,21 @@ export const AddTaskSheet = forwardRef(
             <View className="mb-3">
               <View className="rounded-3xl overflow-hidden bg-white border border-gray-100">
                 <Pressable
-                  onPress={() => clockSheetRef.current?.present()}
-                  className={`p-4 items-center flex-row gap-2 justify-center bg-blue-100 rounded-2xl mb-4`}
+                  onPress={() => dateSheetRef.current?.present()}
+                  className={`p-4 items-center flex-row gap-2 justify-center bg-blue-100 rounded-2xl mb-3`}
                 >
                   <Text className="text-blue-600 font-bold text-center">
-                    اختيار وقت المهمة
+                    اختيار تاريخ المهمة
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => timeSheetRef.current?.present()}
+                  className={`p-4 items-center flex-row gap-2 justify-center bg-blue-100 rounded-2xl`}
+                >
+                  <Text className="text-blue-600 font-bold text-center">
+                    {selectedIsDuration
+                      ? `مدة: ${selectedTime}`
+                      : `وقت: ${selectedTime}`}
                   </Text>
                   <Clock1 size={20} color="#3B82F6" />
                 </Pressable>
@@ -183,11 +223,21 @@ export const AddTaskSheet = forwardRef(
             onPress={() => {
               if (title.trim()) {
                 if (type === "task") {
+                  const dueDate = new Date(selectedDate);
+                  if (selectedTime && !selectedIsDuration) {
+                    const [hourText, minuteText] = selectedTime.split(":");
+                    const hour = parseInt(hourText, 10);
+                    const minute = parseInt(minuteText, 10);
+                    if (!Number.isNaN(hour) && !Number.isNaN(minute)) {
+                      dueDate.setHours(hour, minute, 0, 0);
+                    }
+                  }
+
                   AddTask({
                     title: title.trim(),
                     description: description.trim(),
                     completed: false,
-                    dueDate: new Date(selectedDate).getTime(),
+                    dueDate: dueDate.getTime(),
                   });
                 } else {
                   AddHabit({
@@ -200,7 +250,14 @@ export const AddTaskSheet = forwardRef(
                 setTitle("");
                 setDescription("");
                 setPriority("medium");
-                setSelectedDate(new Date().toISOString().split("T")[0]);
+                setSelectedDate(new Date());
+                setSelectedTime(
+                  new Date().toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                );
+                setSelectedIsDuration(false);
                 (ref as React.RefObject<BottomSheet>)?.current?.close();
               }
             }}
@@ -212,11 +269,20 @@ export const AddTaskSheet = forwardRef(
             </Text>
           </TouchableOpacity>
         </BottomSheetView>
-        <DateClockSheet
-          ref={clockSheetRef}
-          initialDate={new Date(selectedDate)}
+        <DateSheet
+          ref={dateSheetRef}
+          initialDate={selectedDate}
           onSave={(date) => {
-            setSelectedDate(date.toISOString().split("T")[0]);
+            setSelectedDate(new Date(date));
+          }}
+        />
+        <TimeSheet
+          ref={timeSheetRef}
+          initialTimeValue={selectedTime}
+          initialIsDuration={selectedIsDuration}
+          onSave={(timeValue, isDuration) => {
+            setSelectedTime(timeValue || selectedTime);
+            setSelectedIsDuration(isDuration);
           }}
         />
       </BottomSheet>

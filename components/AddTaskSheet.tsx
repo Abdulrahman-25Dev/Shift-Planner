@@ -109,7 +109,7 @@ export const AddTaskSheet = forwardRef(
           />
 
           {/* 3. القسم المتغير (وصف المهمة | وصف العادة) */}
-          <Text className="text-gray-400 font-bold mb-1 ml-1 text-right">
+          <Text className="text-gray-400 font-bold mb-1 ml-1">
             وصف {type === "task" ? "المهمة" : "العادة"} (اختياري)
           </Text>
           <BottomSheetTextInput
@@ -123,29 +123,29 @@ export const AddTaskSheet = forwardRef(
             className="bg-white p-3 rounded-2xl border border-gray-100 font-bold text-gray-800 mb-4"
             placeholderTextColor="#9CA3AF"
           />
-  
-            <View className="flex-row justify-between items-center bg-white border border-gray-100 rounded-2xl p-3 mb-4">
-              <View className="flex-1 pr-2">
-                <Text className="text-gray-400 text-xs mb-1">التاريخ</Text>
-                <Text className="font-bold text-center text-gray-800">
-                  {selectedDate.toLocaleDateString("en-US", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </Text>
-              </View>
-              <View className="flex-1 pl-2 border-l border-gray-200">
-                <Text className="text-gray-400 text-xs mb-1">الوقت المحدد</Text>
-                <Text className="font-bold text-center text-gray-800">
-                  {selectedIsDuration ? `مدة: ${selectedTime}` : selectedTime}
-                </Text>
-              </View>
+
+          <View className="flex-row justify-between items-center bg-white border border-gray-100 rounded-2xl p-3 mb-4">
+            <View className="flex-1 pr-2">
+              <Text className="text-gray-400 text-xs mb-1">التاريخ</Text>
+              <Text className="font-bold text-center text-gray-800">
+                {selectedDate.toLocaleDateString("en-US", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </Text>
             </View>
+            <View className="flex-1 pl-2 border-l border-gray-200">
+              <Text className="text-gray-400 text-xs mb-1">الوقت المحدد</Text>
+              <Text className="font-bold text-center text-gray-800">
+                {selectedIsDuration ? `مدة: ${selectedTime}` : selectedTime}
+              </Text>
+            </View>
+          </View>
           {/* 3. اختيار الأولوية */}
           {type === "habit" && (
             <View className="mb-3">
-              <Text className="text-gray-400 font-bold mb-1 ml-1 text-right">
+              <Text className="text-gray-400 font-bold mb-1 ml-1">
                 مستوى الأولوية
               </Text>
               <View className="flex-row justify-between">

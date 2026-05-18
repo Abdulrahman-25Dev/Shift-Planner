@@ -59,6 +59,14 @@ const ShowAll = () => {
         })
       : "بدون تاريخ";
 
+      const dueTimeLabel = dateSource
+      ? dateSource.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        })
+      : "";
+
     return (
       <Pressable onPress={() => handleOpenDetails(item.id)}>
         <View
@@ -97,7 +105,11 @@ const ShowAll = () => {
             >
               {item.title}
             </Text>
-            <Text className="text-gray-600 text-xs">{dueDateLabel}</Text>
+            <Text className="text-gray-600 text-xs">
+              {dueDateLabel} - {dueTimeLabel ? (
+                <Text className="text-gray-600 text-xs">{dueTimeLabel}</Text>
+              ) : null}
+            </Text>
           </View>
 
           {/* زر إتمام سريع */}
@@ -225,7 +237,7 @@ const ShowAll = () => {
     <View className="flex-1 px-4 py-6 bg-white">
       <View className="flex-row items-center justify-center mb-6">
         <Text className="text-xl font-bold my-6 mlr-3 text-center">
-          جميع المهام والعادات
+          جميع {type === "task" ? "المهام" : "العادات"}
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}

@@ -5,7 +5,6 @@ import {
   BottomSheetModal,
   BottomSheetView,
   BottomSheetBackdrop,
-  BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { useAppStore } from "../store/useAppStore";
 
@@ -21,11 +20,12 @@ const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"))
 
 const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
   ({ onSave, initialTimeValue, initialIsDuration }, ref) => {
-    const [timeValue, setTimeValue] = useState(initialTimeValue || "");
     const [isDuration, setIsDuration] = useState(initialIsDuration ?? false);
 
     const hourRef = useRef<FlashListRef<string>>(null);
     const minuteRef = useRef<FlashListRef<string>>(null);
+    const durationHourRef = useRef<FlashListRef<string>>(null);
+    const durationMinuteRef = useRef<FlashListRef<string>>(null);
 
     const parseTime = (val?: string) => {
       const parts = val?.split(":");
@@ -42,22 +42,41 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
     const [selectedMinute, setSelectedMinute] = useState(initialParsed.m);
     const [isPM, setIsPM] = useState(initialParsed.pm);
 
+    const parseDuration = (val?: string) => {
+      const parts = val?.split(":");
+      const h = parts?.[0] && HOURS_12.includes(parts[0]) ? parts[0] : "01";
+      const m = parts?.[1] && MINUTES.includes(parts[1]) ? parts[1] : "00";
+      return { h, m };
+    };
+
+    const initialDurationParsed = parseDuration(initialTimeValue);
+    const [durationHour, setDurationHour] = useState(initialDurationParsed.h);
+    const [durationMinute, setDurationMinute] = useState(initialDurationParsed.m);
+
     useEffect(() => {
-      setTimeValue(initialTimeValue || "");
       setIsDuration(initialIsDuration ?? false);
       const p = parseTime(initialTimeValue);
       setSelectedHour(p.h);
       setSelectedMinute(p.m);
       setIsPM(p.pm);
 
-      if (!(initialIsDuration ?? false)) {
-        const hourIndex = HOURS_12.indexOf(p.h);
-        const minuteIndex = MINUTES.indexOf(p.m);
-        setTimeout(() => {
+      const dp = parseDuration(initialTimeValue);
+      setDurationHour(dp.h);
+      setDurationMinute(dp.m);
+
+      setTimeout(() => {
+        if (!(initialIsDuration ?? false)) {
+          const hourIndex = HOURS_12.indexOf(p.h);
+          const minuteIndex = MINUTES.indexOf(p.m);
           hourRef.current?.scrollToOffset({ offset: hourIndex * ITEM_HEIGHT, animated: false });
           minuteRef.current?.scrollToOffset({ offset: minuteIndex * ITEM_HEIGHT, animated: false });
-        }, 50);
-      }
+        } else {
+          const dHourIndex = HOURS_12.indexOf(dp.h);
+          const dMinuteIndex = MINUTES.indexOf(dp.m);
+          durationHourRef.current?.scrollToOffset({ offset: dHourIndex * ITEM_HEIGHT, animated: false });
+          durationMinuteRef.current?.scrollToOffset({ offset: dMinuteIndex * ITEM_HEIGHT, animated: false });
+        }
+      }, 50);
     }, [initialTimeValue, initialIsDuration]);
 
     const prevHourRef = useRef(selectedHour);
@@ -70,10 +89,6 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
       }
       prevHourRef.current = selectedHour;
     }, [selectedHour]);
-
-    const handleTimeChange = (text: string) => {
-      setTimeValue(text);
-    };
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -99,7 +114,7 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
 
     const handleConfirm = () => {
       if (isDuration) {
-        onSave(timeValue.trim(), true);
+        onSave(`${durationHour}:${durationMinute}`, true);
       } else {
         const h24 = to24Hour(selectedHour, isPM);
         onSave(`${h24}:${selectedMinute}`, false);
@@ -126,6 +141,25 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
     const onMinuteScrollEnd = (e: any) => updateMinuteSelection(e.nativeEvent.contentOffset.y);
     const onMinuteDragEnd = (e: any) => updateMinuteSelection(e.nativeEvent.contentOffset.y);
 
+    const updateDurationHourSelection = (offsetY: number) => {
+      const clamped = Math.max(0, offsetY);
+      const index = Math.round(clamped / ITEM_HEIGHT);
+      const clampedIndex = Math.min(index, HOURS_12.length - 1);
+      setDurationHour(HOURS_12[clampedIndex]);
+    };
+
+    const updateDurationMinuteSelection = (offsetY: number) => {
+      const clamped = Math.max(0, offsetY);
+      const index = Math.round(clamped / ITEM_HEIGHT);
+      const clampedIndex = Math.min(index, MINUTES.length - 1);
+      setDurationMinute(MINUTES[clampedIndex]);
+    };
+
+    const onDurationHourScrollEnd = (e: any) => updateDurationHourSelection(e.nativeEvent.contentOffset.y);
+    const onDurationHourDragEnd = (e: any) => updateDurationHourSelection(e.nativeEvent.contentOffset.y);
+    const onDurationMinuteScrollEnd = (e: any) => updateDurationMinuteSelection(e.nativeEvent.contentOffset.y);
+    const onDurationMinuteDragEnd = (e: any) => updateDurationMinuteSelection(e.nativeEvent.contentOffset.y);
+
     const selectHour = (item: string) => {
       setSelectedHour(item);
       hourRef.current?.scrollToOffset({ offset: HOURS_12.indexOf(item) * ITEM_HEIGHT, animated: true });
@@ -134,6 +168,16 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
     const selectMinute = (item: string) => {
       setSelectedMinute(item);
       minuteRef.current?.scrollToOffset({ offset: MINUTES.indexOf(item) * ITEM_HEIGHT, animated: true });
+    };
+
+    const selectDurationHour = (item: string) => {
+      setDurationHour(item);
+      durationHourRef.current?.scrollToOffset({ offset: HOURS_12.indexOf(item) * ITEM_HEIGHT, animated: true });
+    };
+
+    const selectDurationMinute = (item: string) => {
+      setDurationMinute(item);
+      durationMinuteRef.current?.scrollToOffset({ offset: MINUTES.indexOf(item) * ITEM_HEIGHT, animated: true });
     };
 
     const renderHourItem = useCallback(
@@ -192,6 +236,62 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
       [selectedMinute, isStudy],
     );
 
+    const renderDurationHourItem = useCallback(
+      ({ item }: { item: string }) => {
+        const isSelected = item === durationHour;
+        return (
+          <TouchableOpacity
+            activeOpacity={0.6}
+            onPress={() => selectDurationHour(item)}
+            style={{ height: ITEM_HEIGHT, justifyContent: "center", alignItems: "center" }}
+          >
+            <Text
+              style={{
+                fontSize: isSelected ? 20 : 16,
+                fontWeight: isSelected ? "800" : "400",
+                color: isSelected
+                  ? isStudy
+                    ? "#4f46e5"
+                    : "#064e3b"
+                  : "#9CA3AF",
+              }}
+            >
+              {item}
+            </Text>
+          </TouchableOpacity>
+        );
+      },
+      [durationHour, isStudy],
+    );
+
+    const renderDurationMinuteItem = useCallback(
+      ({ item }: { item: string }) => {
+        const isSelected = item === durationMinute;
+        return (
+          <TouchableOpacity
+            activeOpacity={0.6}
+            onPress={() => selectDurationMinute(item)}
+            style={{ height: ITEM_HEIGHT, justifyContent: "center", alignItems: "center" }}
+          >
+            <Text
+              style={{
+                fontSize: isSelected ? 20 : 16,
+                fontWeight: isSelected ? "800" : "400",
+                color: isSelected
+                  ? isStudy
+                    ? "#4f46e5"
+                    : "#064e3b"
+                  : "#9CA3AF",
+              }}
+            >
+              {item}
+            </Text>
+          </TouchableOpacity>
+        );
+      },
+      [durationMinute, isStudy],
+    );
+
     return (
       <BottomSheetModal
         ref={ref}
@@ -230,14 +330,74 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
               <Text className="text-gray-400 font-bold mb-1 ml-1">
                 المدة
               </Text>
-              <BottomSheetTextInput
-                value={timeValue}
-                onChangeText={handleTimeChange}
-                placeholder="مثلاً: 2 hours"
-                placeholderTextColor="#9CA3AF"
-                keyboardType="default"
-                className="bg-white p-3 rounded-2xl border border-gray-100 text-right font-bold text-gray-800"
-              />
+              <View
+                style={{
+                  height: ITEM_HEIGHT * 3,
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  overflow: "hidden",
+                }}
+                className="bg-white rounded-2xl border border-gray-100"
+              >
+                <View
+                  style={{
+                    position: "absolute",
+                    top: ITEM_HEIGHT,
+                    left: 8,
+                    right: 8,
+                    height: ITEM_HEIGHT,
+                    backgroundColor: isStudy ? "#4f46e5" : "#064e3b",
+                    opacity: 0.1,
+                    borderRadius: 8,
+                  }}
+                />
+                <View style={{ flex: 1 }}>
+                  <FlashList
+                    ref={durationHourRef}
+                    data={HOURS_12}
+                    renderItem={renderDurationHourItem}
+                    {...{ estimatedItemSize: ITEM_HEIGHT }}
+                    snapToInterval={ITEM_HEIGHT}
+                    decelerationRate="fast"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{
+                      paddingTop: ITEM_HEIGHT,
+                      paddingBottom: ITEM_HEIGHT,
+                    }}
+                    onMomentumScrollEnd={onDurationHourScrollEnd}
+                    onScrollEndDrag={onDurationHourDragEnd}
+                  />
+                </View>
+                <View style={{ paddingHorizontal: 4 }}>
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: "800",
+                      color: isStudy ? "#4f46e5" : "#064e3b",
+                    }}
+                  >
+                    :
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <FlashList
+                    ref={durationMinuteRef}
+                    data={MINUTES}
+                    renderItem={renderDurationMinuteItem}
+                    {...{ estimatedItemSize: ITEM_HEIGHT }}
+                    snapToInterval={ITEM_HEIGHT}
+                    decelerationRate="fast"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{
+                      paddingTop: ITEM_HEIGHT,
+                      paddingBottom: ITEM_HEIGHT,
+                    }}
+                    onMomentumScrollEnd={onDurationMinuteScrollEnd}
+                    onScrollEndDrag={onDurationMinuteDragEnd}
+                  />
+                </View>
+              </View>
             </View>
           ) : (
             <View className="mb-4">
@@ -340,7 +500,7 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
               <Text
                 className={`font-black ${isStudy ? "text-study-primary" : "text-coding-primary"}`}
               >
-                {isDuration ? (timeValue || "0 hours") : `${selectedHour}:${selectedMinute} ${isPM ? "PM" : "AM"}`}
+                {isDuration ? `${durationHour}:${durationMinute}` : `${selectedHour}:${selectedMinute} ${isPM ? "PM" : "AM"}`}
               </Text>
             </View>
 

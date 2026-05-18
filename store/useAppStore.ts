@@ -11,7 +11,6 @@ export interface Task {
   completed: boolean;
   dueDate?: number;
   createdAt: number;
-  priority?: "low" | "medium" | "high";
   reminderTime?: string; // ISO string for reminder
   mode: "study" | "coding"; // Separate tasks by mode
 }
@@ -33,8 +32,6 @@ export interface Habit {
 interface AppState {
   mode: "study" | "coding";
   toggleMode: () => void;
-  selectDay: number;
-  setSelectDay: (day: number) => void;
 
   // All data (unfiltered)
   allTasks: Task[];
@@ -57,7 +54,6 @@ interface AppState {
   resetHabitStreak: (id: string) => void;
 }
 
-const today = new Date().getDate();
 
 const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
   const data = storage.getString(key);
@@ -92,11 +88,6 @@ export const useAppStore = create<AppState>((set, get) => {
           habits: state.allHabits.filter((habit) => habit.mode === nextMode),
         };
       }),
-    selectDay: today,
-    setSelectDay: (day: number) => {
-      storage.set("select_day", day);
-      set({ selectDay: day });
-    },
 
     // ============ All Data (unfiltered) ============
     allTasks,

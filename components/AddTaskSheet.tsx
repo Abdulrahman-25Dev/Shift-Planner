@@ -27,7 +27,7 @@ export const AddTaskSheet = forwardRef(
       new Date().toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
-        hour12: false,
+        hour12: true,
       }),
     );
     const [selectedIsDuration, setSelectedIsDuration] =
@@ -108,9 +108,8 @@ export const AddTaskSheet = forwardRef(
             placeholderTextColor="#9CA3AF"
           />
 
-
           {/* 3. القسم المتغير (وصف المهمة | وصف العادة) */}
-          <Text className="text-gray-400 font-bold mb-1 ml-1">
+          <Text className="text-gray-400 font-bold mb-1 ml-1 text-right">
             وصف {type === "task" ? "المهمة" : "العادة"} (اختياري)
           </Text>
           <BottomSheetTextInput
@@ -118,33 +117,31 @@ export const AddTaskSheet = forwardRef(
             onChangeText={setDescription}
             placeholder={
               type === "task"
-              ? "مثلاً: مذاكرة شابتر 1"
-              : "مثلاً: شرب لتر ماء يومياً"
+                ? "مثلاً: مذاكرة شابتر 1"
+                : "مثلاً: شرب لتر ماء يومياً"
             }
-            className="bg-white p-3 rounded-2xl border border-gray-100 text-right font-bold text-gray-800 mb-4"
+            className="bg-white p-3 rounded-2xl border border-gray-100 font-bold text-gray-800 mb-4"
             placeholderTextColor="#9CA3AF"
-            />
-
-            {type === "task" && (
-              <View className="flex-row justify-between items-center bg-white border border-gray-100 rounded-2xl p-3 mb-4">
-                <View className="flex-1 pr-2">
-                  <Text className="text-gray-400 text-xs mb-1">التاريخ</Text>
-                  <Text className="font-bold text-center text-gray-800">
-                    {selectedDate.toLocaleDateString("en-US", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </Text>
-                </View>
-                <View className="flex-1 pl-2 border-l border-gray-200">
-                  <Text className="text-gray-400 text-xs mb-1">الوقت المحدد</Text>
-                  <Text className="font-bold text-center text-gray-800">
-                    {selectedIsDuration ? `مدة: ${selectedTime}` : selectedTime}
-                  </Text>
-                </View>
+          />
+  
+            <View className="flex-row justify-between items-center bg-white border border-gray-100 rounded-2xl p-3 mb-4">
+              <View className="flex-1 pr-2">
+                <Text className="text-gray-400 text-xs mb-1">التاريخ</Text>
+                <Text className="font-bold text-center text-gray-800">
+                  {selectedDate.toLocaleDateString("en-US", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </Text>
               </View>
-            )}
+              <View className="flex-1 pl-2 border-l border-gray-200">
+                <Text className="text-gray-400 text-xs mb-1">الوقت المحدد</Text>
+                <Text className="font-bold text-center text-gray-800">
+                  {selectedIsDuration ? `مدة: ${selectedTime}` : selectedTime}
+                </Text>
+              </View>
+            </View>
           {/* 3. اختيار الأولوية */}
           {type === "habit" && (
             <View className="mb-3">
@@ -180,7 +177,7 @@ export const AddTaskSheet = forwardRef(
           )}
 
           {/* 4. القسم المتغير (تاريخ للمهمة | أيقونة للعادة) */}
-          {type === "task" ? (
+          {(type === "task" || type === "habit") && (
             <View className="mb-3">
               <View className="rounded-3xl overflow-hidden bg-white border border-gray-100">
                 <Pressable
@@ -188,7 +185,7 @@ export const AddTaskSheet = forwardRef(
                   className={`p-4 items-center flex-row gap-2 justify-center bg-blue-100 rounded-2xl mb-3`}
                 >
                   <Text className="text-blue-600 font-bold text-center">
-                    اختيار تاريخ المهمة
+                    اختيار تاريخ {type === "task" ? "المهمة" : "العادة"}
                   </Text>
                 </Pressable>
                 <Pressable
@@ -203,18 +200,6 @@ export const AddTaskSheet = forwardRef(
                   <Clock1 size={20} color="#3B82F6" />
                 </Pressable>
               </View>
-            </View>
-          ) : (
-            <View>
-              <Pressable
-                onPress={() => {}}
-                className={`p-4 items-center flex-row gap-2 justify-center bg-blue-100 rounded-2xl mb-4`}
-              >
-                <Text className="text-blue-600 font-bold text-center">
-                  اختيار وقت العادة
-                </Text>
-                <Clock1 size={20} color="#3B82F6" />
-              </Pressable>
             </View>
           )}
 

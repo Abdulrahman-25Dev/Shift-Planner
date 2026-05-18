@@ -31,6 +31,7 @@ const ShowAll = () => {
   const [type, setType] = useState<"task" | "habit">("task");
   const detailsSheetRef = useRef<BottomSheetModal>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [category, setCategory] = useState<string>("all");
 
   const handleOpenDetails = (id: string) => {
     setSelectedId(id);
@@ -59,7 +60,7 @@ const ShowAll = () => {
         })
       : "بدون تاريخ";
 
-      const dueTimeLabel = dateSource
+    const dueTimeLabel = dateSource
       ? dateSource.toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
@@ -106,7 +107,8 @@ const ShowAll = () => {
               {item.title}
             </Text>
             <Text className="text-gray-600 text-xs">
-              {dueDateLabel} - {dueTimeLabel ? (
+              {dueDateLabel} -{" "}
+              {dueTimeLabel ? (
                 <Text className="text-gray-600 text-xs">{dueTimeLabel}</Text>
               ) : null}
             </Text>
@@ -247,7 +249,7 @@ const ShowAll = () => {
         </TouchableOpacity>
       </View>
 
-      {/* 1. السويتش (مبدل مهمة/عادة) */}
+      {/* 2. السويتش (مبدل مهمة/عادة) */}
       <View className="flex-row bg-gray-100 p-1.5 rounded-2xl mb-6">
         <TouchableOpacity
           onPress={() => setType("task")}
@@ -275,50 +277,92 @@ const ShowAll = () => {
           <RefreshCw size={20} color={type === "habit" ? "white" : "#9CA3AF"} />
         </TouchableOpacity>
       </View>
-
-      {type === "task" ? (
-        tasks.length === 0 ? (
-          <View className="flex-1 items-center justify-center">
-            <Text className="text-gray-500">لا توجد مهام حالياً.</Text>
-            <Text className="text-gray-500">قم بانشاء مهمة جديدة.</Text>
-            <TouchableOpacity
-              onPress={openAddTaskSheet}
-              className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
-                isStudy ? "bg-study-primary" : "bg-coding-primary"
-              }`}
-              style={{ elevation: 5 }}
-            >
-              <Text className="text-white text-3xl font-bold">+</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <FlashList
-            data={tasks}
-            renderItem={renderTasks}
-            keyExtractor={(item) => item.id}
-          />
-        )
-      ) : habits.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-gray-500">لا توجد عادات حالياً.</Text>
-          <Text className="text-gray-500">قم بانشاء عادة جديدة.</Text>
+      {/* 1. الفلاتر (الكل / مكتملة / غير مكتملة) */}
+      <View className="flex-row bg-gray-100 p-1.5 rounded-2xl mb-4">
+        {["all", "completed", "incompleted"].map((cat) => (
           <TouchableOpacity
-            onPress={openAddTaskSheet}
-            className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
-              isStudy ? "bg-study-primary" : "bg-coding-primary"
-            }`}
-            style={{ elevation: 5 }}
+            key={cat}
+            onPress={() => setCategory(cat)}
+            className={`flex-1 py-2 rounded-xl items-center justify-center ${category === cat ? (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
           >
-            <Text className="text-white text-3xl font-bold">+</Text>
+            <Text
+              className={`font-bold text-sm ${category === cat ? "text-white" : "text-gray-500"}`}
+            >
+              {cat === "all"
+                ? "الكل"
+                : cat === "completed"
+                  ? "مكتملة"
+                  : "غير مكتملة"}
+            </Text>
           </TouchableOpacity>
-        </View>
-      ) : (
-        <FlashList
-          data={habits}
-          renderItem={renderHabits}
-          keyExtractor={(item) => item.id}
-        />
-      )}
+        ))}
+      </View>
+
+      {type === "task"
+        ? (() => {
+            const filteredTasks = tasks.filter((t) =>
+              category === "all"
+                ? true
+                : category === "completed"
+                  ? t.completed
+                  : !t.completed,
+            );
+            return filteredTasks.length === 0 ? (
+              <View className="flex-1 items-center justify-center">
+                <Text className="text-gray-500">لا توجد مهام حالياً.</Text>
+                <Text className="text-gray-500">قم بانشاء مهمة جديدة.</Text>
+                <TouchableOpacity
+                  onPress={openAddTaskSheet}
+                  className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
+                    isStudy ? "bg-study-primary" : "bg-coding-primary"
+                  }`}
+                  style={{ elevation: 5 }}
+                >
+                  <Text className="text-white text-3xl font-bold">+</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <FlashList
+                data={filteredTasks}
+                renderItem={renderTasks}
+                keyExtractor={(item) => item.id}
+              />
+            );
+          })()
+        : (() => {
+            const today = new Date().toDateString();
+            const filteredHabits = habits.filter((h) => {
+              const isCompletedToday =
+                h.lastCompletedDate &&
+                new Date(h.lastCompletedDate).toDateString() === today;
+              return category === "all"
+                ? true
+                : category === "completed"
+                  ? isCompletedToday
+                  : !isCompletedToday;
+            });
+            return filteredHabits.length === 0 ? (
+              <View className="flex-1 items-center justify-center">
+                <Text className="text-gray-500">لا توجد عادات حالياً.</Text>
+                <Text className="text-gray-500">قم بانشاء عادة جديدة.</Text>
+                <TouchableOpacity
+                  onPress={openAddTaskSheet}
+                  className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
+                    isStudy ? "bg-study-primary" : "bg-coding-primary"
+                  }`}
+                  style={{ elevation: 5 }}
+                >
+                  <Text className="text-white text-3xl font-bold">+</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <FlashList
+                data={filteredHabits}
+                renderItem={renderHabits}
+                keyExtractor={(item) => item.id}
+              />
+            );
+          })()}
       <AddTaskSheet ref={bottomSheetRef} />
       <DetailsSheet ref={detailsSheetRef} itemId={selectedId} />
     </View>

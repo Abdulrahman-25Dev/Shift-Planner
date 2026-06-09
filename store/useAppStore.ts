@@ -33,6 +33,9 @@ interface AppState {
   mode: "study" | "coding";
   toggleMode: () => void;
 
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+
   // All data (unfiltered)
   allTasks: Task[];
   allHabits: Habit[];
@@ -88,6 +91,10 @@ export const useAppStore = create<AppState>((set, get) => {
           habits: state.allHabits.filter((habit) => habit.mode === nextMode),
         };
       }),
+
+    isDarkMode: false,
+    toggleDarkMode: () =>
+      set((state) => ({ isDarkMode: !state.isDarkMode })),
 
     // ============ All Data (unfiltered) ============
     allTasks,

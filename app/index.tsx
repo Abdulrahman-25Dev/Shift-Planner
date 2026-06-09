@@ -325,7 +325,7 @@ export default function Index() {
 
   const HeaderSection = () => (
     <View
-      className={`pt-12 pb-5 px-6 shadow-2xl ${
+      className={`pt-12 pb-5 px-6 shadow-2xl dark:bg-gray-800 ${
         isStudy ? "bg-study-primary" : "bg-coding-primary"
       }`}
     >

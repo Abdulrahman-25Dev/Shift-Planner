@@ -20,6 +20,7 @@ export default function Index() {
     toggleMode,
     tasks,
     habits,
+    isDarkMode,
     toggleTaskComplete,
     completeHabit,
     removeTask,
@@ -113,10 +114,16 @@ export default function Index() {
         <View
           className={`flex-row items-center justify-between mb-3 p-3 rounded-[30px] border ${
             item.completed
-              ? "bg-gray-100 border-gray-200"
-              : isStudy
-                ? "bg-white border-study-primary/20"
-                : "bg-white border-coding-primary/20"
+              ? isDarkMode
+                ? "bg-gray-700 border-gray-600"
+                : "bg-gray-100 border-gray-200"
+              : isDarkMode
+                ? isStudy
+                  ? "bg-study-dark-bg/60 border-gray-700"
+                  : "bg-coding-dark-bg/60 border-gray-700"
+                : isStudy
+                  ? "bg-white border-study-primary/20"
+                  : "bg-white border-coding-primary/20"
           }`}
           style={{
             elevation: 2,
@@ -128,10 +135,14 @@ export default function Index() {
           <View
             className={`w-10 h-10 rounded-full items-center justify-center ${
               item.completed
-                ? "bg-gray-200"
-                : isStudy
-                  ? "bg-study-primary/10"
-                  : "bg-coding-primary/10"
+                ? isDarkMode
+                  ? "bg-gray-600"
+                  : "bg-gray-200"
+                : isDarkMode
+                  ? "bg-gray-600"
+                  : isStudy
+                    ? "bg-study-primary/10"
+                    : "bg-coding-primary/10"
             }`}
           >
             <View
@@ -141,15 +152,15 @@ export default function Index() {
 
           <View className="flex-1 ml-3">
             <Text
-              className={`font-bold text-base ${item.completed ? "line-through text-gray-500" : "text-gray-800"}`}
+              className={`font-bold text-base ${item.completed ?  "line-through text-gray-500" : isDarkMode ? "line through text-gray-200" : "text-gray-800"}`}
             >
               {item.title}
             </Text>
             <View className="flex-row justify-between items-center mt-1">
-              <Text className="text-gray-600 text-xs">
+              <Text className={" text-xs" + (item.completed ? " text-gray-400" : isDarkMode ? " text-gray-400" : " text-gray-600")}>
                 {dueDateLabel}-
                 {dueTimeLabel ? (
-                  <Text className="text-gray-600 text-xs">{dueTimeLabel}</Text>
+                  <Text className={" text-xs" + (item.completed ? " text-gray-400" : isDarkMode ? " text-gray-400" : " text-gray-600")}>{dueTimeLabel}</Text>
                 ) : null}
               </Text>
             </View>
@@ -158,11 +169,17 @@ export default function Index() {
           <Pressable
             onPress={() => toggleTaskComplete(item.id)}
             className={`flex-row items-center p-1 mb-2 rounded-[24px] ${
-              item.completed ? "bg-gray-100 border-gray-200" : "bg-white"
+              item.completed
+                ? isDarkMode
+                  ? "bg-gray-700 border-gray-600"
+                  : "bg-gray-100 border-gray-200"
+                : isDarkMode
+                  ? "bg-transparent"
+                  : "bg-white"
             }`}
           >
             <View
-              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : "border-gray-200"}`}
+              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? "border-gray-500" : "border-gray-200"}`}
             >
               {item.completed && (
                 <Text className="text-white text-xs font-bold text-center">
@@ -199,10 +216,16 @@ export default function Index() {
         onPressIn={() => handleOpenDetails(item.id)}
         className={`flex-row justify-between items-center px-4 py-2 mb-3 rounded-[24px] border ${
           item.completed
-            ? "bg-gray-100 border-gray-200"
-            : isStudy
-              ? "bg-white border-study-primary/10"
-              : "bg-white border-coding-primary/10"
+            ? isDarkMode
+              ? "bg-gray-700 border-gray-600"
+              : "bg-gray-100 border-gray-200"
+            : isDarkMode
+              ? isStudy
+                ? "bg-study-dark-bg/60 border-gray-700"
+                : "bg-coding-dark-bg/60 border-gray-700"
+              : isStudy
+                ? "bg-white border-study-primary/10"
+                : "bg-white border-coding-primary/10"
         }`}
         style={{
           elevation: 2,
@@ -214,10 +237,14 @@ export default function Index() {
         <View
           className={`w-10 h-10 rounded-full items-center justify-center ${
             item.completed
-              ? "bg-gray-200"
-              : isStudy
-                ? "bg-study-primary/10"
-                : "bg-coding-primary/10"
+              ? isDarkMode
+                ? "bg-gray-600"
+                : "bg-gray-200"
+              : isDarkMode
+                ? "bg-gray-600"
+                : isStudy
+                  ? "bg-study-primary/10"
+                  : "bg-coding-primary/10"
           }`}
         >
           <View
@@ -227,28 +254,35 @@ export default function Index() {
 
         <View className="mx-3 ml-3 flex-1">
           <Text
-            className={`font-bold text-base text-gray-800 ${item.completed ? "line-through text-gray-500" : ""}`}
+            className={`${isDarkMode ? "font-semibold text-gray-100" : "font-bold text-gray-800"} text-base ${item.completed ? "line-through text-gray-400" : ""}`}
           >
             {item.title}
           </Text>
-          <View className="self-start rounded-full px-3 py-1 border border-gray-200 bg-gray-50">
-            <Text className="text-[8px] font-black uppercase text-gray-600">
+          <View className={`${isDarkMode ? "bg-transparent border-gray-600" : "self-start rounded-full px-3 py-1 border border-gray-200 bg-gray-50"}`}>
+            <Text className={`${isDarkMode ? "text-[8px] font-black uppercase text-gray-300" : "text-[8px] font-black uppercase text-gray-600"}`}>
               {item.priority === "high"
-                ? "عالية" /* High */
+                ? "عالية"
                 : item.priority === "medium"
-                  ? "متوسطة" /* Medium */
-                  : "منخفضة"}{" "}
-              {/* Low */}
+                  ? "متوسطة"
+                  : "منخفضة"}
             </Text>
           </View>
         </View>
 
         <Pressable
           onPress={() => completeHabit(item.id)}
-          className="flex-row items-center"
+          className={`flex-row items-center ${
+            item.completed
+              ? isDarkMode
+                ? "bg-gray-700 border-gray-600"
+                : "bg-white border-gray-200"
+              : isDarkMode
+                ? "bg-transparent"
+                : "bg-white"
+          }`}
         >
           <View
-            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : "border-gray-100"}`}
+            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? "border-gray-500" : "border-gray-100"}`}
           >
             {item.completed && (
               <Text className="text-white text-xs font-bold text-center">
@@ -271,43 +305,43 @@ export default function Index() {
   // داشبورد التقدم بدلاً من شريط الأيام (Progress Dashboard replacing Days Row)
   const ProgressDashboard = () => (
     <View
-      className={`mb-4 rounded-3xl px-4 py-4 ${isStudy ? "bg-violet-400" : "bg-green-200"}`}
+      className={`my-4 rounded-3xl px-4 py-4 ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : isStudy ? "bg-violet-400" : "bg-green-200"}`}
       style={{ minHeight: 128 }}
     >
       <View className="flex-row justify-between items-start">
         <View className="flex-1 pr-3">
           <Text
-            className={`text-xs font-bold uppercase ${isStudy ? "text-violet-500" : "text-green-600"}`}
+            className={`text-xs font-bold uppercase ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-600") : isStudy ? "text-violet-500" : "text-green-600"}`}
           >
             {progressLabel}
           </Text>
           <Text
-            className={`mt-2 text-3xl font-black ${isStudy ? "text-violet-900" : "text-green-800 font-mono"}`}
+            className={`mt-2 text-3xl font-black ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
           >
             {progressPercentage}%
           </Text>
           <Text
-            className={`mt-1 text-sm ${isStudy ? "text-violet-700" : "text-green-700"}`}
+            className={`mt-1 text-sm ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-700" : "text-green-700"}`}
           >
             {completedItems} / {totalItems || 1} مكتملة {/* completed */}
           </Text>
         </View>
 
         <View
-          className={`justify-center rounded-full px-4 py-3 ${isStudy ? "bg-violet-100" : "bg-green-100"}`}
+          className={`justify-center rounded-full px-4 py-3 ${isDarkMode ? (isStudy ? "bg-study-dark-bg/40" : "bg-coding-dark-bg/40") : isStudy ? "bg-violet-100" : "bg-green-100"}`}
         >
           <Text
-            className={`text-[10px] text-center uppercase font-bold ${isStudy ? "text-violet-500" : "text-green-500 font-mono"}`}
+            className={`text-[10px] text-center uppercase font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-500" : "text-green-500 font-mono"}`}
           >
             السلسلة
           </Text>
           <Text
-            className={`mt-1 text-center text-2xl font-black ${isStudy ? "text-violet-900" : "text-green-800 font-mono"}`}
+            className={`mt-1 text-center text-2xl font-black ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800 font-mono"}`}
           >
             {streakCount}
           </Text>
           <Text
-            className={`text-[10px] text-center ${isStudy ? "text-violet-600" : "text-green-600"}`}
+            className={`text-[10px] text-center ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-600" : "text-green-600"}`}
           >
             أيام متصلة {/* consecutive days */}
           </Text>
@@ -325,9 +359,8 @@ export default function Index() {
 
   const HeaderSection = () => (
     <View
-      className={`pt-12 pb-5 px-6 shadow-2xl dark:bg-gray-800 ${
-        isStudy ? "bg-study-primary" : "bg-coding-primary"
-      }`}
+      className={`pt-12 pb-5 px-6 shadow-2xl 
+        ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
     >
       <View className="flex-row justify-between items-center">
         <TouchableOpacity
@@ -363,7 +396,7 @@ export default function Index() {
   );
 
   return (
-    <View className={`flex-1 ${isStudy ? "bg-study-bg" : "bg-coding-bg"}`}>
+    <View className={`flex-1 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : "bg-gray-50"}`}>
       <HeaderSection />
 
       <View className="flex-1 px-4 mt-2">
@@ -371,7 +404,7 @@ export default function Index() {
 
         <View className="flex-row justify-between items-center mt-6 mb-3 px-1">
           <Text
-            className={`text-lg font-bold ${isStudy ? "text-indigo-900" : "text-emerald-900"}`}
+            className={`text-lg font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
           >
             مهام اليوم {/* ترجمة عربية: Today's Tasks */}
           </Text>
@@ -379,7 +412,9 @@ export default function Index() {
             onPress={() => router.push("./view-all")}
             className="px-3 py-1 rounded-lg"
           >
-            <Text className="text-sm font-bold text-gray-600">عرض الكل</Text>
+            <Text className={`text-sm font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}>
+              عرض الكل
+            </Text>
             {/* View All */}
           </Pressable>
         </View>
@@ -394,13 +429,17 @@ export default function Index() {
         </View>
 
         <View className="flex-row justify-between items-center px-1 mb-3">
-          <Text className="text-lg font-bold text-gray-800">عاداتي</Text>
+          <Text className={`text-lg font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}>
+            عاداتي
+          </Text>
           {/* My Habits */}
           <Pressable
             onPress={() => router.push("./view-all")}
             className="px-3 py-1 rounded-lg"
           >
-            <Text className="text-sm font-bold text-gray-600">عرض الكل</Text>
+            <Text className={`text-sm font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}>
+              عرض الكل
+            </Text>
           </Pressable>
         </View>
 

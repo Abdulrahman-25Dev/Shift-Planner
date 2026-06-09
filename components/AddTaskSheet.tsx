@@ -66,7 +66,7 @@ export const AddTaskSheet = forwardRef(
           <View className="flex-row bg-gray-100 p-1.5 rounded-2xl mb-6">
             <TouchableOpacity
               onPress={() => setType("task")}
-              className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
+              className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? ( isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
             >
               <Text
                 className={`font-bold ${type === "task" ? "text-white" : "text-gray-500"}`}
@@ -179,7 +179,7 @@ export const AddTaskSheet = forwardRef(
           {/* 4. القسم المتغير (تاريخ للمهمة | أيقونة للعادة) */}
           {(type === "task" || type === "habit") && (
             <View className="mb-3">
-              <View className="rounded-3xl overflow-hidden bg-white border border-gray-100">
+              <View className="rounded-3xl">
                 <Pressable
                   onPress={() => dateSheetRef.current?.present()}
                   className={`p-4 items-center flex-row gap-2 justify-center bg-blue-100 rounded-2xl mb-3`}

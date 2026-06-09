@@ -27,6 +27,7 @@ const ShowAll = () => {
     toggleTaskComplete,
     mode,
     completeHabit,
+    isDarkMode,
   } = useAppStore();
   const [type, setType] = useState<"task" | "habit">("task");
   const detailsSheetRef = useRef<BottomSheetModal>(null);
@@ -73,10 +74,16 @@ const ShowAll = () => {
         <View
           className={`flex-row items-center justify-between mb-3 p-3 rounded-[30px] border ${
             item.completed
-              ? "bg-gray-100 border-gray-200"
-              : isStudy
-                ? "bg-white border-study-primary/20"
-                : "bg-white border-coding-primary/20"
+              ? isDarkMode
+                ? "bg-gray-700 border-gray-600"
+                : "bg-gray-100 border-gray-200"
+              : isDarkMode
+                ? isStudy
+                  ? "bg-study-dark-bg/60 border-gray-700"
+                  : "bg-coding-dark-bg/60 border-gray-700"
+                : isStudy
+                  ? "bg-white border-study-primary/20"
+                  : "bg-white border-coding-primary/20"
           }`}
           style={{
             elevation: 2,
@@ -89,27 +96,37 @@ const ShowAll = () => {
           <View
             className={`w-10 h-10 rounded-full items-center justify-center ${
               item.completed
-                ? "bg-gray-200"
-                : isStudy
-                  ? "bg-study-primary/10"
-                  : "bg-coding-primary/10"
+                ? isDarkMode
+                  ? "bg-gray-600"
+                  : "bg-gray-200"
+                : isDarkMode
+                  ? "bg-gray-600"
+                  : isStudy
+                    ? "bg-study-primary/10"
+                    : "bg-coding-primary/10"
             }`}
           >
             <View
-              className={`w-3 h-3 rounded-full ${item.completed ? "bg-gray-400" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+              className={`w-3 h-3 rounded-full ${item.completed ? (isDarkMode ? "bg-gray-400" : "bg-gray-400") : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
             />
           </View>
 
           <View className="flex-1 ml-3">
             <Text
-              className={`font-bold text-base ${item.completed ? "line-through text-gray-500" : "text-gray-800"}`}
+              className={`${isDarkMode ? "font-semibold text-gray-100" : "font-bold text-gray-800"} text-base ${item.completed ? "line-through text-gray-400" : ""}`}
             >
               {item.title}
             </Text>
-            <Text className="text-gray-600 text-xs">
+            <Text
+              className={`${isDarkMode ? "text-gray-300" : "text-gray-600"} text-xs`}
+            >
               {dueDateLabel} -{" "}
               {dueTimeLabel ? (
-                <Text className="text-gray-600 text-xs">{dueTimeLabel}</Text>
+                <Text
+                  className={`${isDarkMode ? "text-gray-300" : "text-gray-600"} text-xs`}
+                >
+                  {dueTimeLabel}
+                </Text>
               ) : null}
             </Text>
           </View>
@@ -119,14 +136,16 @@ const ShowAll = () => {
             onPress={() => toggleTaskComplete(item.id)}
             className={`flex-row items-center p-1 mb-2 rounded-[24px] ${
               item.completed
-                ? "bg-gray-100 border-gray-200"
-                : isStudy
-                  ? "bg-white"
+                ? isDarkMode
+                  ? "bg-gray-700 border-gray-600"
+                  : "bg-gray-100 border-gray-200"
+                : isDarkMode
+                  ? "bg-transparent"
                   : "bg-white"
             }`}
           >
             <View
-              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : "border-gray-200"}`}
+              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? "border-gray-500" : "border-gray-200"}`}
             >
               {item.completed && (
                 <Text className="text-white text-xs font-bold text-center">
@@ -159,10 +178,16 @@ const ShowAll = () => {
         onPressIn={() => handleOpenDetails(item.id)}
         className={`flex-row justify-between items-center px-4 py-2 mb-3 rounded-[24px] border ${
           completed
-            ? "bg-gray-100 border-gray-200"
-            : isStudy
-              ? "bg-white border-study-primary/10"
-              : "bg-white border-coding-primary/10"
+            ? isDarkMode
+              ? "bg-gray-700 border-gray-600"
+              : "bg-gray-100 border-gray-200"
+            : isDarkMode
+              ? isStudy
+                ? "bg-study-dark-bg/60 border-gray-700"
+                : "bg-coding-dark-bg/60 border-gray-700"
+              : isStudy
+                ? "bg-white border-study-primary/10"
+                : "bg-white border-coding-primary/10"
         }`}
         style={{
           elevation: 2,
@@ -175,10 +200,14 @@ const ShowAll = () => {
         <View
           className={`w-10 h-10 rounded-full items-center justify-center ${
             completed
-              ? "bg-gray-200"
-              : isStudy
-                ? "bg-study-primary/10"
-                : "bg-coding-primary/10"
+              ? isDarkMode
+                ? "bg-gray-600"
+                : "bg-gray-200"
+              : isDarkMode
+                ? "bg-gray-600"
+                : isStudy
+                  ? "bg-study-primary/10"
+                  : "bg-coding-primary/10"
           }`}
         >
           <View
@@ -189,12 +218,16 @@ const ShowAll = () => {
         {/* 2. النصوص (العنوان والسلسلة) */}
         <View className="mx-3 ml-3 flex-1">
           <Text
-            className={`font-bold text-base text-gray-800 ${completed ? "line-through text-gray-500" : ""}`}
+            className={`${isDarkMode ? "font-semibold text-gray-100" : "font-bold text-gray-800"} text-base ${completed ? "line-through text-gray-400" : ""}`}
           >
             {item.title}
           </Text>
-          <View className="self-start rounded-full px-3 py-1 border border-gray-200 bg-gray-50">
-            <Text className="text-[8px] font-black uppercase text-gray-600">
+          <View
+            className={`${isDarkMode ? "bg-transparent border-gray-600" : "self-start rounded-full px-3 py-1 border border-gray-200 bg-gray-50"}`}
+          >
+            <Text
+              className={`${isDarkMode ? "text-[8px] font-black uppercase text-gray-300" : "text-[8px] font-black uppercase text-gray-600"}`}
+            >
               {item.priority === "high"
                 ? "عالية"
                 : item.priority === "medium"
@@ -207,14 +240,16 @@ const ShowAll = () => {
           onPress={() => completeHabit(item.id)}
           className={`flex-row items-center ${
             completed
-              ? "bg-white border-gray-200"
-              : isStudy
-                ? "bg-white"
+              ? isDarkMode
+                ? "bg-gray-700 border-gray-600"
+                : "bg-white border-gray-200"
+              : isDarkMode
+                ? "bg-transparent"
                 : "bg-white"
           }`}
         >
           <View
-            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${completed ? "bg-green-700 border-green-700" : "border-gray-100"}`}
+            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${completed ? "bg-green-700 border-green-700" : isDarkMode ? "border-gray-500" : "border-gray-100"}`}
           >
             {completed && (
               <Text className="text-white text-xs font-bold text-center">
@@ -236,27 +271,30 @@ const ShowAll = () => {
   };
 
   return (
-    <View className="flex-1 px-4 py-6 bg-white">
+    <View
+      className={`flex-1 px-4 py-6 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : "bg-white"}`}
+    >
       <View className="flex-row items-center justify-center mb-6">
-        <Text className="text-xl font-bold my-6 mlr-3 text-center">
+        <Text className={`text-xl font-bold my-6 mlr-3 text-center 
+          ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"}`}>
           جميع {type === "task" ? "المهام" : "العادات"}
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
-          className="absolute right-4 p-2 rounded-full bg-gray-200"
+          className={"absolute right-4 top-6 p-2 rounded-full " + (isDarkMode ? isStudy ? "bg-violet-700" : "bg-green-700" : isStudy ? "bg-study-primary" : "bg-coding-primary")}
         >
-          <ChevronLeft color="black" size={24} />
+          <ChevronLeft color="white" size={24} />
         </TouchableOpacity>
       </View>
 
       {/* 2. السويتش (مبدل مهمة/عادة) */}
-      <View className="flex-row bg-gray-100 p-1.5 rounded-2xl mb-6">
+      <View className={"flex-row p-1.5 rounded-2xl mb-4 " + (isDarkMode ? isStudy ? "bg-study-dark-accent/60" : "bg-coding-dark-accent/60" : "bg-gray-100")}>
         <TouchableOpacity
           onPress={() => setType("task")}
-          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
+          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? isDarkMode ? isStudy ? "bg-study-dark-primary/50" : "bg-coding-dark-primary/50" : (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
         >
           <Text
-            className={`font-bold ${type === "task" ? "text-white" : "text-gray-500"}`}
+            className={`font-bold ${type === "task" ? "text-white" : "text-gray-400"}`}
           >
             قيد الإنجاز
           </Text>
@@ -267,10 +305,10 @@ const ShowAll = () => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setType("habit")}
-          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-3 ${type === "habit" ? (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
+          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-3 ${type === "habit" ? isDarkMode ? isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary" : (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
         >
           <Text
-            className={`font-bold ${type === "habit" ? "text-white" : "text-gray-500"}`}
+            className={`font-bold ${type === "habit" ? "text-white" : "text-gray-400"}`}
           >
             الروتين اليومي
           </Text>
@@ -278,15 +316,15 @@ const ShowAll = () => {
         </TouchableOpacity>
       </View>
       {/* 1. الفلاتر (الكل / مكتملة / غير مكتملة) */}
-      <View className="flex-row bg-gray-100 p-1.5 rounded-2xl mb-4">
+      <View className={"flex-row p-1.5 rounded-2xl mb-4 " + (isDarkMode ? isStudy ? "bg-study-dark-accent/60" : "bg-coding-dark-accent/60" : "bg-gray-100")}>
         {["all", "completed", "incompleted"].map((cat) => (
           <TouchableOpacity
             key={cat}
             onPress={() => setCategory(cat)}
-            className={`flex-1 py-2 rounded-xl items-center justify-center ${category === cat ? (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
+            className={`flex-1 py-2 rounded-xl items-center justify-center ${category === cat ? (isDarkMode ? isStudy ? "bg-study-dark-primary/50" : "bg-coding-dark-primary/50" : (isStudy ? "bg-study-primary" : "bg-coding-primary")) : ""}`}
           >
             <Text
-              className={`font-bold text-sm ${category === cat ? "text-white" : "text-gray-500"}`}
+              className={`font-bold text-sm ${category === cat ? "text-white" : "text-gray-400"}`}
             >
               {cat === "all"
                 ? "الكل"
@@ -314,7 +352,7 @@ const ShowAll = () => {
                 <TouchableOpacity
                   onPress={openAddTaskSheet}
                   className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
-                    isStudy ? "bg-study-primary" : "bg-coding-primary"
+                    isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : (isStudy ? "bg-study-primary" : "bg-coding-primary")
                   }`}
                   style={{ elevation: 5 }}
                 >
@@ -348,7 +386,7 @@ const ShowAll = () => {
                 <TouchableOpacity
                   onPress={openAddTaskSheet}
                   className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
-                    isStudy ? "bg-study-primary" : "bg-coding-primary"
+                    isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : (isStudy ? "bg-study-primary" : "bg-coding-primary")
                   }`}
                   style={{ elevation: 5 }}
                 >

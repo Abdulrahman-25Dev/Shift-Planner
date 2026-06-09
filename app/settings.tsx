@@ -33,7 +33,7 @@ export default function Settings() {
           >
             <ArrowRight size={22} color={iconColor} />
           </TouchableOpacity>
-          <Text className={`text-gray-800 text-lg font-bold flex-1 text-center ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
+          <Text className={` text-lg font-bold flex-1 text-center ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
             الإعدادات
           </Text>
           <View className="w-12" />
@@ -50,13 +50,13 @@ export default function Settings() {
               <Code2 size={32} color={iconColor} />
             )}
           </View>
-          <Text className={`text-gray-800 text-base font-bold mt-3 ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
+          <Text className={` text-base font-bold mt-3 ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
             اسم المستخدم
           </Text>
         </View>
 
         {/* Settings Grid - 2 Columns */}
-          <Text className={`text-gray-500 text-sm font-bold mb-4 ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-500'}`}>
+          <Text className={` text-sm font-bold mb-4 ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-500'}`}>
             التفضيلات
           </Text>
         <View className="flex-row flex-wrap justify-between mb-4">
@@ -73,7 +73,7 @@ export default function Settings() {
                 <Sun size={24} color={iconColor} />
               )}
             </View>
-            <Text className={`text-gray-800 text-sm font-bold mt-3 text-center ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
+            <Text className={` text-sm font-bold mt-3 text-center ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
               الثيم
             </Text>
           </TouchableOpacity>
@@ -87,7 +87,7 @@ export default function Settings() {
             <View className={`w-12 h-12 rounded-2xl items-center justify-center ${primaryBgLight}`}>
               <Globe size={24} color={iconColor} />
             </View>
-            <Text className={`text-gray-800 text-sm font-bold mt-3 text-center ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
+            <Text className={` text-sm font-bold mt-3 text-center ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
               اللغة ع | En
             </Text>
           </TouchableOpacity>
@@ -101,7 +101,7 @@ export default function Settings() {
             <View className={`w-12 h-12 rounded-2xl items-center justify-center ${primaryBgLight}`}>
               <Info size={24} color={iconColor} />
             </View>
-            <Text className={`text-gray-800 text-sm font-bold mt-3 text-center ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
+            <Text className={` text-sm font-bold mt-3 text-center ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
               حول التطبيق
             </Text>
           </TouchableOpacity>
@@ -114,7 +114,7 @@ export default function Settings() {
             <View className={`w-12 h-12 rounded-2xl items-center justify-center ${primaryBgLight}`}>
               <Bell size={24} color={iconColor} />
             </View>
-            <Text className={`text-gray-800 text-sm font-bold mt-3 text-center mb-2 ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
+            <Text className={` text-sm font-bold mt-3 text-center mb-2 ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
               تشغيل الإشعارات
             </Text>
             <Switch
@@ -128,7 +128,7 @@ export default function Settings() {
 
         {/* Data Management */}
         <View className="mx-0 mt-4 mb-8">
-          <Text className={`text-gray-600 text-sm font-bold mb-3 mr-1 ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-600'}`}>
+          <Text className={` text-sm font-bold mb-3 mr-1 ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-600'}`}>
             إدارة البيانات
           </Text>
           <View className="bg-white rounded-3xl" style={shadowStyle}>

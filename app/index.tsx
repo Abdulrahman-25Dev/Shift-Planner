@@ -122,8 +122,8 @@ export default function Index() {
                   ? "bg-study-dark-bg/60 border-gray-700"
                   : "bg-coding-dark-bg/60 border-gray-700"
                 : isStudy
-                  ? "bg-white border-study-primary/20"
-                  : "bg-white border-coding-primary/20"
+                  ? "bg-violet-100 border-study-primary/20"
+                  : "bg-green-50 border-coding-primary/20"
           }`}
           style={{
             elevation: 2,
@@ -174,8 +174,12 @@ export default function Index() {
                   ? "bg-gray-700 border-gray-600"
                   : "bg-gray-100 border-gray-200"
                 : isDarkMode
-                  ? "bg-transparent"
-                  : "bg-white"
+                  ? isStudy
+                    ? "bg-study-dark-bg/60 border-gray-700"
+                    : "bg-coding-dark-bg/60 border-gray-700"
+                  : isStudy
+                  ? "bg-violet-100 border-study-primary/20"
+                  : "bg-green-50 border-coding-primary/20"
             }`}
           >
             <View
@@ -224,8 +228,8 @@ export default function Index() {
                 ? "bg-study-dark-bg/60 border-gray-700"
                 : "bg-coding-dark-bg/60 border-gray-700"
               : isStudy
-                ? "bg-white border-study-primary/10"
-                : "bg-white border-coding-primary/10"
+                ? "bg-violet-50 border-study-primary/20"
+                : "bg-green-50 border-coding-primary/20"
         }`}
         style={{
           elevation: 2,
@@ -305,13 +309,13 @@ export default function Index() {
   // داشبورد التقدم بدلاً من شريط الأيام (Progress Dashboard replacing Days Row)
   const ProgressDashboard = () => (
     <View
-      className={`my-4 rounded-3xl px-4 py-4 ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : isStudy ? "bg-violet-400" : "bg-green-200"}`}
+      className={`my-4 rounded-3xl px-4 py-4 ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : isStudy ? "bg-violet-300" : "bg-green-300"}`}
       style={{ minHeight: 128 }}
     >
       <View className="flex-row justify-between items-start">
         <View className="flex-1 pr-3">
           <Text
-            className={`text-xs font-bold uppercase ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-600") : isStudy ? "text-violet-500" : "text-green-600"}`}
+            className={`text-sm font-bold uppercase ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-600") : isStudy ? "text-violet-600" : "text-green-600"}`}
           >
             {progressLabel}
           </Text>
@@ -328,7 +332,7 @@ export default function Index() {
         </View>
 
         <View
-          className={`justify-center rounded-full px-4 py-3 ${isDarkMode ? (isStudy ? "bg-study-dark-bg/40" : "bg-coding-dark-bg/40") : isStudy ? "bg-violet-100" : "bg-green-100"}`}
+          className={`justify-center rounded-full px-4 py-3 ${isDarkMode ? (isStudy ? "bg-study-dark-bg/40" : "bg-coding-dark-bg/40") : isStudy ? "bg-violet-200" : "bg-green-200"}`}
         >
           <Text
             className={`text-[10px] text-center uppercase font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-500" : "text-green-500 font-mono"}`}
@@ -350,7 +354,7 @@ export default function Index() {
 
       <View className="mt-4 h-3 w-full overflow-hidden rounded-full bg-white/20">
         <View
-          className={`h-full rounded-full ${isStudy ? "bg-violet-700" : "bg-green-500"}`}
+          className={`h-full rounded-full ${isStudy ? "bg-violet-700" : "bg-green-600"}`}
           style={{ width: `${progressPercentage}%` }}
         />
       </View>
@@ -396,9 +400,9 @@ export default function Index() {
   );
 
   return (
-    <View className={`flex-1 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : "bg-gray-50"}`}>
+    <View className={`flex-1 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : (isStudy ? "bg-study-accent" : "bg-coding-accent")}`}>
       <HeaderSection />
-
+    
       <View className="flex-1 px-4 mt-2">
         <ProgressDashboard />
 

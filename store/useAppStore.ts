@@ -57,7 +57,6 @@ interface AppState {
   resetHabitStreak: (id: string) => void;
 }
 
-
 const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
   const data = storage.getString(key);
   if (!data) return [];
@@ -73,11 +72,14 @@ const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
   }
 };
 
-const initialMode = (storage.getString("app_mode") as "study" | "coding") || "study";
+const initialMode =
+  (storage.getString("app_mode") as "study" | "coding") || "study";
 
 export const useAppStore = create<AppState>((set, get) => {
   const allTasks = loadFromStorage<Task>("tasks");
   const allHabits = loadFromStorage<Habit>("habits");
+  const storedDark = storage.getString("dark_mode");
+  const initialDark = storedDark === "true";
 
   return {
     mode: initialMode,
@@ -92,9 +94,13 @@ export const useAppStore = create<AppState>((set, get) => {
         };
       }),
 
-    isDarkMode: false,
+    isDarkMode: initialDark,
     toggleDarkMode: () =>
-      set((state) => ({ isDarkMode: !state.isDarkMode })),
+      set((state) => {
+        const next = !state.isDarkMode;
+        storage.set("dark_mode", next ? "true" : "false");
+        return { isDarkMode: next };
+      }),
 
     // ============ All Data (unfiltered) ============
     allTasks,

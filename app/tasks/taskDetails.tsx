@@ -79,7 +79,16 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
         index={0}
         snapPoints={snapPoints}
         keyboardBehavior="fillParent"
-        backgroundStyle={{ backgroundColor: isDarkMode ?  isStudy ? "#0f172a" : "#022c22" : isStudy ? "#f8fafc" : "#f0fdf4", borderRadius: 40 }}
+        backgroundStyle={{
+          backgroundColor: isDarkMode
+            ? isStudy
+              ? "#0f172a"
+              : "#022c22"
+            : isStudy
+              ? "#f8fafc"
+              : "#f0fdf4",
+          borderRadius: 40,
+        }}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: "#E5E7EB" }}
         keyboardBlurBehavior="restore"
@@ -88,7 +97,18 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
           {/* الهيدر: العنوان مع أيقونة النوع */}
           <View className="flex-row-reverse items-center justify-between mb-6">
             <View className="flex-1 ml-4">
-              <Text className={" font-bold mb-3 text-left" + (isDarkMode ? (isStudy ? " text-study-dark-primary" : " text-coding-dark-primary") : (isStudy ? " text-study-secondary" : " text-coding-secondary"))}>
+              <Text
+                className={
+                  " font-bold mb-3 text-left" +
+                  (isDarkMode
+                    ? isStudy
+                      ? " text-study-dark-primary"
+                      : " text-coding-dark-primary"
+                    : isStudy
+                      ? " text-study-secondary"
+                      : " text-coding-secondary")
+                }
+              >
                 {isHabit ? "عنوان العادة" : "عنوان المهمة"}
               </Text>
               <TextInput
@@ -98,7 +118,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                     ? updateHabit(item.id, { title: text })
                     : updateTask(item.id, { title: text })
                 }
-                className={`text-lg font-black text-right px-4 rounded-2xl ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30 text-study-dark-primary" : " bg-coding-dark-primary/30 text-coding-dark-primary") : (isStudy ? " bg-violet-50 text-study-primary" : " bg-green-100 text-coding-primary")}`}
+                className={`text-lg font-black text-right px-4 rounded-2xl ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30 text-study-dark-primary" : " bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? " bg-violet-50 text-study-primary" : " bg-green-100 text-coding-primary"}`}
                 placeholder="العنوان..."
               />
             </View>
@@ -106,7 +126,18 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
 
           {/* قسم الستريك (يظهر فقط للعدات) */}
           {isHabit && (
-            <View className={"p-4 rounded-2xl flex-row-reverse items-center mb-6" + (isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : (isStudy ? " bg-violet-50" : " bg-green-100"))}>
+            <View
+              className={
+                "p-4 rounded-2xl flex-row-reverse items-center mb-6" +
+                (isDarkMode
+                  ? isStudy
+                    ? " bg-study-dark-primary/30"
+                    : " bg-coding-dark-primary/30"
+                  : isStudy
+                    ? " bg-violet-50"
+                    : " bg-green-100")
+              }
+            >
               <Text className="text-2xl mr-2">🔥</Text>
               <View className="flex-1">
                 <Text className="text-orange-600 font-bold text-left">
@@ -121,7 +152,18 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
 
           {/* حقل الوصف */}
           <View className="mb-6">
-            <Text className={"text-left  font-bold mb-2" + (isDarkMode ? (isStudy ? " text-study-dark-primary" : " text-coding-dark-primary") : (isStudy ? " text-study-secondary" : " text-coding-secondary"))}>
+            <Text
+              className={
+                "text-left  font-bold mb-2" +
+                (isDarkMode
+                  ? isStudy
+                    ? " text-study-dark-primary"
+                    : " text-coding-dark-primary"
+                  : isStudy
+                    ? " text-study-secondary"
+                    : " text-coding-secondary")
+              }
+            >
               تفاصيل {isHabit ? "العادة" : "المهمة"}
             </Text>
             <BottomSheetTextInput
@@ -133,7 +175,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                   : updateTask(item.id, { description: text })
               }
               placeholder="اكتب تفاصيل إضافية هنا..."
-              className={` p-4 text-md rounded-2xl text-right font-semibold min-h-[120px] ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30 text-study-dark-primary" : " bg-coding-dark-primary/30 text-coding-dark-primary") : (isStudy ? " bg-violet-50 text-study-primary" : " bg-green-100 text-coding-primary")}`}
+              className={` p-4 text-md rounded-2xl text-right font-semibold min-h-[120px] ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30 text-study-dark-primary" : " bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? " bg-violet-50 text-study-primary" : " bg-green-100 text-coding-primary"}`}
               textAlignVertical="top"
             />
           </View>
@@ -141,27 +183,47 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
           <View className="mb-6">
             <Pressable
               onPress={() => dateSheetRef.current?.present()}
-              className={` gap-2 p-4 rounded-2xl flex-row items-center justify-center relative mb-3 ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : (isStudy ? " bg-study-accent" : " bg-coding-accent")}`}
+              className={` gap-2 p-4 rounded-2xl flex-row items-center justify-center relative mb-3 ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : isStudy ? " bg-study-accent" : " bg-coding-accent"}`}
             >
-              <Text className={` font-bold text-center ${isDarkMode ? (isStudy ? " text-study-dark-primary" : " text-coding-dark-primary") : (isStudy ? " text-study-primary" : " text-coding-primary")}`}>
+              <Text
+                className={` font-bold text-center ${isDarkMode ? (isStudy ? " text-study-dark-primary" : " text-coding-dark-primary") : isStudy ? " text-study-primary" : " text-coding-primary"}`}
+              >
                 تغيير تاريخ التذكير
               </Text>
               <Calendar
                 size={20}
-                color={isDarkMode ? (isStudy ? "#E0E7FF" : "#D1FAE5") : (isStudy ? "#1E40AF" : "#065F46")}
+                color={
+                  isDarkMode
+                    ? isStudy
+                      ? "#E0E7FF"
+                      : "#D1FAE5"
+                    : isStudy
+                      ? "#1E40AF"
+                      : "#065F46"
+                }
                 className="absolute left-4 top-1/2 -translate-y-1/2"
               />
             </Pressable>
             <Pressable
               onPress={() => timeSheetRef.current?.present()}
-              className={` gap-2 p-4 rounded-2xl flex-row items-center justify-center relative ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : (isStudy ? " bg-study-accent" : " bg-coding-accent")}`}
+              className={` gap-2 p-4 rounded-2xl flex-row items-center justify-center relative ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : isStudy ? " bg-study-accent" : " bg-coding-accent"}`}
             >
-              <Text className={` font-bold text-center ${isDarkMode ? (isStudy ? " text-study-dark-primary" : " text-coding-dark-primary") : (isStudy ? " text-study-primary" : " text-coding-primary")}`}>
+              <Text
+                className={` font-bold text-center ${isDarkMode ? (isStudy ? " text-study-dark-primary" : " text-coding-dark-primary") : isStudy ? " text-study-primary" : " text-coding-primary"}`}
+              >
                 تغيير وقت التذكير
               </Text>
               <Clock
                 size={20}
-                color={isDarkMode ? (isStudy ? "#E0E7FF" : "#D1FAE5") : (isStudy ? "#1E40AF" : "#065F46")}
+                color={
+                  isDarkMode
+                    ? isStudy
+                      ? "#E0E7FF"
+                      : "#D1FAE5"
+                    : isStudy
+                      ? "#1E40AF"
+                      : "#065F46"
+                }
                 className="absolute left-4 top-1/2 -translate-y-1/2"
               />
             </Pressable>
@@ -187,7 +249,16 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                 },
               ]);
             }}
-            className={"mt-auto p-4 rounded-2xl flex-row items-center justify-center " + (isDarkMode ? (isStudy ? " bg-red-600/30" : " bg-red-600/30") : (isStudy ? " bg-red-100" : " bg-red-100"))}
+            className={
+              "mt-auto p-4 rounded-2xl flex-row items-center justify-center " +
+              (isDarkMode
+                ? isStudy
+                  ? " bg-red-600/30"
+                  : " bg-red-600/30"
+                : isStudy
+                  ? " bg-red-100"
+                  : " bg-red-100")
+            }
           >
             <Text className="text-red-600 font-bold mr-2">حذف العنصر</Text>
             <Ionicons name="trash-outline" size={20} color="#EF4444" />
@@ -227,8 +298,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                   })
                 : ""
           }
-          initialIsDuration={false}
-          onSave={(timeValue, isDuration) => {
+          onSave={(timeValue) => {
             const existingDate =
               taskDueDate !== undefined
                 ? new Date(taskDueDate)
@@ -236,7 +306,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                   ? new Date(taskReminderTime)
                   : new Date();
             const nextDate = new Date(existingDate);
-            if (!isDuration && timeValue) {
+            if (timeValue) {
               const [hourText, minuteText] = timeValue.split(":");
               const hour = parseInt(hourText, 10);
               const minute = parseInt(minuteText, 10);

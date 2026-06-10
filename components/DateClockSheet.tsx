@@ -48,6 +48,8 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
       (ref as any).current?.dismiss();
     };
 
+    // time picker state removed (not used here)
+
     return (
       <BottomSheetModal
         ref={ref}

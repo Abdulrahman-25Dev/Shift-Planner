@@ -30,8 +30,6 @@ export const AddTaskSheet = forwardRef(
         hour12: true,
       }),
     );
-    const [selectedIsDuration, setSelectedIsDuration] =
-      useState<boolean>(false);
     const isStudy = props.mode === "study";
     const isDarkMode = useAppStore((state) => state.isDarkMode);
     const AddTask = useAppStore((state) => state.addTask);
@@ -170,7 +168,7 @@ export const AddTaskSheet = forwardRef(
               <Text
                 className={`font-bold text-center ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-800"}`}
               >
-                {selectedIsDuration ? `مدة: ${selectedTime}` : selectedTime}
+                {selectedTime}
               </Text>
             </View>
           </View>
@@ -244,7 +242,6 @@ export const AddTaskSheet = forwardRef(
                     className={`${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"} font-bold text-center`}
                   >
                     اختيار وقت {type === "task" ? "المهمة" : "العادة"}
-                    {selectedIsDuration ? ` (مدة: ${selectedTime})` : ""}
                   </Text>
                   <Clock1
                     size={20}
@@ -269,7 +266,7 @@ export const AddTaskSheet = forwardRef(
               if (title.trim()) {
                 if (type === "task") {
                   const dueDate = new Date(selectedDate);
-                  if (selectedTime && !selectedIsDuration) {
+                  if (selectedTime) {
                     const [hourText, minuteText] = selectedTime.split(":");
                     const hour = parseInt(hourText, 10);
                     const minute = parseInt(minuteText, 10);
@@ -302,7 +299,6 @@ export const AddTaskSheet = forwardRef(
                     minute: "2-digit",
                   }),
                 );
-                setSelectedIsDuration(false);
                 (ref as React.RefObject<BottomSheet>)?.current?.close();
               }
             }}
@@ -324,10 +320,8 @@ export const AddTaskSheet = forwardRef(
         <TimeSheet
           ref={timeSheetRef}
           initialTimeValue={selectedTime}
-          initialIsDuration={selectedIsDuration}
-          onSave={(timeValue, isDuration) => {
+          onSave={(timeValue) => {
             setSelectedTime(timeValue || selectedTime);
-            setSelectedIsDuration(isDuration);
           }}
         />
       </BottomSheet>

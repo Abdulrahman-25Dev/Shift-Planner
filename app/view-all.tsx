@@ -290,7 +290,7 @@ const ShowAll = () => {
       <View className={"flex-row p-1.5 rounded-2xl mb-4 " + (isDarkMode ? isStudy ? "bg-study-dark-accent/60" : "bg-coding-dark-accent/60" : "bg-gray-100")}>
         <TouchableOpacity
           onPress={() => setType("task")}
-          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? isDarkMode ? isStudy ? "bg-study-dark-primary/50" : "bg-coding-dark-primary/50" : (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
+          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? isDarkMode ? isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary" : (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
         >
           <Text
             className={`font-bold ${type === "task" ? "text-white" : "text-gray-400"}`}

@@ -1,0 +1,48 @@
+{
+  "settings": {
+    "title": "Settings",
+    "username": "Default Username",
+    "preferences": "Preferences",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "language": "Language",
+    "languageEnglish": "English",
+    "languageArabic": "Arabic",
+    "notifications": "Notifications",
+    "dataManagement": "Data Management",
+    "deleteAllTasks": "Clear All Tasks",
+    "deleteAllHabits": "Clear All Habits",
+    "aboutApp": "About App"
+  },
+  "home": {
+    "todayTasks": "Today's Tasks",
+    "myHabits": "My Habits",
+    "viewAll": "View All"
+  },
+  "progress": {
+    "completeStudy": "Your daily goal is complete!",
+    "daily": "Daily Goal",
+    "completeDev": "All your tasks are complete!",
+    "devTitle": "System Stability",
+    "completed": "completed"
+  },
+  "task": {
+    "noDate": "No date"
+  },
+  "header": {
+    "modeShortStudy": "بيئة الدراسة",
+    "modeShortDev": "بيئة البرمجة",
+    "modeTitleStudy": "STUDY MODE",
+    "modeTitleDev": "DEV MODE"
+  },
+  "priority": {
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "common": {
+    "viewAll": "View All",
+    "Tasks": "My Tasks",
+    "Habits": "My Habits"
+  }
+}

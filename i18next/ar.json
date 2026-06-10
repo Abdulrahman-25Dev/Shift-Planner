@@ -1,0 +1,48 @@
+{
+  "settings": {
+    "title": "الإعدادات",
+    "username": "اسم افتراضي",
+    "preferences": "التفضيلات",
+    "darkMode": "الوضع الداكن",
+    "lightMode": "الوضع الفاتح",
+    "language": "اللغة",
+    "languageEnglish": "English",
+    "languageArabic": "العربية",
+    "notifications": "تشغيل الإشعارات",
+    "dataManagement": "إدارة البيانات",
+    "deleteAllTasks": "مسح جميع المهام",
+    "deleteAllHabits": "مسح جميع العادات",
+    "aboutApp": "حول التطبيق"
+  },
+  "home": {
+    "todayTasks": "مهام اليوم",
+    "myHabits": "عاداتي",
+    "viewAll": "عرض الكل"
+  },
+  "progress": {
+    "completeStudy": "هدفك اليومي مكتمل!",
+    "daily": "الهدف اليومي",
+    "completeDev": "كل مهامك مكتملة!",
+    "devTitle": "استقرار النظام",
+    "completed": "مكتملة"
+  },
+  "task": {
+    "noDate": "بدون تاريخ"
+  },
+  "header": {
+    "modeShortStudy": "STUDY MODE",
+    "modeShortDev": "DEV MODE",
+    "modeTitleStudy": "بيئة الدراسة",
+    "modeTitleDev": "بيئة البرمجة"
+  },
+  "priority": {
+    "high": "عالية",
+    "medium": "متوسطة",
+    "low": "منخفضة"
+  },
+  "common": {
+    "viewAll": "عرض الكل",
+    "Tasks": "مهام اليوم",
+    "Habits": "عاداتي"
+  }
+}

@@ -1,13 +1,19 @@
 import React, { useRef, useState } from "react";
 import {
-  I18nManager,
   View,
   Text,
   TouchableOpacity,
   Pressable,
 } from "react-native";
 import { useAppStore, Task } from "../store/useAppStore";
-import { GraduationCap, Code2, Settings, Trash2, Flame } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
+import {
+  GraduationCap,
+  Code2,
+  Settings,
+  Trash2,
+  Flame,
+} from "lucide-react-native";
 import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
 import { AddTaskSheet } from "../components/AddTaskSheet";
@@ -25,8 +31,10 @@ export default function Index() {
     completeHabit,
     removeTask,
     removeHabit,
+    language,
   } = useAppStore();
   const isStudy = mode === "study";
+  const { t } = useTranslation();
 
   const priorityRank = (priority: string | undefined) => {
     if (priority === "high") return 3;
@@ -50,12 +58,11 @@ export default function Index() {
   const progressPercentage = Math.round(progressRatio * 100);
   const progressLabel = isStudy
     ? progressPercentage === 100
-      ? "هدفك اليومي مكتمل!"
-      : "الهدف اليومي"
+      ? t("progress.completeStudy")
+      : t("progress.daily")
     : progressPercentage === 100
-      ? "كل مهامك مكتملة!"
-      : "استقرار النظام";
-
+      ? t("progress.completeDev")
+      : t("progress.devTitle");
 
   // ترتيب العادات حسب الاكتمال ثم الاولوية (Sort habits by completion then priority)
   const sortedHabits = [...habitsWithCompleted].sort((a, b) => {
@@ -91,14 +98,14 @@ export default function Index() {
         : null;
 
     const dueDateLabel = dateSource
-      ? dateSource.toLocaleDateString(I18nManager.isRTL ? "ar-SA" : "en-US", {
+      ? dateSource.toLocaleDateString(language === "ar" ? "ar-SA" : "en-US", {
           day: "numeric",
           month: "short",
         })
-      : "بدون تاريخ";
+      : t("task.noDate");
 
     const dueTimeLabel = dateSource
-      ? dateSource.toLocaleTimeString("en-US", {
+      ? dateSource.toLocaleTimeString(language === "ar" ? "ar-SA" : "en-US", {
           hour: "2-digit",
           minute: "2-digit",
           hour12: true,
@@ -148,23 +155,42 @@ export default function Index() {
 
           <View className="flex-1 ml-3">
             <Text
-              className={`font-bold text-base ${item.completed ?  "line-through text-gray-500" : isDarkMode ? "line through text-gray-200" : "text-gray-800"}`}
+              className={`font-bold text-base ${item.completed ? "line-through text-gray-500" : isDarkMode ? "line through text-gray-200" : "text-gray-800"}`}
             >
               {item.title}
             </Text>
             <View className="flex-row justify-between items-center mt-1">
-              <Text className={" text-xs" + (item.completed ? " text-gray-400" : isDarkMode ? " text-gray-400" : " text-gray-600")}>
+              <Text
+                className={
+                  " text-xs" +
+                  (item.completed
+                    ? " text-gray-400"
+                    : isDarkMode
+                      ? " text-gray-400"
+                      : " text-gray-600")
+                }
+              >
                 {dueDateLabel}-
                 {dueTimeLabel ? (
-                  <Text className={" text-xs" + (item.completed ? " text-gray-400" : isDarkMode ? " text-gray-400" : " text-gray-600")}>{dueTimeLabel}</Text>
+                  <Text
+                    className={
+                      " text-xs" +
+                      (item.completed
+                        ? " text-gray-400"
+                        : isDarkMode
+                          ? " text-gray-400"
+                          : " text-gray-600")
+                    }
+                  >
+                    {dueTimeLabel}
+                  </Text>
                 ) : null}
               </Text>
             </View>
           </View>
 
           <Pressable
-            onPress={() => toggleTaskComplete(item.id)
-            }
+            onPress={() => toggleTaskComplete(item.id)}
             className={`flex-row items-center p-1 mb-2 rounded-[24px] ${
               item.completed
                 ? isDarkMode
@@ -175,8 +201,8 @@ export default function Index() {
                     ? "bg-study-dark-bg/60 border-gray-700"
                     : "bg-coding-dark-bg/60 border-gray-700"
                   : isStudy
-                  ? "bg-violet-100 border-study-primary/20"
-                  : "bg-green-50 border-coding-primary/20"
+                    ? "bg-violet-100 border-study-primary/20"
+                    : "bg-green-50 border-coding-primary/20"
             }`}
           >
             <View
@@ -248,7 +274,16 @@ export default function Index() {
                   : "bg-coding-primary/10"
           }`}
         >
-          <Flame size={20} color={item.priority === "high" ? "red" : item.priority === "medium" ? "orange" : "green"} />
+          <Flame
+            size={20}
+            color={
+              item.priority === "high"
+                ? "red"
+                : item.priority === "medium"
+                  ? "orange"
+                  : "green"
+            }
+          />
         </View>
 
         <View className="mx-3 ml-3 flex-1">
@@ -257,13 +292,17 @@ export default function Index() {
           >
             {item.title}
           </Text>
-          <View className={`${isDarkMode ? "bg-transparent border-gray-600" : "self-start rounded-full px-3 py-1 border border-gray-200 bg-gray-50"}`}>
-            <Text className={`${isDarkMode ? "text-[8px] font-black uppercase text-gray-300" : "text-[8px] font-black uppercase text-gray-600"}`}>
+          <View
+            className={`${isDarkMode ? "bg-transparent border-gray-600" : "self-start rounded-full px-3 py-1 border border-gray-200 bg-gray-50"}`}
+          >
+            <Text
+              className={`${isDarkMode ? "text-[8px] font-black uppercase text-gray-300" : "text-[8px] font-black uppercase text-gray-600"}`}
+            >
               {item.priority === "high"
-                ? "عالية"
+                ? t("priority.high")
                 : item.priority === "medium"
-                  ? "متوسطة"
-                  : "منخفضة"}
+                  ? t("priority.medium")
+                  : t("priority.low")}
             </Text>
           </View>
         </View>
@@ -310,26 +349,26 @@ export default function Index() {
       <View className="flex-row justify-between items-start">
         <View className="flex-1 pr-3">
           <Text
-            className={`text-sm font-bold uppercase ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-600") : isStudy ? "text-violet-600" : "text-green-600"}`}
+            className={`text-sm font-bold uppercase ${language === "ar" ? "text-left" : "text-right"} ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-600") : isStudy ? "text-violet-600" : "text-green-600"}`}
           >
             {progressLabel}
           </Text>
           <Text
-            className={`mt-2 text-3xl font-black ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
+            className={`mt-2 text-3xl font-black ${language === "ar" ? "text-left" : "text-right"} ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
           >
             {progressPercentage}%
           </Text>
           <Text
-            className={`mt-1 text-sm ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-700" : "text-green-700"}`}
+            className={`mt-1 text-sm ${language === "ar" ? "text-left" : "text-right"} ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-700" : "text-green-700"}`}
           >
-            {completedItems} / {totalItems || 1} مكتملة {/* completed */}
+            {completedItems} / {totalItems || 1} {t("progress.completed")}
           </Text>
         </View>
       </View>
 
       <View className="mt-4 h-3 w-full overflow-hidden rounded-full bg-white/20">
         <View
-          className={`h-full rounded-full ${isStudy ? "bg-violet-700" : "bg-green-600"}`}
+          className={`h-full rounded-full ${language === "ar" ? "mr-auto" : "ml-auto"} ${isStudy ? "bg-violet-700" : "bg-green-600"}`}
           style={{ width: `${progressPercentage}%` }}
         />
       </View>
@@ -355,10 +394,10 @@ export default function Index() {
 
         <View className="flex-1 items-center">
           <Text className="text-white/70 text-xs font-bold mb-1">
-            {isStudy ? "STUDY MODE" : "DEV MODE"}
+            {isStudy ? t("header.modeShortStudy") : t("header.modeShortDev")}
           </Text>
           <Text className="text-white text-2xl font-black">
-            {isStudy ? "بيئة الدراسة" : "بيئة البرمجة"}
+            {isStudy ? t("header.modeTitleStudy") : t("header.modeTitleDev")}
           </Text>
         </View>
 
@@ -375,24 +414,28 @@ export default function Index() {
   );
 
   return (
-    <View className={`flex-1 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : (isStudy ? "bg-study-accent" : "bg-coding-accent")}`}>
+    <View
+      className={`flex-1 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : isStudy ? "bg-study-accent" : "bg-coding-accent"}`}
+    >
       <HeaderSection />
-    
+
       <View className="flex-1 px-4 mt-2">
         <ProgressDashboard />
 
-        <View className="flex-row justify-between items-center mt-6 mb-3 px-1">
+        <View className={" justify-between items-center mt-6 mb-3 px-1" + (language === "ar" ? " flex-row" : " flex-row-reverse")}>
           <Text
             className={`text-lg font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
           >
-            مهام اليوم {/* ترجمة عربية: Today's Tasks */}
+            {t("common.Tasks")}
           </Text>
           <Pressable
             onPress={() => router.push("./view-all")}
             className="px-3 py-1 rounded-lg"
           >
-            <Text className={`text-sm font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}>
-              عرض الكل
+            <Text
+              className={`text-sm font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
+            >
+              {t("common.viewAll")}
             </Text>
             {/* View All */}
           </Pressable>
@@ -407,17 +450,21 @@ export default function Index() {
           />
         </View>
 
-        <View className="flex-row justify-between items-center px-1 mb-3">
-          <Text className={`text-lg font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}>
-            عاداتي
+        <View className={"justify-between items-center px-1 mb-3" + (language === "ar" ? " flex-row" : " flex-row-reverse")}>
+          <Text
+            className={`text-lg font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
+          >
+            {t("common.Habits")}
           </Text>
           {/* My Habits */}
           <Pressable
             onPress={() => router.push("./view-all")}
             className="px-3 py-1 rounded-lg"
           >
-            <Text className={`text-sm font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}>
-              عرض الكل
+            <Text
+              className={`text-sm font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
+            >
+              {t("common.viewAll")}
             </Text>
           </Pressable>
         </View>

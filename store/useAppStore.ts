@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import { createMMKV } from "react-native-mmkv";
+import i18n from "../i18next/i18n";
 
 const storage = createMMKV();
+const storedLanguage = (storage.getString("language") as "ar" | "en") || "ar";
 
 // ============ Interfaces ============
 export interface Task {
@@ -35,6 +37,9 @@ interface AppState {
 
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+
+  language: "ar" | "en";
+  setLanguage: (lang: "ar" | "en") => void;
 
   // All data (unfiltered)
   allTasks: Task[];
@@ -100,6 +105,14 @@ export const useAppStore = create<AppState>((set, get) => {
         const next = !state.isDarkMode;
         storage.set("dark_mode", next ? "true" : "false");
         return { isDarkMode: next };
+      }),
+
+    language: storedLanguage,
+    setLanguage: (lang) =>
+      set((state) => {
+        storage.set("language", lang);
+        i18n.changeLanguage(lang);
+        return { language: lang };
       }),
 
     // ============ All Data (unfiltered) ============

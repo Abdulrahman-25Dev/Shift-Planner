@@ -1,4 +1,5 @@
 import "../global.css";
+import "../i18next/i18n"; // تأكد من استيراد ملف i18n
 import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";

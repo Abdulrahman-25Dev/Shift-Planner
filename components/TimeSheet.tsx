@@ -13,6 +13,7 @@ import {
   BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
 import { useAppStore } from "../store/useAppStore";
+import { useTranslation } from "react-i18next";
 
 interface TimeSheetProps {
   onSave: (timeValue: string) => void;
@@ -85,7 +86,8 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
       [],
     );
 
-    const { mode: appMode, isDarkMode } = useAppStore();
+    const { mode: appMode, isDarkMode, language } = useAppStore();
+    const { t } = useTranslation();
     const isStudy = appMode === "study";
 
     const primaryColor = isStudy
@@ -233,9 +235,9 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
       >
         <BottomSheetView className={`flex-1 p-5 ${sheetBgClass}`}>
           <Text
-            className={`text-lg font-black mb-4 ${isDarkMode ? "text-gray-100" : "text-gray-900"}`}
+            className={`text-lg font-black mb-4 px-3 ${isDarkMode ? "text-gray-100" : "text-gray-900"} ${language === "ar" ? "text-left" : "text-right"}`}
           >
-            اختيار الوقت
+            {t("add.Set time")}
           </Text>
 
           <View className="mb-2" />
@@ -318,28 +320,28 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
                 <Text
                   className={`font-bold ${!isPM ? "text-white" : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
                 >
-                  AM
+                  {language === "ar" ? "ص" : "AM"}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setIsPM(true)}
-                className={`px-5 py-2 rounded-xl mx-1 ${isPM ? (isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary") : isDarkMode ? "bg-gray-700" : "bg-gray-100"}`}
+                className={`px-5 py-2 rounded-xl mx-1 ${isPM ? (isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : isStudy ? "bg-study-primary" : "bg-coding-primary") : isDarkMode ? "bg-gray-700" : "bg-gray-100"}`}
               >
                 <Text
                   className={`font-bold ${isPM ? "text-white" : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
                 >
-                  PM
+                  {language === "ar" ? "م" : "PM"}
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
 
           <View className="mt-auto">
-            <View className="flex-row justify-between items-center mb-4 px-2">
+            <View className={" justify-between items-center mb-4 px-3 " + (language === "ar" ? " flex-row" : " flex-row-reverse")}>
               <Text
                 className={`${isDarkMode ? "text-gray-300" : "text-gray-500"} font-bold`}
               >
-                ملخص الوقت:
+                {t("add.Selected time")} :
               </Text>
               <Text
                 className={`font-black ${isDarkMode ? (isStudy ? "text-study-accent" : "text-coding-accent") : isStudy ? "text-study-primary" : "text-coding-primary"}`}
@@ -350,9 +352,11 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
 
             <TouchableOpacity
               onPress={handleConfirm}
-              className={`py-4 rounded-2xl items-center shadow-lg ${isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+              className={`py-4 rounded-2xl items-center shadow-lg ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
             >
-              <Text className="text-white font-black text-lg">تأكيد الوقت</Text>
+              <Text className="text-white font-black text-lg">
+                {t("add.Confirm time")}
+              </Text>
             </TouchableOpacity>
           </View>
         </BottomSheetView>

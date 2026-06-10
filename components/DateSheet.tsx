@@ -7,6 +7,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { Calendar } from "react-native-calendars";
 import { useAppStore } from "../store/useAppStore";
+import { useTranslation } from "react-i18next";
 
 interface DateSheetProps {
   onSave: (date: Date) => void;
@@ -43,7 +44,8 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
       [],
     );
 
-    const { mode: appMode, isDarkMode } = useAppStore();
+    const { mode: appMode, isDarkMode, language } = useAppStore();
+    const { t } = useTranslation();
     const isStudy = appMode === "study";
 
     const handleConfirm = () => {
@@ -69,9 +71,9 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
           className={`flex-1 p-5 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : "bg-white"}`}
         >
           <Text
-            className={`text-lg font-black mb-4 ${isDarkMode ? "text-gray-100" : "text-gray-900"}`}
+            className={`text-lg px-3 font-black mb-4 ${isDarkMode ? "text-gray-100" : "text-gray-900"} ${language === "ar" ? "text-left" : "text-right"}`}
           >
-            اختيار التاريخ
+            {t("add.Set date")}
           </Text>
 
           <Calendar
@@ -118,8 +120,8 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
           />
 
           <View className="mt-auto">
-            <View className="flex-row justify-between items-center mb-4 px-2">
-              <Text className="text-gray-500 font-bold">التاريخ المحدد:</Text>
+            <View className={"justify-between items-center mb-4 px-3 " + (language === "ar" ? "flex-row" : "flex-row-reverse")}>
+              <Text className="text-gray-300 font-bold">{t("add.Selected date")} :</Text>
               <Text
                 className={`font-black ${isStudy ? "text-study-accent" : "text-coding-accent"}`}
               >
@@ -133,10 +135,10 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
 
             <TouchableOpacity
               onPress={handleConfirm}
-              className={`py-4 rounded-2xl items-center shadow-lg ${isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+              className={`py-4 rounded-2xl items-center shadow-lg ${isStudy ? "bg-study-primary" : "bg-coding-primary"} `}
             >
               <Text className="text-white font-black text-lg">
-                تأكيد التاريخ
+                {t("add.Confirm date")}
               </Text>
             </TouchableOpacity>
           </View>

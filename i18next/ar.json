@@ -74,5 +74,17 @@
     "delete": "حذف العنصر",
     "delete confirmation": "هل أنت متأكد من حذف هذا العنصر؟",
     "cancel": "إلغاء"
+  },
+  "add": {
+    "task": "مهمة",
+    "habit": "عادة",
+    "Selected date": "التاريخ المحدد",
+    "Selected time": "الوقت المحدد",
+    "Set date": "تعيين التاريخ",
+    "Set time": "تعيين الوقت",
+    "add task": "إضافة مهمة",
+    "add habit": "إضافة عادة",
+    "Confirm date": "تأكيد التاريخ",
+    "Confirm time": "تأكيد الوقت"
   }
 }

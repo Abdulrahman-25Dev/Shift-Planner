@@ -8,6 +8,7 @@ import BottomSheet, {
   BottomSheetModal,
 } from "@gorhom/bottom-sheet";
 import { useAppStore } from "../store/useAppStore";
+import { useTranslation } from "react-i18next";
 import DateSheet from "../components/DateSheet";
 import TimeSheet from "../components/TimeSheet";
 
@@ -19,6 +20,7 @@ export const AddTaskSheet = forwardRef(
     const [priority, setPriority] = useState<"low" | "medium" | "high">(
       "medium",
     );
+    const { t } = useTranslation();
 
     const dateSheetRef = React.useRef<BottomSheetModal>(null);
     const timeSheetRef = React.useRef<BottomSheetModal>(null);
@@ -31,9 +33,7 @@ export const AddTaskSheet = forwardRef(
       }),
     );
     const isStudy = props.mode === "study";
-    const isDarkMode = useAppStore((state) => state.isDarkMode);
-    const AddTask = useAppStore((state) => state.addTask);
-    const AddHabit = useAppStore((state) => state.addHabit);
+    const { addTask, addHabit, isDarkMode, language } = useAppStore();
 
     // نقاط التوقف: 50% من الشاشة أو 85%
     const snapPoints = useMemo(() => ["85%"], []);
@@ -81,7 +81,7 @@ export const AddTaskSheet = forwardRef(
               <Text
                 className={`font-bold ${type === "task" ? "text-white" : "text-gray-400"}`}
               >
-                مهمة
+                {t("add.task")}
               </Text>
               <CheckCircle2
                 size={20}
@@ -95,7 +95,7 @@ export const AddTaskSheet = forwardRef(
               <Text
                 className={`font-bold ${type === "habit" ? "text-white" : "text-gray-400"}`}
               >
-                عادة
+                {t("add.habit")}
               </Text>
               <RefreshCw
                 size={20}
@@ -106,33 +106,33 @@ export const AddTaskSheet = forwardRef(
 
           {/* 2. حقل الإدخال */}
           <Text
-            className={`font-bold mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"}`}
+            className={`font-bold px-3 mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
           >
-            عنوان {type === "task" ? "المهمة" : "العادة"}
+            {type === "task" ? t("details.title task") : t("details.title habit")}
           </Text>
           <BottomSheetTextInput
             value={title}
             onChangeText={setTitle}
             placeholder={
-              type === "task" ? "مثلاً: مذاكرة شابتر " : "مثلاً: شرب الماء"
+              type === "task" ? t("details.task title placeholder") : t("details.habit title placeholder")
             }
-            className={`p-3 rounded-2xl ${isDarkMode ? (isStudy ? "bg-study-dark-primary/30 text-study-dark-primary" : "bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? "bg-violet-50 border-transparent text-study-primary" : "bg-green-100 border-transparent text-coding-primary"} text-right font-bold mb-4`}
+            className={`p-3 rounded-2xl ${isDarkMode ? (isStudy ? "bg-study-dark-primary/30 text-study-dark-primary" : "bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? "bg-violet-50 border-transparent text-study-primary" : "bg-green-100 border-transparent text-coding-primary"} font-bold mb-4`}
             placeholderTextColor="#9CA3AF"
           />
 
           {/* 3. القسم المتغير (وصف المهمة | وصف العادة) */}
           <Text
-            className={`font-bold mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"}`}
+            className={`font-bold px-3 mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
           >
-            وصف {type === "task" ? "المهمة" : "العادة"} (اختياري)
+            {type === "task" ? t("details.description task") : t("details.description habit")}
           </Text>
           <BottomSheetTextInput
             value={description}
             onChangeText={setDescription}
             placeholder={
               type === "task"
-                ? "مثلاً: مذاكرة شابتر 1"
-                : "مثلاً: شرب لتر ماء يومياً"
+                ? t("details.description task placeholder")
+                : t("details.description habit placeholder")
             }
             className={`p-3 rounded-2xl ${isDarkMode ? (isStudy ? "bg-study-dark-primary/30 text-study-dark-primary" : "bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? "bg-violet-50 border-transparent text-study-primary" : "bg-green-100 border-transparent text-coding-primary"} font-bold mb-4`}
             placeholderTextColor="#9CA3AF"
@@ -143,9 +143,9 @@ export const AddTaskSheet = forwardRef(
           >
             <View className="flex-1 pr-2">
               <Text
-                className={`text-sm mb-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"}`}
+                className={`text-sm mb-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"} ${language === "ar" ? "text-left" : "text-right"}`}
               >
-                التاريخ
+                {t("add.Selected date")}
               </Text>
               <Text
                 className={`font-bold text-center ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-800"}`}
@@ -161,9 +161,9 @@ export const AddTaskSheet = forwardRef(
               className={`flex-1 pl-2 border-l ${isDarkMode ? (isStudy ? "border-study-dark-primary/30" : "border-gray-200") : isStudy ? "border-study-primary" : "border-coding-primary"}`}
             >
               <Text
-                className={`text-sm mb-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"}`}
+                className={`text-sm mb-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
               >
-                الوقت المحدد
+                {t("add.Selected time")}
               </Text>
               <Text
                 className={`font-bold text-center ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-800"}`}
@@ -176,15 +176,15 @@ export const AddTaskSheet = forwardRef(
           {type === "habit" && (
             <View className="mb-3">
               <Text
-                className={`font-bold mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"}`}
+                className={`font-bold px-3 mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
               >
-                مستوى الأولوية
+                {t("details.priority")}
               </Text>
               <View className="flex-row justify-between">
                 {[
-                  { value: "low", label: "منخفض" },
-                  { value: "medium", label: "متوسط" },
-                  { value: "high", label: "عالي" },
+                  { value: "low", label: t("priority.low") },
+                  { value: "medium", label: t("priority.medium") },
+                  { value: "high", label: t("priority.high") },
                 ].map((item) => (
                   <TouchableOpacity
                     key={item.value}
@@ -219,7 +219,7 @@ export const AddTaskSheet = forwardRef(
                   <Text
                     className={`${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"} font-bold text-center`}
                   >
-                    اختيار تاريخ {type === "task" ? "المهمة" : "العادة"}
+                    {t("add.Set date")}
                   </Text>
                     <Calendar
                       size={20}
@@ -241,7 +241,7 @@ export const AddTaskSheet = forwardRef(
                   <Text
                     className={`${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"} font-bold text-center`}
                   >
-                    اختيار وقت {type === "task" ? "المهمة" : "العادة"}
+                    {t("add.Set time")}
                   </Text>
                   <Clock1
                     size={20}
@@ -275,14 +275,14 @@ export const AddTaskSheet = forwardRef(
                     }
                   }
 
-                  AddTask({
+                  addTask({
                     title: title.trim(),
                     description: description.trim(),
                     completed: false,
                     dueDate: dueDate.getTime(),
                   });
                 } else {
-                  AddHabit({
+                  addHabit({
                     title: title.trim(),
                     description: description.trim(),
                     streak: 0,
@@ -306,7 +306,7 @@ export const AddTaskSheet = forwardRef(
             style={{ elevation: 5 }}
           >
             <Text className="text-white font-black text-lg">
-              إضافة {type === "task" ? "المهمة" : "العادة"}
+              {type === "task" ? t("add.add task") : t("add.add habit")}
             </Text>
           </TouchableOpacity>
         </BottomSheetView>

@@ -74,5 +74,17 @@
     "delete": "Delete",
     "delete confirmation": "Are you sure you want to delete this item?",
     "cancel": "Cancel"
+  },
+  "add": {
+    "task": "Task",
+    "habit": "Habit",
+    "Selected date": "Selected Date",
+    "Selected time": "Selected Time",
+    "Set date": "Set Date",
+    "Set time": "Set Time",
+    "add task": "Add Task",
+    "add habit": "Add Habit",
+    "Confirm date": "Confirm Date",
+    "Confirm time": "Confirm Time"
   }
 }

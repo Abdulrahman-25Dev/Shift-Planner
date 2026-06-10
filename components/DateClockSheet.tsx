@@ -13,6 +13,13 @@ interface DateClockSheetProps {
   initialDate?: Date;
 }
 
+const formatDateString = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
   ({ onSave, initialDate }, ref) => {
     // استخدام التوقيت الحالي إذا لم يوجد تاريخ ابتدائي
@@ -30,7 +37,7 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
       [],
     );
 
-    const { mode: appMode } = useAppStore();
+    const { mode: appMode, isDarkMode } = useAppStore();
 
     const isStudy = appMode === "study";
 
@@ -41,12 +48,6 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
       (ref as any).current?.dismiss();
     };
 
-    const handleTimeChange = (hour: number, minute: number) => {
-      const newDate = new Date(tempDate);
-      newDate.setHours(hour, minute);
-      setTempDate(newDate);
-    };
-
     return (
       <BottomSheetModal
         ref={ref}
@@ -54,26 +55,37 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
         backdropComponent={renderBackdrop}
         // هذا السطر يحل مشكلة التعليق في أندرويد عند فتح الكيبورد أو أدوات النظام
         keyboardBehavior="interactive"
+        backgroundStyle={{
+          backgroundColor: isDarkMode
+            ? isStudy
+              ? "#0f172a"
+              : "#022c22"
+            : "#ffffff",
+        }}
       >
-        <BottomSheetView className="flex-1 p-5">
+        <BottomSheetView
+          className={`flex-1 p-5 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : "bg-white"}`}
+        >
           {/* أزرار التبديل العلوية - شكل أحدث */}
-          <View className="flex-row-reverse bg-gray-100 p-1 rounded-2xl mb-6">
+          <View
+            className={`flex-row-reverse p-1 rounded-2xl mb-6 ${isDarkMode ? "bg-gray-800" : "bg-gray-100"}`}
+          >
             <TouchableOpacity
               onPress={() => setMode("date")}
-              className={`flex-1 py-3 rounded-xl items-center ${mode === "date" ? "bg-white shadow-sm" : ""}`}
+              className={`flex-1 py-3 rounded-xl items-center ${mode === "date" ? (isDarkMode ? "bg-gray-700" : "bg-white shadow-sm") : ""}`}
             >
               <Text
-                className={`font-bold ${mode === "date" ? isStudy ? "text-study-primary" : "text-coding-primary/80" : "text-gray-500"}`}
+                className={`font-bold ${mode === "date" ? (isStudy ? "text-study-primary" : "text-coding-primary/80") : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
               >
                 التاريخ
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setMode("time")}
-              className={`flex-1 py-3 rounded-xl items-center ${mode === "time" ? "bg-white shadow-sm" : ""}`}
+              className={`flex-1 py-3 rounded-xl items-center ${mode === "time" ? (isDarkMode ? "bg-gray-700" : "bg-white shadow-sm") : ""}`}
             >
               <Text
-                className={`font-bold ${mode === "time" ? isStudy ? "text-study-primary" : "text-coding-primary/80" : "text-gray-500"}`}
+                className={`font-bold ${mode === "time" ? (isStudy ? "text-study-primary" : "text-coding-primary/80") : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
               >
                 الوقت
               </Text>
@@ -83,24 +95,48 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
           <View className="flex-1">
             {mode === "date" ? (
               <Calendar
-                current={tempDate.toISOString().split("T")[0]}
+                current={formatDateString(tempDate)}
                 onDayPress={(day) => {
                   const newDate = new Date(tempDate);
                   newDate.setFullYear(day.year, day.month - 1, day.day);
                   setTempDate(newDate);
                 }}
                 markedDates={{
-                  [tempDate.toISOString().split("T")[0]]: {
+                  [formatDateString(tempDate)]: {
                     selected: true,
-                    selectedColor: isStudy ? "#4F46E5" : "#047857",
+                    selectedColor: isStudy
+                      ? isDarkMode
+                        ? "#818cf8"
+                        : "#4F46E5"
+                      : isDarkMode
+                        ? "#34d399"
+                        : "#047857",
                   },
                 }}
                 theme={{
-                  calendarBackground: "transparent",
+                  calendarBackground: isDarkMode
+                    ? isStudy
+                      ? "#0f172a"
+                      : "#022c22"
+                    : "#ffffff",
                   todayTextColor: isStudy ? "#4F46E5" : "#047857",
+                  dayTextColor: isDarkMode ? "#e2e8f0" : "#0f172a",
+                  textSectionTitleColor: isDarkMode ? "#94a3b8" : "#64748b",
+                  monthTextColor: isDarkMode
+                    ? "#e2e8f0"
+                    : isStudy
+                      ? "#4F46E5"
+                      : "#047857",
+                  arrowColor: isDarkMode
+                    ? "#e2e8f0"
+                    : isStudy
+                      ? "#4F46E5"
+                      : "#047857",
+                  selectedDayTextColor: "#ffffff",
+                  textDisabledColor: isDarkMode ? "#64748b" : "#9ca3af",
                 }}
               />
-            ): (
+            ) : (
               <View></View>
             )}
           </View>
@@ -109,7 +145,9 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
           <View className="mt-auto">
             <View className="flex-row justify-between items-center mb-4 px-2">
               <Text className="text-gray-500 font-bold">الموعد:</Text>
-              <Text className={`font-black ${isStudy ? "text-study-primary" : "text-coding-primary"}`}>
+              <Text
+                className={`font-black ${isStudy ? "text-study-primary" : "text-coding-primary"}`}
+              >
                 {tempDate.toLocaleTimeString("en-US", {
                   hour: "2-digit",
                   minute: "2-digit",

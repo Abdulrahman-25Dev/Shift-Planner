@@ -74,7 +74,7 @@ export default function Settings() {
               )}
             </View>
             <Text className={` text-sm font-bold mt-3 text-center ${isDarkMode ? isStudy ? 'text-study-dark-primary' : 'text-coding-dark-primary' : 'text-gray-800'}`}>
-              الثيم
+             {isDarkMode ? 'الوضع الداكن' : 'الوضع الفاتح'}
             </Text>
           </TouchableOpacity>
 

@@ -106,13 +106,13 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
 
           {/* قسم الستريك (يظهر فقط للعدات) */}
           {isHabit && (
-            <View className="bg-orange-50 p-4 rounded-2xl flex-row-reverse items-center mb-6">
+            <View className={"p-4 rounded-2xl flex-row-reverse items-center mb-6" + (isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : (isStudy ? " bg-violet-50" : " bg-green-100"))}>
               <Text className="text-2xl mr-2">🔥</Text>
-              <View>
-                <Text className="text-orange-600 font-bold text-right">
+              <View className="flex-1">
+                <Text className="text-orange-600 font-bold text-left">
                   أنت مستمر لـ {habit?.streak} أيام!
                 </Text>
-                <Text className="text-orange-400 text-xs text-right">
+                <Text className="text-orange-400 text-xs text-left">
                   لا توقف الحماس
                 </Text>
               </View>

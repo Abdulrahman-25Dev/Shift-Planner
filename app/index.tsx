@@ -7,7 +7,7 @@ import {
   Pressable,
 } from "react-native";
 import { useAppStore, Task } from "../store/useAppStore";
-import { GraduationCap, Code2, Settings, Trash2 } from "lucide-react-native";
+import { GraduationCap, Code2, Settings, Trash2, Flame } from "lucide-react-native";
 import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
 import { AddTaskSheet } from "../components/AddTaskSheet";
@@ -56,10 +56,6 @@ export default function Index() {
       ? "كل مهامك مكتملة!"
       : "استقرار النظام";
 
-  const streakCount = habits.reduce(
-    (max, habit) => Math.max(max, habit.streak),
-    0,
-  );
 
   // ترتيب العادات حسب الاكتمال ثم الاولوية (Sort habits by completion then priority)
   const sortedHabits = [...habitsWithCompleted].sort((a, b) => {
@@ -167,7 +163,8 @@ export default function Index() {
           </View>
 
           <Pressable
-            onPress={() => toggleTaskComplete(item.id)}
+            onPress={() => toggleTaskComplete(item.id)
+            }
             className={`flex-row items-center p-1 mb-2 rounded-[24px] ${
               item.completed
                 ? isDarkMode
@@ -251,9 +248,7 @@ export default function Index() {
                   : "bg-coding-primary/10"
           }`}
         >
-          <View
-            className={`w-3 h-3 rounded-full ${item.priority === "high" ? "bg-red-500" : item.priority === "medium" ? "bg-yellow-500" : item.priority === "low" ? "bg-green-600" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
-          />
+          <Flame size={20} color={item.priority === "high" ? "red" : item.priority === "medium" ? "orange" : "green"} />
         </View>
 
         <View className="mx-3 ml-3 flex-1">
@@ -328,26 +323,6 @@ export default function Index() {
             className={`mt-1 text-sm ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-700" : "text-green-700"}`}
           >
             {completedItems} / {totalItems || 1} مكتملة {/* completed */}
-          </Text>
-        </View>
-
-        <View
-          className={`justify-center rounded-full px-4 py-3 ${isDarkMode ? (isStudy ? "bg-study-dark-bg/40" : "bg-coding-dark-bg/40") : isStudy ? "bg-violet-200" : "bg-green-200"}`}
-        >
-          <Text
-            className={`text-[10px] text-center uppercase font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-500" : "text-green-500 font-mono"}`}
-          >
-            السلسلة
-          </Text>
-          <Text
-            className={`mt-1 text-center text-2xl font-black ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800 font-mono"}`}
-          >
-            {streakCount}
-          </Text>
-          <Text
-            className={`text-[10px] text-center ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-600" : "text-green-600"}`}
-          >
-            أيام متصلة {/* consecutive days */}
           </Text>
         </View>
       </View>

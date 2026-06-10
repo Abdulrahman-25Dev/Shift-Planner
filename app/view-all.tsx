@@ -13,6 +13,7 @@ import {
   RefreshCw,
   Trash2,
   ChevronLeft,
+  Flame,
 } from "lucide-react-native";
 import { AddTaskSheet } from "../components/AddTaskSheet";
 import { router } from "expo-router";
@@ -210,9 +211,7 @@ const ShowAll = () => {
                   : "bg-coding-primary/10"
           }`}
         >
-          <View
-            className={`w-3 h-3 rounded-full ${item.priority === "high" ? "bg-red-500" : item.priority === "medium" ? "bg-yellow-500" : item.priority === "low" ? "bg-green-600" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
-          />
+          <Flame size={20} color={item.priority === "high" ? "red" : item.priority === "medium" ? "orange" : "green"} />
         </View>
 
         {/* 2. النصوص (العنوان والسلسلة) */}

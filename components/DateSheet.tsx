@@ -13,6 +13,13 @@ interface DateSheetProps {
   initialDate?: Date;
 }
 
+const formatDateString = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
   ({ onSave, initialDate }, ref) => {
     const [selectedDate, setSelectedDate] = useState(
@@ -36,7 +43,7 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
       [],
     );
 
-    const { mode: appMode } = useAppStore();
+    const { mode: appMode, isDarkMode } = useAppStore();
     const isStudy = appMode === "study";
 
     const handleConfirm = () => {
@@ -50,26 +57,63 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
         snapPoints={["75%"]}
         backdropComponent={renderBackdrop}
         keyboardBehavior="interactive"
+        backgroundStyle={{
+          backgroundColor: isDarkMode
+            ? isStudy
+              ? "#0f172a"
+              : "#022c22"
+            : "#ffffff",
+        }}
       >
-        <BottomSheetView className="flex-1 p-5">
-          <Text className="text-lg font-black mb-4">اختيار التاريخ</Text>
+        <BottomSheetView
+          className={`flex-1 p-5 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : "bg-white"}`}
+        >
+          <Text
+            className={`text-lg font-black mb-4 ${isDarkMode ? "text-gray-100" : "text-gray-900"}`}
+          >
+            اختيار التاريخ
+          </Text>
 
           <Calendar
-            current={selectedDate.toISOString().split("T")[0]}
+            current={formatDateString(selectedDate)}
             onDayPress={(day) => {
               const next = new Date(selectedDate);
               next.setFullYear(day.year, day.month - 1, day.day);
               setSelectedDate(next);
             }}
             markedDates={{
-              [selectedDate.toISOString().split("T")[0]]: {
+              [formatDateString(selectedDate)]: {
                 selected: true,
-                selectedColor: isStudy ? "#4F46E5" : "#047857",
+                selectedColor: isStudy
+                  ? isDarkMode
+                    ? "#818cf8"
+                    : "#4F46E5"
+                  : isDarkMode
+                    ? "#34d399"
+                    : "#047857",
               },
             }}
             theme={{
-              calendarBackground: "transparent",
+              calendarBackground: isDarkMode
+                ? isStudy
+                  ? "#0f172a"
+                  : "#022c22"
+                : "#ffffff",
               todayTextColor: isStudy ? "#4F46E5" : "#047857",
+              dayTextColor: isDarkMode ? "#e2e8f0" : "#0f172a",
+              textSectionTitleColor: isDarkMode ? "#94a3b8" : "#64748b",
+              monthTextColor: isDarkMode
+                ? "#e2e8f0"
+                : isStudy
+                  ? "#4F46E5"
+                  : "#047857",
+              arrowColor: isDarkMode
+                ? "#e2e8f0"
+                : isStudy
+                  ? "#4F46E5"
+                  : "#047857",
+              selectedDayTextColor: "#ffffff",
+              textDisabledColor: isDarkMode ? "#64748b" : "#9ca3af",
             }}
           />
 
@@ -77,7 +121,7 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
             <View className="flex-row justify-between items-center mb-4 px-2">
               <Text className="text-gray-500 font-bold">التاريخ المحدد:</Text>
               <Text
-                className={`font-black ${isStudy ? "text-study-primary" : "text-coding-primary"}`}
+                className={`font-black ${isStudy ? "text-study-accent" : "text-coding-accent"}`}
               >
                 {selectedDate.toLocaleDateString("en-US", {
                   day: "2-digit",

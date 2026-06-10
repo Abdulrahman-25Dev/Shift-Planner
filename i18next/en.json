@@ -44,5 +44,35 @@
     "viewAll": "View All",
     "Tasks": "My Tasks",
     "Habits": "My Habits"
+  },
+  "ViewAll": {
+    "Tasks": "All Tasks",
+    "Habits": "All Habits",
+    "daily routine": "Daily Routine",
+    "inProgress": "In Progress",
+    "all": "All",
+    "completed": "Completed",
+    "InCompleted": "InCompleted",
+    "No tasks": "No tasks, add your first task!",
+    "No habits": "No habits, add your first habit!"
+  },
+  "details": {
+    "title task": "Task Title",
+    "title habit": "Habit Title",
+    "habit title placeholder": "Habit Title...",
+    "task title placeholder": "Task Title...",
+    "you are doing great": "You are doing great! ",
+    "Keep it up!": "Keep it up!",
+    "number of days": "Number of days in streak",
+    "description task": "Task Description (optional)",
+    "description task placeholder": "Task Description...",
+    "description habit": "Habit Description (optional)",
+    "description habit placeholder": "Habit Description...",
+    "change date": "Change Date",
+    "change time": "Change Time",
+    "priority": "Priority",
+    "delete": "Delete",
+    "delete confirmation": "Are you sure you want to delete this item?",
+    "cancel": "Cancel"
   }
 }

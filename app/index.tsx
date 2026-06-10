@@ -206,7 +206,7 @@ export default function Index() {
             }`}
           >
             <View
-              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? "border-gray-500" : "border-gray-200"}`}
+              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? "border-gray-500" : isStudy ? "border-study-primary/20" : "border-coding-primary/20"}`}
             >
               {item.completed && (
                 <Text className="text-white text-xs font-bold text-center">
@@ -316,11 +316,13 @@ export default function Index() {
                 : "bg-white border-gray-200"
               : isDarkMode
                 ? "bg-transparent"
-                : "bg-white"
+                : isStudy
+                  ? "bg-violet-50 border-study-primary/20"
+                  : "bg-green-50 border-coding-primary/20"
           }`}
         >
           <View
-            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? "border-gray-500" : "border-gray-100"}`}
+            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? isStudy ? "bg-study-primary border-study-primary" : "bg-coding-primary border-coding-primary" : isDarkMode ? "border-gray-500" : isStudy ? "border-study-primary/20" : "border-coding-primary/20"}`}
           >
             {item.completed && (
               <Text className="text-white text-xs font-bold text-center">
@@ -361,7 +363,7 @@ export default function Index() {
           <Text
             className={`mt-1 text-sm ${language === "ar" ? "text-left" : "text-right"} ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-700" : "text-green-700"}`}
           >
-            {completedItems} / {totalItems || 1} {t("progress.completed")}
+            {completedItems} / {totalItems || 0} {t("progress.completed")}
           </Text>
         </View>
       </View>

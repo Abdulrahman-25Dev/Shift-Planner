@@ -44,5 +44,35 @@
     "viewAll": "عرض الكل",
     "Tasks": "مهام اليوم",
     "Habits": "عاداتي"
+  },
+  "ViewAll": {
+    "Tasks": "جميع المهام",
+    "Habits": "جميع العادات",
+    "daily routine": "الروتين اليومي",
+    "inProgress": "قيد الانجاز",
+    "all": "الكل",
+    "completed": "المكتملة",
+    "InCompleted": "غير المكتملة",
+    "No tasks": "لا توجد مهام, قم بإضافة مهمتك الأولى!",
+    "No habits": "لا توجد عادات, قم بإضافة عادتك الأولى!"
+  },
+  "details": {
+    "title task": "عنوان المهمة",
+    "title habit": "عنوان العادة",
+    "habit title placeholder": "عنوان العادة...",
+    "task title placeholder": "عنوان المهمة...",
+    "you are doing great": "أنت تقوم بعمل رائع! ",
+    "Keep it up!": "استمر هكذا!",
+    "number of days": "عدد ايام التحدي",
+    "description task": "وصف المهمة (اختياري)",
+    "description habit placeholder": "وصف العادة...",
+    "description habit": "وصف العادة (اختياري)",
+    "description task placeholder": "وصف المهمة...",
+    "change date": "تغيير التاريخ",
+    "change time": "تغيير الوقت",
+    "priority": "الأولوية",
+    "delete": "حذف العنصر",
+    "delete confirmation": "هل أنت متأكد من حذف هذا العنصر؟",
+    "cancel": "إلغاء"
   }
 }

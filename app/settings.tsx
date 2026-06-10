@@ -43,7 +43,7 @@ export default function Settings() {
 
   return (
     <View
-      className={`flex-1 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : "bg-gray-100"}`}
+      className={`flex-1 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : isStudy ? "bg-study-bg" : "bg-coding-bg"}`}
     >
       {/* Header */}
       <View className="pt-14 pb-2 px-4">

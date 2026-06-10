@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Calendar, Clock } from "lucide-react-native";
 import DateSheet from "../../components/DateSheet";
 import TimeSheet from "../../components/TimeSheet";
+import { useTranslation } from "react-i18next";
 
 interface DetailsSheetProps {
   itemId: string | null;
@@ -33,7 +34,9 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
       removeTask,
       removeHabit,
       mode,
+      language,
     } = useAppStore();
+    const { t } = useTranslation();
 
     // 1. جلب البيانات والتعرف على النوع
     const task = useMemo(
@@ -106,10 +109,11 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                       : " text-coding-dark-primary"
                     : isStudy
                       ? " text-study-secondary"
-                      : " text-coding-secondary")
+                      : " text-coding-secondary") +
+                  (language === "ar" ? " text-left" : " text-right")
                 }
               >
-                {isHabit ? "عنوان العادة" : "عنوان المهمة"}
+                {isHabit ? t("details.title habit") : t("details.title task")}
               </Text>
               <TextInput
                 value={item.title}
@@ -118,53 +122,32 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                     ? updateHabit(item.id, { title: text })
                     : updateTask(item.id, { title: text })
                 }
-                className={`text-lg font-black text-right px-4 rounded-2xl ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30 text-study-dark-primary" : " bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? " bg-violet-50 text-study-primary" : " bg-green-100 text-coding-primary"}`}
-                placeholder="العنوان..."
+                className={`text-md font-black px-4 rounded-2xl ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30 text-study-dark-primary" : " bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? " bg-violet-50 text-study-primary" : " bg-green-100 text-coding-primary"}`}
+                placeholder={
+                  isHabit
+                    ? t("details.habit title placeholder")
+                    : t("details.task title placeholder")
+                }
+                placeholderClassName={`${language === "ar" ? " text-left" : " text-right"}`}
               />
             </View>
           </View>
-
-          {/* قسم الستريك (يظهر فقط للعدات) */}
-          {isHabit && (
-            <View
-              className={
-                "p-4 rounded-2xl flex-row-reverse items-center mb-6" +
-                (isDarkMode
-                  ? isStudy
-                    ? " bg-study-dark-primary/30"
-                    : " bg-coding-dark-primary/30"
-                  : isStudy
-                    ? " bg-violet-50"
-                    : " bg-green-100")
-              }
-            >
-              <Text className="text-2xl mr-2">🔥</Text>
-              <View className="flex-1">
-                <Text className="text-orange-600 font-bold text-left">
-                  أنت مستمر لـ {habit?.streak} أيام!
-                </Text>
-                <Text className="text-orange-400 text-xs text-left">
-                  لا توقف الحماس
-                </Text>
-              </View>
-            </View>
-          )}
-
           {/* حقل الوصف */}
           <View className="mb-6">
             <Text
               className={
-                "text-left  font-bold mb-2" +
+                "  font-bold mb-2" +
                 (isDarkMode
                   ? isStudy
                     ? " text-study-dark-primary"
                     : " text-coding-dark-primary"
                   : isStudy
                     ? " text-study-secondary"
-                    : " text-coding-secondary")
+                    : " text-coding-secondary") +
+                (language === "ar" ? " text-left" : " text-right")
               }
             >
-              تفاصيل {isHabit ? "العادة" : "المهمة"}
+              {t("details.description " + (isHabit ? "habit" : "task"))}
             </Text>
             <BottomSheetTextInput
               multiline
@@ -174,21 +157,78 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                   ? updateHabit(item.id, { description: text })
                   : updateTask(item.id, { description: text })
               }
-              placeholder="اكتب تفاصيل إضافية هنا..."
-              className={` p-4 text-md rounded-2xl text-right font-semibold min-h-[120px] ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30 text-study-dark-primary" : " bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? " bg-violet-50 text-study-primary" : " bg-green-100 text-coding-primary"}`}
+              placeholder={t(
+                "details.description " +
+                  (isHabit ? "habit placeholder" : "task placeholder"),
+              )}
+              className={` p-4 text-md rounded-2xl font-semibold min-h-[120px] ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30 text-study-dark-primary" : " bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? " bg-violet-50 text-study-primary" : " bg-green-100 text-coding-primary"}`}
               textAlignVertical="top"
             />
           </View>
+
+          {/* قسم الستريك (يظهر فقط للعدات) */}
+          {isHabit && (
+            <View
+              className={
+                " p-4 rounded-2xl items-center mb-6 justify-between" +
+                (isDarkMode
+                  ? isStudy
+                    ? " bg-study-dark-primary/30"
+                    : " bg-coding-dark-primary/30"
+                  : isStudy
+                    ? " bg-violet-50"
+                    : " bg-green-100") +
+                (language === "ar" ? " flex-row-reverse" : " flex-row")
+              }
+            >
+              <Text className="text-2xl mr-2">🔥</Text>
+              <View className={"flex-1 "}>
+                <Text
+                  className={
+                    "text-sm font-bold" +
+                    (language === "ar" ? " text-left" : " text-right") +
+                    (isDarkMode
+                      ? isStudy
+                        ? " text-study-dark-primary"
+                        : " text-coding-dark-primary"
+                      : isStudy
+                        ? " text-study-primary"
+                        : " text-coding-primary")
+                  }
+                >
+                  {" "}
+                  {t("details.number of days")} {habit.streak}
+                </Text>
+                <Text
+                  className={
+                    "text-orange-600 font-bold" +
+                    (language === "ar" ? " text-left" : " text-right")
+                  }
+                >
+                  {t("details.you are doing great")}
+                </Text>
+                <Text
+                  className={
+                    "text-orange-400 text-xs" +
+                    (language === "ar" ? " text-left" : " text-right")
+                  }
+                >
+                  {t("details.Keep it up!")}
+                </Text>
+              </View>
+            </View>
+          )}
+
           {/* قسم تغيير وقت التذكير (مش مفعل حالياً) */}
           <View className="mb-6">
             <Pressable
               onPress={() => dateSheetRef.current?.present()}
-              className={` gap-2 p-4 rounded-2xl flex-row items-center justify-center relative mb-3 ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : isStudy ? " bg-study-accent" : " bg-coding-accent"}`}
+              className={` gap-2 p-4 rounded-2xl items-center justify-center relative mb-3 ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : isStudy ? " bg-study-accent" : " bg-coding-accent"} ${language === "ar" ? " flex-row" : " flex-row-reverse"}`}
             >
               <Text
                 className={` font-bold text-center ${isDarkMode ? (isStudy ? " text-study-dark-primary" : " text-coding-dark-primary") : isStudy ? " text-study-primary" : " text-coding-primary"}`}
               >
-                تغيير تاريخ التذكير
+                {t("details.change date")}
               </Text>
               <Calendar
                 size={20}
@@ -206,12 +246,12 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
             </Pressable>
             <Pressable
               onPress={() => timeSheetRef.current?.present()}
-              className={` gap-2 p-4 rounded-2xl flex-row items-center justify-center relative ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : isStudy ? " bg-study-accent" : " bg-coding-accent"}`}
+              className={` gap-2 p-4 rounded-2xl flex-row items-center justify-center relative ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : isStudy ? " bg-study-accent" : " bg-coding-accent"} ${language === "ar" ? " flex-row" : " flex-row-reverse"}`}
             >
               <Text
                 className={` font-bold text-center ${isDarkMode ? (isStudy ? " text-study-dark-primary" : " text-coding-dark-primary") : isStudy ? " text-study-primary" : " text-coding-primary"}`}
               >
-                تغيير وقت التذكير
+                {t("details.change time")}
               </Text>
               <Clock
                 size={20}
@@ -232,35 +272,47 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
           {/* زر الحذف في الأسفل */}
           <TouchableOpacity
             onPress={() => {
-              Alert.alert("حذف", "هل أنت متأكد من حذف هذا العنصر؟", [
-                { text: "إلغاء", style: "cancel" },
-                {
-                  text: "حذف",
-                  style: "destructive",
-                  onPress: () => {
-                    if (isHabit) {
-                      removeHabit(item.id);
-                    } else {
-                      removeTask(item.id);
-                    }
-                    // @ts-ignore
-                    ref.current?.dismiss();
+              Alert.alert(
+                t("details.delete"),
+                t("details.delete confirmation"),
+                [
+                  { text: t("details.cancel"), style: "cancel" },
+                  {
+                    text: t("details.delete"),
+                    style: "destructive",
+                    onPress: () => {
+                      if (isHabit) {
+                        removeHabit(item.id);
+                      } else {
+                        removeTask(item.id);
+                      }
+                      // @ts-ignore
+                      ref.current?.dismiss();
+                    },
                   },
-                },
-              ]);
+                ],
+              );
             }}
             className={
-              "mt-auto p-4 rounded-2xl flex-row items-center justify-center " +
+              "mt-auto p-4 rounded-2xl items-center justify-center " +
               (isDarkMode
                 ? isStudy
                   ? " bg-red-600/30"
                   : " bg-red-600/30"
                 : isStudy
                   ? " bg-red-100"
-                  : " bg-red-100")
+                  : " bg-red-100") +
+              (language === "ar" ? " flex-row" : " flex-row-reverse")
             }
           >
-            <Text className="text-red-600 font-bold mr-2">حذف العنصر</Text>
+            <Text
+              className={
+                "text-red-600 font-bold" +
+                (language === "ar" ? " mr-2" : " ml-2")
+              }
+            >
+              {t("details.delete")}
+            </Text>
             <Ionicons name="trash-outline" size={20} color="#EF4444" />
           </TouchableOpacity>
         </BottomSheetView>

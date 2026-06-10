@@ -17,9 +17,11 @@ import {
 } from "lucide-react-native";
 import { AddTaskSheet } from "../components/AddTaskSheet";
 import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { DetailsSheet } from "./tasks/taskDetails";
 import BottomSheetModal from "@gorhom/bottom-sheet/lib/typescript/components/bottomSheetModal/BottomSheetModal";
 const ShowAll = () => {
+  const { t } = useTranslation();
   const {
     tasks,
     removeTask,
@@ -29,6 +31,7 @@ const ShowAll = () => {
     mode,
     completeHabit,
     isDarkMode,
+    language,
   } = useAppStore();
   const [type, setType] = useState<"task" | "habit">("task");
   const detailsSheetRef = useRef<BottomSheetModal>(null);
@@ -60,7 +63,7 @@ const ShowAll = () => {
           day: "numeric",
           month: "short",
         })
-      : "بدون تاريخ";
+      : t("task.noDate");
 
     const dueTimeLabel = dateSource
       ? dateSource.toLocaleTimeString("en-US", {
@@ -211,7 +214,16 @@ const ShowAll = () => {
                   : "bg-coding-primary/10"
           }`}
         >
-          <Flame size={20} color={item.priority === "high" ? "red" : item.priority === "medium" ? "orange" : "green"} />
+          <Flame
+            size={20}
+            color={
+              item.priority === "high"
+                ? "red"
+                : item.priority === "medium"
+                  ? "orange"
+                  : "green"
+            }
+          />
         </View>
 
         {/* 2. النصوص (العنوان والسلسلة) */}
@@ -228,10 +240,10 @@ const ShowAll = () => {
               className={`${isDarkMode ? "text-[8px] font-black uppercase text-gray-300" : "text-[8px] font-black uppercase text-gray-600"}`}
             >
               {item.priority === "high"
-                ? "عالية"
+                ? t("priority.high")
                 : item.priority === "medium"
-                  ? "متوسطة"
-                  : "منخفضة"}
+                  ? t("priority.medium")
+                  : t("priority.low")}
             </Text>
           </View>
         </View>
@@ -274,28 +286,48 @@ const ShowAll = () => {
       className={`flex-1 px-4 py-6 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : "bg-white"}`}
     >
       <View className="flex-row items-center justify-center mb-6">
-        <Text className={`text-xl font-bold my-6 mlr-3 text-center 
-          ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"}`}>
-          جميع {type === "task" ? "المهام" : "العادات"}
+        <Text
+          className={`text-xl font-bold my-6 mlr-3 text-center 
+          ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"}`}
+        >
+          {type === "task" ? t("ViewAll.Tasks") : t("ViewAll.Habits")}
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
-          className={"absolute right-4 top-6 p-2 rounded-full " + (isDarkMode ? isStudy ? "bg-violet-700" : "bg-green-700" : isStudy ? "bg-study-primary" : "bg-coding-primary")}
+          className={
+            "absolute right-4 top-6 p-2 rounded-full " +
+            (isDarkMode
+              ? isStudy
+                ? "bg-violet-700"
+                : "bg-green-700"
+              : isStudy
+                ? "bg-study-primary"
+                : "bg-coding-primary")
+          }
         >
           <ChevronLeft color="white" size={24} />
         </TouchableOpacity>
       </View>
 
       {/* 2. السويتش (مبدل مهمة/عادة) */}
-      <View className={"flex-row p-1.5 rounded-2xl mb-4 " + (isDarkMode ? isStudy ? "bg-study-dark-accent/60" : "bg-coding-dark-accent/60" : "bg-gray-100")}>
+      <View
+        className={
+          "flex-row p-1.5 rounded-2xl mb-4 " +
+          (isDarkMode
+            ? isStudy
+              ? "bg-study-dark-accent/60"
+              : "bg-coding-dark-accent/60"
+            : "bg-gray-100")
+        }
+      >
         <TouchableOpacity
           onPress={() => setType("task")}
-          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? isDarkMode ? isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary" : (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
+          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${language === "ar" ? "flex-row" : "flex-row-reverse"} space-x-2 ${type === "task" ? (isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
         >
           <Text
             className={`font-bold ${type === "task" ? "text-white" : "text-gray-400"}`}
           >
-            قيد الإنجاز
+            {t("ViewAll.inProgress")}
           </Text>
           <CheckCircle2
             size={20}
@@ -304,32 +336,41 @@ const ShowAll = () => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setType("habit")}
-          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-3 ${type === "habit" ? isDarkMode ? isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary" : (isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
+          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${language === "ar" ? "flex-row" : "flex-row-reverse"} ${type === "habit" ? (isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
         >
           <Text
             className={`font-bold ${type === "habit" ? "text-white" : "text-gray-400"}`}
           >
-            الروتين اليومي
+            {t("ViewAll.daily routine")}
           </Text>
           <RefreshCw size={20} color={type === "habit" ? "white" : "#9CA3AF"} />
         </TouchableOpacity>
       </View>
       {/* 1. الفلاتر (الكل / مكتملة / غير مكتملة) */}
-      <View className={"flex-row p-1.5 rounded-2xl mb-4 " + (isDarkMode ? isStudy ? "bg-study-dark-accent/60" : "bg-coding-dark-accent/60" : "bg-gray-100")}>
+      <View
+        className={
+          "flex-row p-1.5 rounded-2xl mb-4 " +
+          (isDarkMode
+            ? isStudy
+              ? "bg-study-dark-accent/60"
+              : "bg-coding-dark-accent/60"
+            : "bg-gray-100")
+        }
+      >
         {["all", "completed", "incompleted"].map((cat) => (
           <TouchableOpacity
             key={cat}
             onPress={() => setCategory(cat)}
-            className={`flex-1 py-2 rounded-xl items-center justify-center ${category === cat ? (isDarkMode ? isStudy ? "bg-study-dark-primary/50" : "bg-coding-dark-primary/50" : (isStudy ? "bg-study-primary" : "bg-coding-primary")) : ""}`}
+            className={`flex-1 py-2 rounded-xl items-center justify-center ${category === cat ? (isDarkMode ? (isStudy ? "bg-study-dark-primary/50" : "bg-coding-dark-primary/50") : isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
           >
             <Text
-              className={`font-bold text-sm ${category === cat ? "text-white" : "text-gray-400"}`}
+              className={`font-bold text-center text-sm ${category === cat ? "text-white" : "text-gray-400"}`}
             >
               {cat === "all"
-                ? "الكل"
+                ? t("ViewAll.all")
                 : cat === "completed"
-                  ? "مكتملة"
-                  : "غير مكتملة"}
+                  ? t("ViewAll.completed")
+                  : t("ViewAll.InCompleted")}
             </Text>
           </TouchableOpacity>
         ))}
@@ -346,12 +387,17 @@ const ShowAll = () => {
             );
             return filteredTasks.length === 0 ? (
               <View className="flex-1 items-center justify-center">
-                <Text className="text-gray-500">لا توجد مهام حالياً.</Text>
-                <Text className="text-gray-500">قم بانشاء مهمة جديدة.</Text>
+                <Text className={`${isDarkMode ? "text-gray-200" : "text-gray-600"}`}>{t("ViewAll.No tasks")}</Text>
                 <TouchableOpacity
                   onPress={openAddTaskSheet}
                   className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
-                    isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : (isStudy ? "bg-study-primary" : "bg-coding-primary")
+                    isDarkMode
+                      ? isStudy
+                        ? "bg-study-dark-primary"
+                        : "bg-coding-dark-primary"
+                      : isStudy
+                        ? "bg-study-primary"
+                        : "bg-coding-primary"
                   }`}
                   style={{ elevation: 5 }}
                 >
@@ -380,12 +426,17 @@ const ShowAll = () => {
             });
             return filteredHabits.length === 0 ? (
               <View className="flex-1 items-center justify-center">
-                <Text className="text-gray-500">لا توجد عادات حالياً.</Text>
-                <Text className="text-gray-500">قم بانشاء عادة جديدة.</Text>
+                <Text className={`${isDarkMode ? "text-gray-200" : "text-gray-600"}`}>{t("ViewAll.No habits")}</Text>
                 <TouchableOpacity
                   onPress={openAddTaskSheet}
                   className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
-                    isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : (isStudy ? "bg-study-primary" : "bg-coding-primary")
+                    isDarkMode
+                      ? isStudy
+                        ? "bg-study-dark-primary"
+                        : "bg-coding-dark-primary"
+                      : isStudy
+                        ? "bg-study-primary"
+                        : "bg-coding-primary"
                   }`}
                   style={{ elevation: 5 }}
                 >

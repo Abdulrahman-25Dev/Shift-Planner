@@ -11,8 +11,16 @@
     "notifications": "تشغيل الإشعارات",
     "dataManagement": "إدارة البيانات",
     "deleteAllTasks": "مسح جميع المهام",
+    "deleteAllTasksDesc": "هل أنت متأكد من مسح جميع المهام؟ لا يمكن التراجع عن هذا الإجراء.",
     "deleteAllHabits": "مسح جميع العادات",
-    "aboutApp": "حول التطبيق"
+    "deleteAllHabitsDesc": "هل أنت متأكد من مسح جميع العادات؟ لا يمكن التراجع عن هذا الإجراء.",
+    "aboutApp": "حول التطبيق",
+    "deleteTaskTitle": "حذف المهمة",
+    "deleteTaskDesc": "هل انت متاكد من حذف هذه المهمة؟",
+    "deleteHabitTitle": "حذف العادة",
+    "deleteHabitDesc": "هل انت متاكد من حذف هذه العادة؟",
+    "cancel": "إلغاء",
+    "delete": "حذف"
   },
   "home": {
     "todayTasks": "مهام اليوم",
@@ -42,7 +50,7 @@
   },
   "common": {
     "viewAll": "عرض الكل",
-    "Tasks": "مهام اليوم",
+    "Tasks": "مهامي",
     "Habits": "عاداتي"
   },
   "ViewAll": {
@@ -86,5 +94,27 @@
     "add habit": "إضافة عادة",
     "Confirm date": "تأكيد التاريخ",
     "Confirm time": "تأكيد الوقت"
+  },
+  "about":{
+    "versionOfDev":"رؤية المطور",
+    "versionOfDevDesc":"وُلد Shift Planner من قلب المعاناة اليومية في الموازنة بين منطق البرمجة اللانهائي، وبين الالتزام الأكاديمي والتحصيل الجامعي؛ ليكون الجسر الرقمي الذي يحمي عاداتك وبناءك اليومي من الانهيار وسط تشتت السياق وضغوط الامتحانات.",
+    "pillars": "أعمدة التطبيق",
+    "context-isolation": "الفصل التام بين بيئة التطوير والدراسة لتجنب تشتت العقل البشري",
+    "sustainability": "التركيز على بناء عادات مستدامة بدلاً من مجرد إنجاز مهام مؤقتة",
+    "native-engine":"تذكير ذكي عشوائي من قلب نظام التشغيل، ليعيدك إلى مسارك قبل فوات الأوان",
+    "architectureStack":"الترسانة البرمجية",
+    "framework":"اطر العمل",
+    "state-management":"إدارة الحالة",
+    "local-storage":"تخزين محلي",
+    "design-engine":"محرك التصميم",
+    "notifications":"الإشعارات",
+    "runtime-specs":"محددات بيئة التشغيل",
+    "hermes":"محرك الـ JS",
+    "fully-offline":"حالة الاتصال",
+    "privacy-and-security":"الخصوصية الأمان",
+    "developer":"مطور التطبيق",
+    "lead-developer":"عبدالرحمن",
+    "share-app":"مشاركة التطبيق مع الاصدقاء"
+    
   }
 }

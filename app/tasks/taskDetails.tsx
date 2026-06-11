@@ -15,7 +15,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { Task, useAppStore } from "../../store/useAppStore"; // تأكد من مسار الستور
 import { Ionicons } from "@expo/vector-icons";
-import { Calendar, Clock } from "lucide-react-native";
+import { Calendar, Clock, Flame } from "lucide-react-native";
 import DateSheet from "../../components/DateSheet";
 import TimeSheet from "../../components/TimeSheet";
 import { useTranslation } from "react-i18next";
@@ -181,7 +181,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                 (language === "ar" ? " flex-row-reverse" : " flex-row")
               }
             >
-              <Text className="text-2xl mr-2">🔥</Text>
+              <Flame size={40} color="#FF8400" />
               <View className={"flex-1 "}>
                 <Text
                   className={

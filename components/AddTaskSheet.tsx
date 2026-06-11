@@ -29,7 +29,7 @@ export const AddTaskSheet = forwardRef(
       new Date().toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
-        hour12: false,
+        hour12: true,
       }),
     );
     const isStudy = props.mode === "study";
@@ -164,7 +164,7 @@ export const AddTaskSheet = forwardRef(
               </Text>
             </View>
             <View
-              className={`flex-1 pl-2 border-l ${isDarkMode ? (isStudy ? "border-study-dark-primary/30" : "border-gray-200") : isStudy ? "border-study-primary" : "border-coding-primary"}`}
+              className={`flex-1 pl-2 border-l ${isDarkMode ? (isStudy ? "border-study-dark-primary" : "border-coding-dark-primary") : isStudy ? "border-study-primary" : "border-coding-primary"}`}
             >
               <Text
                 className={`text-sm mb-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}

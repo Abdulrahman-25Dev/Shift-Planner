@@ -55,6 +55,10 @@ interface AppState {
     v: { id: string; type: "task" | "habit" } | null,
   ) => void;
 
+  deleteSingleItem: (id: string, type: "task" | "habit") => void;
+  clearAllTasks: (mode: "coding" | "study") => void;
+  clearAllHabits: (mode: "coding" | "study") => void;
+
   // All data (unfiltered)
   allTasks: Task[];
   allHabits: Habit[];
@@ -256,6 +260,43 @@ export const useAppStore = create<AppState>((set, get) => {
         return {
           allTasks: updatedAllTasks,
           tasks: updatedAllTasks.filter((t) => t.mode === state.mode),
+        };
+      }),
+    deleteSingleItem: (id: string, type: "task" | "habit") =>
+      set((state) => {
+        if (type === "task") {
+          const updated = state.allTasks.filter((t) => t.id !== id);
+          storage.set("tasks", JSON.stringify(updated));
+          cancelNotification(id).catch(() => {});
+          return {
+            allTasks: updated,
+            tasks: updated.filter((t) => t.mode === state.mode),
+          };
+        }
+        const updated = state.allHabits.filter((h) => h.id !== id);
+        storage.set("habits", JSON.stringify(updated));
+        cancelNotification(id).catch(() => {});
+        return {
+          allHabits: updated,
+          habits: updated.filter((h) => h.mode === state.mode),
+        };
+      }),
+    clearAllTasks: (mode: "coding" | "study") =>
+      set((state) => {
+        const updated = state.allTasks.filter((t) => t.mode !== mode);
+        storage.set("tasks", JSON.stringify(updated));
+        return {
+          allTasks: updated,
+          tasks: updated.filter((t) => t.mode === state.mode),
+        };
+      }),
+    clearAllHabits: (mode: "coding" | "study") =>
+      set((state) => {
+        const updated = state.allHabits.filter((h) => h.mode !== mode);
+        storage.set("habits", JSON.stringify(updated));
+        return {
+          allHabits: updated,
+          habits: updated.filter((h) => h.mode === state.mode),
         };
       }),
     updateTask: (id: string, updates: Partial<Task>) =>

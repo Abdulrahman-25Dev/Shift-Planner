@@ -6,7 +6,7 @@ import {
   ScrollView,
   Pressable,
 } from "react-native";
-import React from "react";
+import React, { useState, useCallback } from "react";
 import {
   ArrowRight,
   Globe,
@@ -21,6 +21,7 @@ import {
 import { router } from "expo-router";
 import { useAppStore } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function Settings() {
   const {
@@ -35,6 +36,40 @@ export default function Settings() {
   const { t } = useTranslation();
   const isStudy = mode === "study";
   const notifications = notificationsEnabled;
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({ title: "", description: "", onConfirm: () => {} });
+
+  const { clearAllTasks, clearAllHabits } = useAppStore();
+
+  const openClearTasksModal = useCallback(() => {
+    setModalConfig({
+      title: t("settings.deleteAllTasks"),
+      description: t("settings.deleteAllTasksDesc") || "Are you sure you want to delete all tasks? This action cannot be undone.",
+      onConfirm: () => {
+        clearAllTasks(mode);
+        setModalVisible(false);
+        router.replace("/");
+      },
+    });
+    setModalVisible(true);
+  }, [clearAllTasks, mode, t]);
+
+  const openClearHabitsModal = useCallback(() => {
+    setModalConfig({
+      title: t("settings.deleteAllHabits"),
+      description: t("settings.deleteAllHabitsDesc") || "Are you sure you want to delete all habits? This action cannot be undone.",
+      onConfirm: () => {
+        clearAllHabits(mode);
+        setModalVisible(false);
+        router.replace("/");
+      },
+    });
+    setModalVisible(true);
+  }, [clearAllHabits, mode, t]);
 
   const toggleLanguage = () => {
     setLanguage(language === "ar" ? "en" : "ar");
@@ -166,7 +201,7 @@ export default function Settings() {
           <TouchableOpacity
             className={`w-[48%] ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : "bg-white"} rounded-3xl p-4 items-center mb-3`}
             style={shadowStyle}
-            onPress={() => {}}
+            onPress={() => router.push("../AboutApp")}
           >
             <View
               className={`w-12 h-12 rounded-2xl items-center justify-center ${primaryBgLight}`}
@@ -221,7 +256,7 @@ export default function Settings() {
           <View className="bg-white rounded-3xl" style={shadowStyle}>
             <Pressable
               className={`flex-row-reverse items-center justify-between p-4 ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : "bg-white"} rounded-t-3xl`}
-              onPress={() => {}}
+              onPress={openClearTasksModal}
             >
               <View
                 className={
@@ -239,7 +274,7 @@ export default function Settings() {
             </Pressable>
             <Pressable
               className={`flex-row-reverse items-center justify-between p-4 ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : "bg-white"} rounded-b-3xl`}
-              onPress={() => {}}
+              onPress={openClearHabitsModal}
             >
               <View
                 className={
@@ -258,6 +293,15 @@ export default function Settings() {
           </View>
         </View>
       </ScrollView>
+      <ConfirmationModal
+        isVisible={modalVisible}
+        title={modalConfig.title}
+        description={modalConfig.description}
+        onConfirm={() => {
+          modalConfig.onConfirm();
+        }}
+        onCancel={() => setModalVisible(false)}
+      />
     </View>
   );
 }

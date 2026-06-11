@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import { AddTaskSheet } from "../components/AddTaskSheet";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { DetailsSheet } from "./tasks/taskDetails";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function Index() {
   const {
@@ -24,8 +25,7 @@ export default function Index() {
     isDarkMode,
     toggleTaskComplete,
     completeHabit,
-    removeTask,
-    removeHabit,
+    deleteSingleItem,
     language,
   } = useAppStore();
   const isStudy = mode === "study";
@@ -75,6 +75,11 @@ export default function Index() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const detailsSheetRef = useRef<BottomSheetModal>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string;
+    type: "task" | "habit";
+  } | null>(null);
 
   const pendingOpenItem = useAppStore((s) => s.pendingOpenItem);
   const setPendingOpenItem = useAppStore((s) => s.setPendingOpenItem);
@@ -226,7 +231,10 @@ export default function Index() {
           </Pressable>
 
           <TouchableOpacity
-            onPress={() => removeTask(item.id)}
+            onPress={() => {
+              setPendingDelete({ id: item.id, type: "task" });
+              setDeleteModalVisible(true);
+            }}
             className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
           >
             <Trash2 color="white" size={20} />
@@ -260,7 +268,7 @@ export default function Index() {
                 ? "bg-study-dark-bg/60 border-gray-700"
                 : "bg-coding-dark-bg/60 border-gray-700"
               : isStudy
-                ? "bg-violet-50 border-study-primary/20"
+                ? "bg-violet-100 border-study-primary/20"
                 : "bg-green-50 border-coding-primary/20"
         }`}
         style={{
@@ -326,7 +334,7 @@ export default function Index() {
               : isDarkMode
                 ? "bg-transparent"
                 : isStudy
-                  ? "bg-violet-50 border-study-primary/20"
+                  ? "bg-violet-100 border-study-primary/20"
                   : "bg-green-50 border-coding-primary/20"
           }`}
         >
@@ -342,7 +350,10 @@ export default function Index() {
         </Pressable>
 
         <Pressable
-          onPress={() => removeHabit(item.id)}
+          onPress={() => {
+            setPendingDelete({ id: item.id, type: "habit" });
+            setDeleteModalVisible(true);
+          }}
           className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
         >
           <Trash2 color="white" size={20} />
@@ -512,6 +523,22 @@ export default function Index() {
 
       <AddTaskSheet ref={bottomSheetRef} mode={mode} />
       <DetailsSheet ref={detailsSheetRef} itemId={selectedId} />
+      <ConfirmationModal
+        isVisible={deleteModalVisible}
+        title={t("settings.delete" + (pendingDelete?.type === "task" ? "Task" : "Habit") + "Title")}
+        description={t("settings.delete" + (pendingDelete?.type === "task" ? "Task" : "Habit") + "Desc")}
+        onConfirm={() => {
+          if (pendingDelete) {
+            deleteSingleItem(pendingDelete.id, pendingDelete.type);
+            setPendingDelete(null);
+          }
+          setDeleteModalVisible(false);
+        }}
+        onCancel={() => {
+          setPendingDelete(null);
+          setDeleteModalVisible(false);
+        }}
+      />
     </View>
   );
 }

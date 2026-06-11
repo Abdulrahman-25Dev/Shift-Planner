@@ -11,8 +11,16 @@
     "notifications": "Notifications",
     "dataManagement": "Data Management",
     "deleteAllTasks": "Clear All Tasks",
+    "deleteAllTasksDesc": "Are you sure you want to clear all tasks? This action cannot be undone.",
     "deleteAllHabits": "Clear All Habits",
-    "aboutApp": "About App"
+    "deleteAllHabitsDesc": "Are you sure you want to clear all habits? This action cannot be undone.",
+    "aboutApp": "About App",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteTaskTitle": "Delete Task",
+    "deleteTaskDesc": "Are you sure you want to delete this task?",
+    "deleteHabitTitle": "Delete Habit",
+    "deleteHabitDesc": "Are you sure you want to delete this habit?"
   },
   "home": {
     "todayTasks": "Today's Tasks",
@@ -86,5 +94,26 @@
     "add habit": "Add Habit",
     "Confirm date": "Confirm Date",
     "Confirm time": "Confirm Time"
+  },
+  "about":{
+    "versionOfDev":"Version of Dev",
+    "versionOfDevDesc":"Shift Planner was born out of the daily struggle to balance the infinite logic of programming with academic commitment and university workload. It serves as the digital bridge that protects your habits and daily progress from collapsing amidst context switching and exam stress",
+    "pillars": "App Pillars",
+    "context-isolation": "The separation of context between development and study to avoid mental fatigue",
+    "sustainability": "Focus on sustainable habits instead of just completing tasks",
+    "native-engine":"Smart reminder engine from the heart of the operating system, to bring you back to your path before the end of the day",
+    "architectureStack":"Architecture Stack",
+    "framework":"Frameworks",
+    "state-management":"State Management",
+    "local-storage":"Local Storage",
+    "design-engine":"Design Engine",
+    "notifications":"Notifications",
+    "runtime-specs":"Runtime Specifications",
+    "hermes":"JavaScript Engine",
+    "fully-offline":"connection status",
+    "privacy-and-security":"Privacy and Security",
+    "developer":"Developer",
+    "lead-developer":"Abdulrahman",
+    "share-app":"Share App with friends"
   }
 }

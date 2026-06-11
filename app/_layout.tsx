@@ -9,7 +9,12 @@ import { useAppStore } from "@/store/useAppStore";
 import * as Notifications from "expo-notifications";
 export default function RootLayout() {
   const { setColorScheme } = useColorScheme();
-  const { isDarkMode } = useAppStore(); // القيمة من الستور حقك
+  const { isDarkMode, checkAndResetDailyHabits } = useAppStore();
+
+  useEffect(() => {
+    // Check and reset daily habits when app boots
+    checkAndResetDailyHabits();
+  }, [checkAndResetDailyHabits]);
 
   useEffect(() => {
     // هنا السحر: نحدث وضع nativewind كل ما تغير الستور

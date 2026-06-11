@@ -77,6 +77,7 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
           </Text>
 
           <Calendar
+            minDate={formatDateString(new Date())}  // منع اختيار تواريخ في الماضي
             current={formatDateString(selectedDate)}
             onDayPress={(day) => {
               const next = new Date(selectedDate);

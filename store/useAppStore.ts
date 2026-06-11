@@ -74,6 +74,7 @@ interface AppState {
   updateHabit: (id: string, updates: Partial<Habit>) => void;
   completeHabit: (id: string) => void;
   resetHabitStreak: (id: string) => void;
+  checkAndResetDailyHabits: () => void;
 }
 
 const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
@@ -427,5 +428,52 @@ export const useAppStore = create<AppState>((set, get) => {
           habits: updatedAllHabits.filter((h) => h.mode === state.mode),
         };
       }),
+    checkAndResetDailyHabits: () => {
+      const today = new Date().toDateString();
+      const lastChecked = storage.getString("last-checked-date");
+
+      // Only run once per calendar day
+      if (lastChecked === today) {
+        return;
+      }
+
+      set((state) => {
+        // Calculate yesterday for streak maintenance check
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toDateString();
+
+        const updatedAllHabits = state.allHabits.map((habit) => {
+          // Check if habit was completed yesterday (streak maintenance)
+          const wasCompletedYesterday = habit.lastCompletedDate
+            ? new Date(habit.lastCompletedDate).toDateString() === yesterdayStr
+            : false;
+
+          if (wasCompletedYesterday) {
+            // Habit was completed yesterday, maintain streak and clear for new day
+            return {
+              ...habit,
+              lastCompletedDate: undefined,
+            };
+          } else {
+            // Habit was not completed recently, reset streak
+            return {
+              ...habit,
+              streak: 0,
+              lastCompletedDate: undefined,
+            };
+          }
+        });
+
+        // Persist changes
+        storage.set("habits", JSON.stringify(updatedAllHabits));
+        storage.set("last-checked-date", today);
+
+        return {
+          allHabits: updatedAllHabits,
+          habits: updatedAllHabits.filter((h) => h.mode === state.mode),
+        };
+      });
+    },
   };
 });

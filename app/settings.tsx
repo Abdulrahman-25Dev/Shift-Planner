@@ -1,5 +1,12 @@
-import { View, Text, TouchableOpacity, Switch, ScrollView, Pressable } from "react-native";
-import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Switch,
+  ScrollView,
+  Pressable,
+} from "react-native";
+import React from "react";
 import {
   ArrowRight,
   Globe,
@@ -16,11 +23,18 @@ import { useAppStore } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
 
 export default function Settings() {
-  const { mode, toggleDarkMode, isDarkMode, language, setLanguage } =
-    useAppStore();
+  const {
+    mode,
+    toggleDarkMode,
+    isDarkMode,
+    language,
+    setLanguage,
+    notificationsEnabled,
+    setNotificationsEnabled,
+  } = useAppStore();
   const { t } = useTranslation();
   const isStudy = mode === "study";
-  const [notifications, setNotifications] = useState(false);
+  const notifications = notificationsEnabled;
 
   const toggleLanguage = () => {
     setLanguage(language === "ar" ? "en" : "ar");
@@ -182,8 +196,11 @@ export default function Settings() {
               {t("settings.notifications")}
             </Text>
             <Switch
-              value={notifications}
-              onValueChange={setNotifications}
+              value={!!notifications}
+              onValueChange={async (v) => {
+                // toggle via store which will request permission and schedule/cancel
+                await setNotificationsEnabled(v);
+              }}
               trackColor={
                 isDarkMode
                   ? { false: "#4b5563", true: primaryLightColor }
@@ -206,7 +223,12 @@ export default function Settings() {
               className={`flex-row-reverse items-center justify-between p-4 ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : "bg-white"} rounded-t-3xl`}
               onPress={() => {}}
             >
-              <View className={" items-center pl-4 justify-between flex-1" + (language === "ar" ? " flex-row-reverse" : " flex-row")}>
+              <View
+                className={
+                  " items-center pl-4 justify-between flex-1" +
+                  (language === "ar" ? " flex-row-reverse" : " flex-row")
+                }
+              >
                 <View className="w-10 h-10 rounded-2xl items-center justify-center bg-red-50 dark:bg-red-900">
                   <Trash2 size={20} color={trashColor} />
                 </View>
@@ -219,7 +241,12 @@ export default function Settings() {
               className={`flex-row-reverse items-center justify-between p-4 ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : "bg-white"} rounded-b-3xl`}
               onPress={() => {}}
             >
-              <View className={" items-center pl-4 justify-between flex-1" + (language === "ar" ? " flex-row-reverse" : " flex-row")}>
+              <View
+                className={
+                  " items-center pl-4 justify-between flex-1" +
+                  (language === "ar" ? " flex-row-reverse" : " flex-row")
+                }
+              >
                 <View className="w-10 h-10 rounded-2xl items-center justify-center bg-red-50 dark:bg-red-900">
                   <Trash2 size={20} color={trashColor} />
                 </View>

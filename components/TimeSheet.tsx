@@ -34,12 +34,20 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
     const minuteRef = useRef<FlashListRef<string>>(null);
 
     const parseTime = (val?: string) => {
-      const parts = val?.split(":");
-      const hour24 = parseInt(parts?.[0] || "0", 10);
+      const value =
+        val && val.length > 0
+          ? val
+          : new Date().toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            });
+      const parts = value.split(":");
+      const hour24 = parseInt(parts[0] || "0", 10);
       const pm = hour24 >= 12;
       const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
       const h = String(hour12).padStart(2, "0");
-      const m = parts?.[1] && MINUTES.includes(parts[1]) ? parts[1] : "00";
+      const m = parts[1] && MINUTES.includes(parts[1]) ? parts[1] : "00";
       return { h, m, pm };
     };
 
@@ -47,8 +55,6 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
     const [selectedHour, setSelectedHour] = useState(initialParsed.h);
     const [selectedMinute, setSelectedMinute] = useState(initialParsed.m);
     const [isPM, setIsPM] = useState(initialParsed.pm);
-
-    
 
     useEffect(() => {
       const p = parseTime(initialTimeValue);
@@ -59,8 +65,14 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
       setTimeout(() => {
         const hourIndex = HOURS_12.indexOf(p.h);
         const minuteIndex = MINUTES.indexOf(p.m);
-        hourRef.current?.scrollToOffset({ offset: hourIndex * ITEM_HEIGHT, animated: false });
-        minuteRef.current?.scrollToOffset({ offset: minuteIndex * ITEM_HEIGHT, animated: false });
+        hourRef.current?.scrollToOffset({
+          offset: hourIndex * ITEM_HEIGHT,
+          animated: false,
+        });
+        minuteRef.current?.scrollToOffset({
+          offset: minuteIndex * ITEM_HEIGHT,
+          animated: false,
+        });
       }, 50);
     }, [initialTimeValue]);
 
@@ -112,6 +124,18 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
       return String(num === 12 ? 0 : num).padStart(2, "0");
     };
 
+    const getHourItemLayout = (_data: string[] | null, index: number) => ({
+      length: ITEM_HEIGHT,
+      offset: ITEM_HEIGHT * index,
+      index,
+    });
+
+    const getMinuteItemLayout = (_data: string[] | null, index: number) => ({
+      length: ITEM_HEIGHT,
+      offset: ITEM_HEIGHT * index,
+      index,
+    });
+
     const handleConfirm = () => {
       const h24 = to24Hour(selectedHour, isPM);
       onSave(`${h24}:${selectedMinute}`);
@@ -141,8 +165,6 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
     const onMinuteDragEnd = (e: any) =>
       updateMinuteSelection(e.nativeEvent.contentOffset.y);
 
-    
-
     const selectHour = (item: string) => {
       setSelectedHour(item);
       hourRef.current?.scrollToOffset({
@@ -158,8 +180,6 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
         animated: true,
       });
     };
-
-    
 
     const renderHourItem = useCallback(
       ({ item }: { item: string }) => {
@@ -217,8 +237,6 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
       [selectedMinute, primaryColor, placeholderColor],
     );
 
-    
-
     return (
       <BottomSheetModal
         ref={ref}
@@ -270,7 +288,12 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
                   ref={minuteRef}
                   data={MINUTES}
                   renderItem={renderMinuteItem}
+                  getItemLayout={getMinuteItemLayout}
                   {...{ estimatedItemSize: ITEM_HEIGHT }}
+                  initialScrollIndex={Math.max(
+                    0,
+                    MINUTES.indexOf(selectedMinute),
+                  )}
                   snapToInterval={ITEM_HEIGHT}
                   decelerationRate="fast"
                   showsVerticalScrollIndicator={false}
@@ -298,7 +321,12 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
                   ref={hourRef}
                   data={HOURS_12}
                   renderItem={renderHourItem}
+                  getItemLayout={getHourItemLayout}
                   {...{ estimatedItemSize: ITEM_HEIGHT }}
+                  initialScrollIndex={Math.max(
+                    0,
+                    HOURS_12.indexOf(selectedHour),
+                  )}
                   snapToInterval={ITEM_HEIGHT}
                   decelerationRate="fast"
                   showsVerticalScrollIndicator={false}
@@ -325,7 +353,7 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setIsPM(true)}
-                className={`px-5 py-2 rounded-xl mx-1 ${isPM ? (isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : isStudy ? "bg-study-primary" : "bg-coding-primary") : isDarkMode ? "bg-gray-700" : "bg-gray-100"}`}
+                className={`px-5 py-2 rounded-xl mx-1 ${isPM ? (isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary") : isDarkMode ? "bg-gray-700" : "bg-gray-100"}`}
               >
                 <Text
                   className={`font-bold ${isPM ? "text-white" : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
@@ -337,7 +365,12 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
           </View>
 
           <View className="mt-auto">
-            <View className={" justify-between items-center mb-4 px-3 " + (language === "ar" ? " flex-row" : " flex-row-reverse")}>
+            <View
+              className={
+                " justify-between items-center mb-4 px-3 " +
+                (language === "ar" ? " flex-row" : " flex-row-reverse")
+              }
+            >
               <Text
                 className={`${isDarkMode ? "text-gray-300" : "text-gray-500"} font-bold`}
               >

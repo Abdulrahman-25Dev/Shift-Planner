@@ -331,7 +331,10 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
               const isoString = fixedDate.toISOString();
               updateHabit(item.id, { reminderTime: isoString });
             } else {
-              updateTask(item.id, { dueDate: fixedDate.getTime() });
+              updateTask(item.id, {
+                dueDate: fixedDate.getTime(),
+                reminderTime: fixedDate.toISOString(),
+              });
             }
           }}
         />
@@ -342,11 +345,13 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
               ? new Date(taskDueDate).toLocaleTimeString("en-US", {
                   hour: "2-digit",
                   minute: "2-digit",
+                  hour12: false,
                 })
               : taskReminderTime
                 ? new Date(taskReminderTime).toLocaleTimeString("en-US", {
                     hour: "2-digit",
                     minute: "2-digit",
+                    hour12: false,
                   })
                 : ""
           }
@@ -370,7 +375,10 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
               const isoString = nextDate.toISOString();
               updateHabit(item.id, { reminderTime: isoString });
             } else {
-              updateTask(item.id, { dueDate: nextDate.getTime() });
+              updateTask(item.id, {
+                dueDate: nextDate.getTime(),
+                reminderTime: nextDate.toISOString(),
+              });
             }
           }}
         />

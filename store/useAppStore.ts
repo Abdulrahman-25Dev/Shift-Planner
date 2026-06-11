@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import { createMMKV } from "react-native-mmkv";
 import i18n from "../i18next/i18n";
+import {
+  requestPermission,
+  scheduleDailyNotification,
+  cancelNotification,
+} from "../src/services/notificationService";
 
 const storage = createMMKV();
 const storedLanguage = (storage.getString("language") as "ar" | "en") || "ar";
@@ -34,12 +39,21 @@ export interface Habit {
 interface AppState {
   mode: "study" | "coding";
   toggleMode: () => void;
+  setMode: (m: "study" | "coding") => void;
 
   isDarkMode: boolean;
   toggleDarkMode: () => void;
 
   language: "ar" | "en";
   setLanguage: (lang: "ar" | "en") => void;
+
+  notificationsEnabled: boolean;
+  setNotificationsEnabled: (enabled: boolean) => Promise<void>;
+  // Pending item to open when app is launched from a notification
+  pendingOpenItem: { id: string; type: "task" | "habit" } | null;
+  setPendingOpenItem: (
+    v: { id: string; type: "task" | "habit" } | null,
+  ) => void;
 
   // All data (unfiltered)
   allTasks: Task[];
@@ -85,6 +99,8 @@ export const useAppStore = create<AppState>((set, get) => {
   const allHabits = loadFromStorage<Habit>("habits");
   const storedDark = storage.getString("dark_mode");
   const initialDark = storedDark === "true";
+  const storedNotifications = storage.getString("notifications_enabled");
+  const initialNotifications = storedNotifications === "true";
 
   return {
     mode: initialMode,
@@ -96,6 +112,15 @@ export const useAppStore = create<AppState>((set, get) => {
           mode: nextMode,
           tasks: state.allTasks.filter((task) => task.mode === nextMode),
           habits: state.allHabits.filter((habit) => habit.mode === nextMode),
+        };
+      }),
+    setMode: (m) =>
+      set((state) => {
+        storage.set("app_mode", m);
+        return {
+          mode: m,
+          tasks: state.allTasks.filter((task) => task.mode === m),
+          habits: state.allHabits.filter((habit) => habit.mode === m),
         };
       }),
 
@@ -114,6 +139,74 @@ export const useAppStore = create<AppState>((set, get) => {
         i18n.changeLanguage(lang);
         return { language: lang };
       }),
+
+    notificationsEnabled: initialNotifications,
+    pendingOpenItem: null,
+    setPendingOpenItem: (v) => set(() => ({ pendingOpenItem: v })),
+    setNotificationsEnabled: async (enabled: boolean) => {
+      const state = get();
+      storage.set("notifications_enabled", enabled ? "true" : "false");
+
+      if (enabled) {
+        const ok = await requestPermission();
+        if (!ok) {
+          set({ notificationsEnabled: false });
+          return;
+        }
+
+        // Schedule for existing tasks
+        await Promise.all(
+          state.allTasks
+            .filter((t) => t.reminderTime)
+            .map((t) => {
+              try {
+                const d = new Date(t.reminderTime as string);
+                return scheduleDailyNotification(
+                  t.id,
+                  t.title,
+                  t.description || "",
+                  d.getHours(),
+                  d.getMinutes(),
+                  "task",
+                  t.mode || "study",
+                );
+              } catch {
+                return Promise.resolve(null);
+              }
+            }),
+        );
+
+        // Schedule for existing habits
+        await Promise.all(
+          state.allHabits
+            .filter((h) => h.reminderTime)
+            .map((h) => {
+              try {
+                const d = new Date(h.reminderTime as string);
+                return scheduleDailyNotification(
+                  h.id,
+                  h.title,
+                  h.description || "",
+                  d.getHours(),
+                  d.getMinutes(),
+                  "habit",
+                  h.mode || "study",
+                );
+              } catch {
+                return Promise.resolve(null);
+              }
+            }),
+        );
+      } else {
+        // Cancel all scheduled notifications for tasks and habits
+        await Promise.all([
+          ...state.allTasks.map((t) => cancelNotification(t.id)),
+          ...state.allHabits.map((h) => cancelNotification(h.id)),
+        ]);
+      }
+
+      set({ notificationsEnabled: enabled });
+    },
 
     // ============ All Data (unfiltered) ============
     allTasks,
@@ -134,6 +227,22 @@ export const useAppStore = create<AppState>((set, get) => {
         };
         const updatedAllTasks = [...state.allTasks, newTask];
         storage.set("tasks", JSON.stringify(updatedAllTasks));
+
+        // Schedule notification if enabled and reminder provided
+        if (state.notificationsEnabled && newTask.reminderTime) {
+          try {
+            const d = new Date(newTask.reminderTime);
+            scheduleDailyNotification(
+              newTask.id,
+              newTask.title,
+              newTask.description || "",
+              d.getHours(),
+              d.getMinutes(),
+              "task",
+              newTask.mode,
+            );
+          } catch {}
+        }
         return {
           allTasks: updatedAllTasks,
           tasks: updatedAllTasks.filter((t) => t.mode === state.mode),
@@ -154,6 +263,28 @@ export const useAppStore = create<AppState>((set, get) => {
           task.id === id ? { ...task, ...updates } : task,
         );
         storage.set("tasks", JSON.stringify(updatedAllTasks));
+
+        // Manage notification scheduling when reminderTime changed
+        const target = updatedAllTasks.find((t) => t.id === id);
+        if (target) {
+          if (state.notificationsEnabled && target.reminderTime) {
+            try {
+              const d = new Date(target.reminderTime);
+              scheduleDailyNotification(
+                target.id,
+                target.title,
+                target.description || "",
+                d.getHours(),
+                d.getMinutes(),
+                "task",
+                target.mode,
+              );
+            } catch {}
+          } else {
+            // If notifications disabled or reminder removed, cancel any existing
+            cancelNotification(id).catch(() => {});
+          }
+        }
         return {
           allTasks: updatedAllTasks,
           tasks: updatedAllTasks.filter((t) => t.mode === state.mode),
@@ -188,6 +319,21 @@ export const useAppStore = create<AppState>((set, get) => {
         };
         const updatedAllHabits = [...state.allHabits, newHabit];
         storage.set("habits", JSON.stringify(updatedAllHabits));
+
+        if (state.notificationsEnabled && newHabit.reminderTime) {
+          try {
+            const d = new Date(newHabit.reminderTime);
+            scheduleDailyNotification(
+              newHabit.id,
+              newHabit.title,
+              newHabit.description || "",
+              d.getHours(),
+              d.getMinutes(),
+              "habit",
+              newHabit.mode,
+            );
+          } catch {}
+        }
         return {
           allHabits: updatedAllHabits,
           habits: updatedAllHabits.filter((h) => h.mode === state.mode),
@@ -210,6 +356,26 @@ export const useAppStore = create<AppState>((set, get) => {
           habit.id === id ? { ...habit, ...updates } : habit,
         );
         storage.set("habits", JSON.stringify(updatedAllHabits));
+
+        const target = updatedAllHabits.find((h) => h.id === id);
+        if (target) {
+          if (state.notificationsEnabled && target.reminderTime) {
+            try {
+              const d = new Date(target.reminderTime);
+              scheduleDailyNotification(
+                target.id,
+                target.title,
+                target.description || "",
+                d.getHours(),
+                d.getMinutes(),
+                "habit",
+                target.mode,
+              );
+            } catch {}
+          } else {
+            cancelNotification(id).catch(() => {});
+          }
+        }
         return {
           allHabits: updatedAllHabits,
           habits: updatedAllHabits.filter((h) => h.mode === state.mode),

@@ -1,10 +1,5 @@
 import React, { useRef, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Pressable,
-} from "react-native";
+import { View, Text, TouchableOpacity, Pressable } from "react-native";
 import { useAppStore, Task } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
 import {
@@ -80,6 +75,20 @@ export default function Index() {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const detailsSheetRef = useRef<BottomSheetModal>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const pendingOpenItem = useAppStore((s) => s.pendingOpenItem);
+  const setPendingOpenItem = useAppStore((s) => s.setPendingOpenItem);
+
+  // Open details when a notification indicates a pending item
+  React.useEffect(() => {
+    if (pendingOpenItem && pendingOpenItem.id) {
+      setSelectedId(pendingOpenItem.id);
+      // present details sheet
+      setTimeout(() => detailsSheetRef.current?.present(), 200);
+      // clear pending
+      setPendingOpenItem(null);
+    }
+  }, [pendingOpenItem, setPendingOpenItem]);
 
   const openAddTaskSheet = () => {
     bottomSheetRef.current?.snapToIndex(0);
@@ -322,7 +331,7 @@ export default function Index() {
           }`}
         >
           <View
-            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? isStudy ? "bg-study-primary border-study-primary" : "bg-coding-primary border-coding-primary" : isDarkMode ? "border-gray-500" : isStudy ? "border-study-primary/20" : "border-coding-primary/20"}`}
+            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? (isStudy ? "bg-study-primary border-study-primary" : "bg-coding-primary border-coding-primary") : isDarkMode ? "border-gray-500" : isStudy ? "border-study-primary/20" : "border-coding-primary/20"}`}
           >
             {item.completed && (
               <Text className="text-white text-xs font-bold text-center">
@@ -424,7 +433,12 @@ export default function Index() {
       <View className="flex-1 px-4 mt-2">
         <ProgressDashboard />
 
-        <View className={" justify-between items-center mt-6 mb-3 px-1" + (language === "ar" ? " flex-row" : " flex-row-reverse")}>
+        <View
+          className={
+            " justify-between items-center mt-6 mb-3 px-1" +
+            (language === "ar" ? " flex-row" : " flex-row-reverse")
+          }
+        >
           <Text
             className={`text-lg font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
           >
@@ -452,7 +466,12 @@ export default function Index() {
           />
         </View>
 
-        <View className={"justify-between items-center px-1 mb-3" + (language === "ar" ? " flex-row" : " flex-row-reverse")}>
+        <View
+          className={
+            "justify-between items-center px-1 mb-3" +
+            (language === "ar" ? " flex-row" : " flex-row-reverse")
+          }
+        >
           <Text
             className={`text-lg font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
           >

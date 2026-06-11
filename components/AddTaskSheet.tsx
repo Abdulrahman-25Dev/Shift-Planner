@@ -29,7 +29,7 @@ export const AddTaskSheet = forwardRef(
       new Date().toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
-        hour12: true,
+        hour12: false,
       }),
     );
     const isStudy = props.mode === "study";
@@ -76,7 +76,7 @@ export const AddTaskSheet = forwardRef(
           >
             <TouchableOpacity
               onPress={() => setType("task")}
-              className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary" : ""}`}
+              className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? (isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
             >
               <Text
                 className={`font-bold ${type === "task" ? "text-white" : "text-gray-400"}`}
@@ -90,7 +90,7 @@ export const AddTaskSheet = forwardRef(
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setType("habit")}
-              className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-3 ${type === "habit" ? isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary" : ""}`}
+              className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-3 ${type === "habit" ? (isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
             >
               <Text
                 className={`font-bold ${type === "habit" ? "text-white" : "text-gray-400"}`}
@@ -108,13 +108,17 @@ export const AddTaskSheet = forwardRef(
           <Text
             className={`font-bold px-3 mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
           >
-            {type === "task" ? t("details.title task") : t("details.title habit")}
+            {type === "task"
+              ? t("details.title task")
+              : t("details.title habit")}
           </Text>
           <BottomSheetTextInput
             value={title}
             onChangeText={setTitle}
             placeholder={
-              type === "task" ? t("details.task title placeholder") : t("details.habit title placeholder")
+              type === "task"
+                ? t("details.task title placeholder")
+                : t("details.habit title placeholder")
             }
             className={`p-3 rounded-2xl ${isDarkMode ? (isStudy ? "bg-study-dark-primary/30 text-study-dark-primary" : "bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? "bg-violet-50 border-transparent text-study-primary" : "bg-green-100 border-transparent text-coding-primary"} font-bold mb-4`}
             placeholderTextColor="#9CA3AF"
@@ -124,7 +128,9 @@ export const AddTaskSheet = forwardRef(
           <Text
             className={`font-bold px-3 mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
           >
-            {type === "task" ? t("details.description task") : t("details.description habit")}
+            {type === "task"
+              ? t("details.description task")
+              : t("details.description habit")}
           </Text>
           <BottomSheetTextInput
             value={description}
@@ -221,18 +227,18 @@ export const AddTaskSheet = forwardRef(
                   >
                     {t("add.Set date")}
                   </Text>
-                    <Calendar
-                      size={20}
-                      color={
-                        isDarkMode
-                          ? isStudy
-                            ? "#E0E7FF"
-                            : "#D1FAE5"
-                          : isStudy
-                            ? "#1E40AF"
-                            : "#065F46"
-                      }
-                    />
+                  <Calendar
+                    size={20}
+                    color={
+                      isDarkMode
+                        ? isStudy
+                          ? "#E0E7FF"
+                          : "#D1FAE5"
+                        : isStudy
+                          ? "#1E40AF"
+                          : "#065F46"
+                    }
+                  />
                 </Pressable>
                 <Pressable
                   onPress={() => timeSheetRef.current?.present()}
@@ -280,13 +286,26 @@ export const AddTaskSheet = forwardRef(
                     description: description.trim(),
                     completed: false,
                     dueDate: dueDate.getTime(),
+                    reminderTime: dueDate.toISOString(),
                   });
                 } else {
+                  // Build a reminder datetime from selected date + selected time
+                  const reminderDate = new Date(selectedDate);
+                  if (selectedTime) {
+                    const [hourText, minuteText] = selectedTime.split(":");
+                    const hour = parseInt(hourText, 10);
+                    const minute = parseInt(minuteText, 10);
+                    if (!Number.isNaN(hour) && !Number.isNaN(minute)) {
+                      reminderDate.setHours(hour, minute, 0, 0);
+                    }
+                  }
+
                   addHabit({
                     title: title.trim(),
                     description: description.trim(),
                     streak: 0,
                     priority,
+                    reminderTime: reminderDate.toISOString(),
                   });
                 }
                 setTitle("");
@@ -297,6 +316,7 @@ export const AddTaskSheet = forwardRef(
                   new Date().toLocaleTimeString("en-US", {
                     hour: "2-digit",
                     minute: "2-digit",
+                    hour12: false,
                   }),
                 );
                 (ref as React.RefObject<BottomSheet>)?.current?.close();

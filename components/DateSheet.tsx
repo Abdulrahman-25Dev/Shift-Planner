@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import HabitRepeatSelector from "./HabitRepeatSelector";
 
 interface DateSheetProps {
-  onSave: (date: Date) => void;
+  onSave: (date: Date, repeatData?: { type: "daily" | "weekly" | "custom"; days: string[] }) => void;
   initialDate?: Date;
   type: "task" | "habit";
 }
@@ -165,8 +165,7 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
           type={type}
           initialDate={selectedDate}
           onSave={(date, repeatData) => {
-            // هنا لما تضغط تأكيد في شيت التكرار، يستقبل البيانات ويرسلها للشاشة الأساسية
-            onSave(date,); 
+            onSave(date, repeatData);
           }}
         />
       </BottomSheetModal>

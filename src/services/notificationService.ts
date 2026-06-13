@@ -192,6 +192,113 @@ export async function scheduleDailyNotification(
   return identifier ?? null;
 }
 
+export async function scheduleHabitNotification(
+  id: string,
+  title: string,
+  body: string,
+  hour: number,
+  minute: number,
+  repeatType: "daily" | "weekly" | "custom",
+  repeatDays: string[],
+  mode: "study" | "coding" = "study",
+): Promise<void> {
+  await cancelNotification(id);
+
+  const notificationType = "habit";
+
+  if (repeatType === "daily" || !repeatDays || repeatDays.length === 0) {
+    await scheduleDailyNotification(
+      id,
+      title,
+      body,
+      hour,
+      minute,
+      notificationType,
+      mode,
+    );
+    return;
+  }
+
+  const dayMap: Record<string, number> = {
+    sun: 1,
+    mon: 2,
+    tue: 3,
+    wed: 4,
+    thu: 5,
+    fri: 6,
+    sat: 7,
+  };
+
+  await Promise.all(
+    repeatDays.map(async (day) => {
+      const weekday = dayMap[day];
+      if (!weekday) return;
+
+      const dynamicBody = getRandomBody(mode, "habit", title);
+      const notificationTitle = (i18n.language?.startsWith("ar")
+        ? "تذكير بالعادة 🎯"
+        : "Habit Reminder 🎯"
+      );
+
+      const content: Notifications.NotificationContentInput = {
+        title: notificationTitle,
+        body: dynamicBody,
+        sound: "default",
+        badge: 1,
+        data: { itemId: id, notificationType, mode },
+        android: {
+          channelId: ANDROID_CHANNEL_ID,
+          color: "#10b981",
+          priority: Notifications.AndroidNotificationPriority.MAX,
+          vibrate: true,
+        },
+      };
+
+      if (Platform.OS === "android") {
+        const now = new Date();
+        const target = new Date();
+        target.setHours(hour, minute, 0, 0);
+
+        const currentWeekday = now.getDay() + 1; // JS: 0=Sun → 1=Sun
+        let daysUntil = weekday - currentWeekday;
+        if (daysUntil < 0) daysUntil += 7;
+        if (daysUntil === 0 && target <= now) daysUntil = 7;
+
+        target.setDate(target.getDate() + daysUntil);
+
+        const secondsUntil = Math.max(
+          1,
+          Math.floor((target.getTime() - now.getTime()) / 1000),
+        );
+
+        const triggerAndroid: Notifications.NotificationTriggerInput = {
+          seconds: secondsUntil,
+          type: "timeInterval",
+          repeats: false,
+        } as any;
+
+        await Notifications.scheduleNotificationAsync({
+          content,
+          trigger: triggerAndroid,
+        });
+      } else {
+        const triggerIOS: any = {
+          hour,
+          minute,
+          weekday,
+          repeats: true,
+          type: "calendar",
+        };
+
+        await Notifications.scheduleNotificationAsync({
+          content,
+          trigger: triggerIOS,
+        });
+      }
+    }),
+  );
+}
+
 export async function logScheduledNotifications() {
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
   console.log("Scheduled notifications:", scheduled);
@@ -261,5 +368,6 @@ export async function scheduleImmediateTestWithPayload(
 export default {
   requestPermission,
   scheduleDailyNotification,
+  scheduleHabitNotification,
   cancelNotification,
 };

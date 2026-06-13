@@ -325,11 +325,19 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                 ? new Date(taskReminderTime)
                 : new Date()
           }
-          onSave={(date) => {
+          onSave={(date, repeatData) => {
             const fixedDate = new Date(date);
             if (isHabit) {
               const isoString = fixedDate.toISOString();
-              updateHabit(item.id, { reminderTime: isoString });
+              updateHabit(item.id, {
+                reminderTime: isoString,
+                ...(repeatData
+                  ? {
+                      repeatType: repeatData.type,
+                      repeatDays: repeatData.days,
+                    }
+                  : {}),
+              });
             } else {
               updateTask(item.id, {
                 dueDate: fixedDate.getTime(),

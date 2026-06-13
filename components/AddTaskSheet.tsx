@@ -32,6 +32,8 @@ export const AddTaskSheet = forwardRef(
         hour12: true,
       }),
     );
+    const [repeatType, setRepeatType] = useState<"daily" | "weekly" | "custom" | undefined>();
+    const [repeatDays, setRepeatDays] = useState<string[] | undefined>();
     const isStudy = props.mode === "study";
     const { addTask, addHabit, isDarkMode, language } = useAppStore();
 
@@ -306,12 +308,16 @@ export const AddTaskSheet = forwardRef(
                     streak: 0,
                     priority,
                     reminderTime: reminderDate.toISOString(),
+                    repeatType,
+                    repeatDays,
                   });
                 }
                 setTitle("");
                 setDescription("");
                 setPriority("medium");
                 setSelectedDate(new Date());
+                setRepeatType(undefined);
+                setRepeatDays(undefined);
                 setSelectedTime(
                   new Date().toLocaleTimeString("en-US", {
                     hour: "2-digit",
@@ -334,8 +340,12 @@ export const AddTaskSheet = forwardRef(
           ref={dateSheetRef}
           type={type}
           initialDate={selectedDate}
-          onSave={(date) => {
+          onSave={(date, repeatData) => {
             setSelectedDate(new Date(date));
+            if (repeatData) {
+              setRepeatType(repeatData.type);
+              setRepeatDays(repeatData.days);
+            }
           }}
         />
         <TimeSheet

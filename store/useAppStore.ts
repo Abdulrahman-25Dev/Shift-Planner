@@ -4,6 +4,7 @@ import i18n from "../i18next/i18n";
 import {
   requestPermission,
   scheduleDailyNotification,
+  scheduleHabitNotification,
   cancelNotification,
 } from "../src/services/notificationService";
 
@@ -32,6 +33,8 @@ export interface Habit {
   color?: string;
   priority?: "low" | "medium" | "high";
   reminderTime?: string; // ISO string for reminder
+  repeatType?: "daily" | "weekly" | "custom";
+  repeatDays?: string[];
   mode: "study" | "coding"; // Separate habits by mode
 }
 
@@ -89,8 +92,19 @@ const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
     return parsed.map((item: any) => ({
       ...item,
       mode: item.mode || "study",
-      ...(key === "habits" && !item.repeatInterval
-        ? { repeatInterval: "daily" }
+      ...(key === "habits"
+        ? {
+            repeatType: item.repeatType || "daily",
+            repeatDays: item.repeatDays || [
+              "sun",
+              "mon",
+              "tue",
+              "wed",
+              "thu",
+              "fri",
+              "sat",
+            ],
+          }
         : {}),
     }));
   } catch {
@@ -190,13 +204,14 @@ export const useAppStore = create<AppState>((set, get) => {
             .map((h) => {
               try {
                 const d = new Date(h.reminderTime as string);
-                return scheduleDailyNotification(
+                return scheduleHabitNotification(
                   h.id,
                   h.title,
                   h.description || "",
                   d.getHours(),
                   d.getMinutes(),
-                  "habit",
+                  h.repeatType || "daily",
+                  h.repeatDays || [],
                   h.mode || "study",
                 );
               } catch {
@@ -359,6 +374,16 @@ export const useAppStore = create<AppState>((set, get) => {
           createdAt: Date.now(),
           streak: 0,
           priority: habit.priority || "medium",
+          repeatType: habit.repeatType || "daily",
+          repeatDays: habit.repeatDays || [
+            "sun",
+            "mon",
+            "tue",
+            "wed",
+            "thu",
+            "fri",
+            "sat",
+          ],
           mode: state.mode,
         };
         const updatedAllHabits = [...state.allHabits, newHabit];
@@ -367,13 +392,14 @@ export const useAppStore = create<AppState>((set, get) => {
         if (state.notificationsEnabled && newHabit.reminderTime) {
           try {
             const d = new Date(newHabit.reminderTime);
-            scheduleDailyNotification(
+            scheduleHabitNotification(
               newHabit.id,
               newHabit.title,
               newHabit.description || "",
               d.getHours(),
               d.getMinutes(),
-              "habit",
+              newHabit.repeatType || "daily",
+              newHabit.repeatDays || [],
               newHabit.mode,
             );
           } catch {}
@@ -406,13 +432,14 @@ export const useAppStore = create<AppState>((set, get) => {
           if (state.notificationsEnabled && target.reminderTime) {
             try {
               const d = new Date(target.reminderTime);
-              scheduleDailyNotification(
+              scheduleHabitNotification(
                 target.id,
                 target.title,
                 target.description || "",
                 d.getHours(),
                 d.getMinutes(),
-                "habit",
+                target.repeatType || "daily",
+                target.repeatDays || [],
                 target.mode,
               );
             } catch {}

@@ -253,8 +253,71 @@ export default function Index() {
       title: string;
       streak: number;
       priority?: "low" | "medium" | "high";
+      repeatType?: "daily" | "weekly" | "custom";
+      repeatDays?: string[];
+      reminderTime?: string;
     };
   }) => {
+    const getRepeatText = () => {
+      const daysMap: Record<string, string> =
+        language === "ar"
+          ? {
+              sun: "الأحد",
+              mon: "الإثنين",
+              tue: "الثلاثاء",
+              wed: "الأربعاء",
+              thu: "الخميس",
+              fri: "الجمعة",
+              sat: "السبت",
+            }
+          : {
+              sun: "Sunday",
+              mon: "Monday",
+              tue: "Tuesday",
+              wed: "Wednesday",
+              thu: "Thursday",
+              fri: "Friday",
+              sat: "Saturday",
+            };
+
+      if (!item.repeatType) return "";
+
+      if (item.repeatType === "daily") {
+        return language === "ar" ? "يومياً" : "Daily";
+      }
+
+      if (item.repeatType === "weekly" && item.repeatDays?.length) {
+        return item.repeatDays.map((day) => daysMap[day] || day).join(", ");
+      }
+
+      if (item.repeatType === "custom") {
+        return language === "ar" ? "مخصص" : "Custom";
+      }
+
+      return "";
+    };
+
+    const formatReminderTime = () => {
+      if (!item.reminderTime) return null;
+      try {
+        const d = new Date(item.reminderTime);
+        if (isNaN(d.getTime())) return null;
+        const hours = d.getHours();
+        const minutes = d.getMinutes();
+        const h12 = hours % 12 || 12;
+        const mm = String(minutes).padStart(2, "0");
+        if (language === "ar") {
+          return `${h12}:${mm} ${hours >= 12 ? "م" : "ص"}`;
+        }
+        return `${h12}:${mm} ${hours >= 12 ? "PM" : "AM"}`;
+      } catch {
+        return null;
+      }
+    };
+
+    const repeatText = getRepeatText();
+    const reminderTimeText = formatReminderTime();
+
     return (
       <Pressable
         onPressIn={() => handleOpenDetails(item.id)}
@@ -295,10 +358,10 @@ export default function Index() {
             size={20}
             color={
               item.priority === "high"
-                ? "red"
+                ? "#FF0000"
                 : item.priority === "medium"
-                  ? "orange"
-                  : "green"
+                  ? "#FF9500"
+                  : "#4DFF00"
             }
           />
         </View>
@@ -309,19 +372,31 @@ export default function Index() {
           >
             {item.title}
           </Text>
-          <View
-            className={`${isDarkMode ? "bg-transparent border-gray-600" : "self-start rounded-full px-3 py-1 border border-gray-200 bg-gray-50"}`}
-          >
-            <Text
-              className={`${isDarkMode ? "text-[8px] font-black uppercase text-gray-300" : "text-[8px] font-black uppercase text-gray-600"}`}
+          {repeatText ? (
+            <View
+              className={`flex-row items-center flex-wrap gap-x-1 ${language === "ar" ? "flex-row" : ""}`}
             >
-              {item.priority === "high"
-                ? t("priority.high")
-                : item.priority === "medium"
-                  ? t("priority.medium")
-                  : t("priority.low")}
-            </Text>
-          </View>
+              <Text
+                className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
+              >
+                {repeatText}
+              </Text>
+              {reminderTimeText && (
+                <>
+                  <Text
+                    className={`text-[8px] font-black ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}
+                  >
+                    {" | "}
+                  </Text>
+                  <Text
+                    className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
+                  >
+                    {reminderTimeText}
+                  </Text>
+                </>
+              )}
+            </View>
+          ) : null}
         </View>
 
         <Pressable

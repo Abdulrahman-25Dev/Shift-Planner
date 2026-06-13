@@ -177,6 +177,66 @@ const ShowAll = () => {
         new Date().toDateString()
       : false;
 
+    const getRepeatText = () => {
+      const daysMap: Record<string, string> =
+        language === "ar"
+          ? {
+              sun: "الأحد",
+              mon: "الإثنين",
+              tue: "الثلاثاء",
+              wed: "الأربعاء",
+              thu: "الخميس",
+              fri: "الجمعة",
+              sat: "السبت",
+            }
+          : {
+              sun: "Sunday",
+              mon: "Monday",
+              tue: "Tuesday",
+              wed: "Wednesday",
+              thu: "Thursday",
+              fri: "Friday",
+              sat: "Saturday",
+            };
+
+      if (!item.repeatType) return "";
+
+      if (item.repeatType === "daily") {
+        return language === "ar" ? "يومياً" : "Daily";
+      }
+
+      if (item.repeatType === "weekly" && item.repeatDays?.length) {
+        return item.repeatDays.map((day) => daysMap[day] || day).join(", ");
+      }
+
+      if (item.repeatType === "custom") {
+        return language === "ar" ? "مخصص" : "Custom";
+      }
+
+      return "";
+    };
+
+    const formatReminderTime = () => {
+      if (!item.reminderTime) return null;
+      try {
+        const d = new Date(item.reminderTime);
+        if (isNaN(d.getTime())) return null;
+        const hours = d.getHours();
+        const minutes = d.getMinutes();
+        const h12 = hours % 12 || 12;
+        const mm = String(minutes).padStart(2, "0");
+        if (language === "ar") {
+          return `${h12}:${mm} ${hours >= 12 ? "م" : "ص"}`;
+        }
+        return `${h12}:${mm} ${hours >= 12 ? "PM" : "AM"}`;
+      } catch {
+        return null;
+      }
+    };
+
+    const repeatText = getRepeatText();
+    const reminderTimeText = formatReminderTime();
+
     return (
       <Pressable
         onPressIn={() => handleOpenDetails(item.id)}
@@ -218,34 +278,46 @@ const ShowAll = () => {
             size={20}
             color={
               item.priority === "high"
-                ? "red"
+                ? "#FF0000"
                 : item.priority === "medium"
-                  ? "orange"
-                  : "green"
+                  ? "#FFFF00"
+                  : "#4DFF00"
             }
           />
         </View>
 
-        {/* 2. النصوص (العنوان والسلسلة) */}
+        {/* 2. النصوص (العنوان - التكرار - الوقت) */}
         <View className="mx-3 ml-3 flex-1">
           <Text
             className={`${isDarkMode ? "font-semibold text-gray-100" : "font-bold text-gray-800"} text-base ${completed ? "line-through text-gray-400" : ""}`}
           >
             {item.title}
           </Text>
-          <View
-            className={`${isDarkMode ? "bg-transparent border-gray-600" : "self-start rounded-full px-3 py-1 border border-gray-200 bg-gray-50"}`}
-          >
-            <Text
-              className={`${isDarkMode ? "text-[8px] font-black uppercase text-gray-300" : "text-[8px] font-black uppercase text-gray-600"}`}
+          {repeatText ? (
+            <View
+              className={`flex-row items-center flex-wrap gap-x-1 ${language === "ar" ? "flex-row-reverse" : ""}`}
             >
-              {item.priority === "high"
-                ? t("priority.high")
-                : item.priority === "medium"
-                  ? t("priority.medium")
-                  : t("priority.low")}
-            </Text>
-          </View>
+              <Text
+                className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
+              >
+                {repeatText}
+              </Text>
+              {reminderTimeText && (
+                <>
+                  <Text
+                    className={`text-[8px] font-black ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}
+                  >
+                    {" | "}
+                  </Text>
+                  <Text
+                    className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
+                  >
+                    {reminderTimeText}
+                  </Text>
+                </>
+              )}
+            </View>
+          ) : null}
         </View>
         <Pressable
           onPress={() => completeHabit(item.id)}

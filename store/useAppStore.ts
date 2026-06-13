@@ -29,7 +29,6 @@ export interface Habit {
   streak: number;
   lastCompletedDate?: number;
   createdAt: number;
-  frequency?: "daily" | "weekly" | "monthly";
   color?: string;
   priority?: "low" | "medium" | "high";
   reminderTime?: string; // ISO string for reminder
@@ -86,10 +85,13 @@ const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
   if (!data) return [];
   try {
     const parsed = JSON.parse(data) as T[];
-    // Ensure all items have a mode property (for backward compatibility)
-    return parsed.map((item) => ({
+    // Ensure backward compatibility for legacy items
+    return parsed.map((item: any) => ({
       ...item,
-      mode: item.mode || "study", // Default to "study" if mode is missing
+      mode: item.mode || "study",
+      ...(key === "habits" && !item.repeatInterval
+        ? { repeatInterval: "daily" }
+        : {}),
     }));
   } catch {
     return [];

@@ -51,7 +51,8 @@
   "common": {
     "viewAll": "عرض الكل",
     "Tasks": "مهامي",
-    "Habits": "عاداتي"
+    "Habits": "عاداتي",
+    "repeat":"اختيار عدد التكرار"
   },
   "ViewAll": {
     "Tasks": "جميع المهام",
@@ -82,6 +83,13 @@
     "delete": "حذف العنصر",
     "delete confirmation": "هل أنت متأكد من حذف هذا العنصر؟",
     "cancel": "إلغاء"
+  },
+  "repeatInterval": {
+    "label": "التكرار",
+    "daily": "يومياً",
+    "weekly": "أسبوعياً",
+    "monthly": "شهرياً",
+    "display": "🔁 تكرار"
   },
   "add": {
     "task": "مهمة",

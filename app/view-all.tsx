@@ -66,7 +66,7 @@ const ShowAll = () => {
       : t("task.noDate");
 
     const dueTimeLabel = dateSource
-      ? dateSource.toLocaleTimeString("en-US", {
+      ? dateSource.toLocaleTimeString(I18nManager.isRTL ? "ar-SA" : "en-US", {
           hour: "2-digit",
           minute: "2-digit",
           hour12: true,

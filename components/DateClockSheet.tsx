@@ -6,7 +6,7 @@ import {
   BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
 import { Calendar } from "react-native-calendars";
-import { useAppStore } from "../store/useAppStore"; // تأكد من مسار الستور
+import { useAppStore } from "../store/useAppStore";
 
 interface DateClockSheetProps {
   onSave: (date: Date) => void;
@@ -21,8 +21,10 @@ const formatDateString = (date: Date) => {
 };
 
 const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
-  ({ onSave, initialDate }, ref) => {
-    // استخدام التوقيت الحالي إذا لم يوجد تاريخ ابتدائي
+  (
+    { onSave, initialDate },
+    ref,
+  ) => {
     const [tempDate, setTempDate] = useState(initialDate || new Date());
     const [mode, setMode] = useState<"date" | "time">("date");
 
@@ -41,21 +43,16 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
 
     const isStudy = appMode === "study";
 
-    // دالة الحفظ التي تضمن إغلاق الشيت
     const handleConfirm = () => {
       onSave(tempDate);
-      // إغلاق الشيت يدوياً
       (ref as any).current?.dismiss();
     };
-
-    // time picker state removed (not used here)
 
     return (
       <BottomSheetModal
         ref={ref}
         snapPoints={["75%"]}
         backdropComponent={renderBackdrop}
-        // هذا السطر يحل مشكلة التعليق في أندرويد عند فتح الكيبورد أو أدوات النظام
         keyboardBehavior="interactive"
         backgroundStyle={{
           backgroundColor: isDarkMode
@@ -68,7 +65,6 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
         <BottomSheetView
           className={`flex-1 p-5 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : "bg-white"}`}
         >
-          {/* أزرار التبديل العلوية - شكل أحدث */}
           <View
             className={`flex-row-reverse p-1 rounded-2xl mb-6 ${isDarkMode ? "bg-gray-800" : "bg-gray-100"}`}
           >
@@ -139,11 +135,10 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
                 }}
               />
             ) : (
-              <View></View>
+              <View />
             )}
           </View>
 
-          {/* ملخص الاختيار بزر التأكيد */}
           <View className="mt-auto">
             <View className="flex-row justify-between items-center mb-4 px-2">
               <Text className="text-gray-500 font-bold">الموعد:</Text>

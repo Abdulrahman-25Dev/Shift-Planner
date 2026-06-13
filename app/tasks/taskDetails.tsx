@@ -128,7 +128,6 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                     ? t("details.habit title placeholder")
                     : t("details.task title placeholder")
                 }
-                placeholderClassName={`${language === "ar" ? " text-left" : " text-right"}`}
               />
             </View>
           </View>
@@ -317,6 +316,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
           </TouchableOpacity>
         </BottomSheetView>
         <DateSheet
+          type={isHabit ? "habit" : "task"}
           ref={dateSheetRef}
           initialDate={
             taskDueDate !== undefined

@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useState } from "react";
+import React, { forwardRef, useCallback, useState , useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import {
   BottomSheetModal,
@@ -8,10 +8,12 @@ import {
 import { Calendar } from "react-native-calendars";
 import { useAppStore } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
+import HabitRepeatSelector from "./HabitRepeatSelector";
 
 interface DateSheetProps {
   onSave: (date: Date) => void;
   initialDate?: Date;
+  type: "task" | "habit";
 }
 
 const formatDateString = (date: Date) => {
@@ -22,7 +24,7 @@ const formatDateString = (date: Date) => {
 };
 
 const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
-  ({ onSave, initialDate }, ref) => {
+  ({ onSave, initialDate, type }, ref) => {
     const [selectedDate, setSelectedDate] = useState(
       initialDate ? new Date(initialDate) : new Date(),
     );
@@ -43,6 +45,14 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
       ),
       [],
     );
+
+    const repeatSheetRef = useRef<BottomSheetModal>(null);
+
+    const handleOpenRepeatSheet = () => {
+      repeatSheetRef.current?.present();
+    };
+
+    const isHabit = type === "habit";
 
     const { mode: appMode, isDarkMode, language } = useAppStore();
     const { t } = useTranslation();
@@ -121,17 +131,23 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
           />
 
           <View className="mt-auto">
-            <View className={"justify-between items-center mb-4 px-3 " + (language === "ar" ? "flex-row" : "flex-row-reverse")}>
-              <Text className="text-gray-300 font-bold">{t("add.Selected date")} :</Text>
-              <Text
-                className={`font-black ${isStudy ? "text-study-accent" : "text-coding-accent"}`}
-              >
-                {selectedDate.toLocaleDateString("en-US", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </Text>
+            <View
+              className={
+                "justify-between items-center mb-4 " +
+                (language === "ar" ? "flex-row" : "flex-row-reverse")
+              }
+            >
+              {isHabit && (
+                <TouchableOpacity
+                  className={`w-full py-4 rounded-2xl items-center shadow-lg ${isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+                  onPress={() => {
+                    handleOpenRepeatSheet();}}
+                >
+                  <Text className="text-white font-black text-lg">
+                    {t("common.repeat")}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <TouchableOpacity
@@ -144,6 +160,15 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
             </TouchableOpacity>
           </View>
         </BottomSheetView>
+        <HabitRepeatSelector
+          ref={repeatSheetRef} // 👈 مررنا له السلك هنا
+          type={type}
+          initialDate={selectedDate}
+          onSave={(date, repeatData) => {
+            // هنا لما تضغط تأكيد في شيت التكرار، يستقبل البيانات ويرسلها للشاشة الأساسية
+            onSave(date,); 
+          }}
+        />
       </BottomSheetModal>
     );
   },

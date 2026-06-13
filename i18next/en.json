@@ -51,7 +51,8 @@
   "common": {
     "viewAll": "View All",
     "Tasks": "My Tasks",
-    "Habits": "My Habits"
+    "Habits": "My Habits",
+    "repeat":"Repeat selection"
   },
   "ViewAll": {
     "Tasks": "All Tasks",
@@ -82,6 +83,13 @@
     "delete": "Delete",
     "delete confirmation": "Are you sure you want to delete this item?",
     "cancel": "Cancel"
+  },
+  "repeatInterval": {
+    "label": "Repeat",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "display": "🔁 Repeat"
   },
   "add": {
     "task": "Task",

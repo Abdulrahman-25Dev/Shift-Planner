@@ -332,6 +332,7 @@ export const AddTaskSheet = forwardRef(
         </BottomSheetView>
         <DateSheet
           ref={dateSheetRef}
+          type={type}
           initialDate={selectedDate}
           onSave={(date) => {
             setSelectedDate(new Date(date));

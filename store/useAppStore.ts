@@ -12,6 +12,8 @@ const storage = createMMKV();
 const storedLanguage = (storage.getString("language") as "ar" | "en") || "ar";
 
 // ============ Interfaces ============
+export type Priority = 'high' | 'medium' | 'low' | 'none';
+
 export interface Task {
   id: string;
   title: string;
@@ -20,6 +22,7 @@ export interface Task {
   dueDate?: number;
   createdAt: number;
   reminderTime?: string; // ISO string for reminder
+  priority?: Priority;
   mode: "study" | "coding"; // Separate tasks by mode
 }
 
@@ -31,7 +34,7 @@ export interface Habit {
   lastCompletedDate?: number;
   createdAt: number;
   color?: string;
-  priority?: "low" | "medium" | "high";
+  priority?: Priority;
   reminderTime?: string; // ISO string for reminder
   repeatType?: "daily" | "weekly" | "custom";
   repeatDays?: string[];
@@ -245,6 +248,7 @@ export const useAppStore = create<AppState>((set, get) => {
           ...task,
           id: Date.now().toString(),
           createdAt: Date.now(),
+          priority: task.priority || "none",
           mode: state.mode,
         };
         const updatedAllTasks = [...state.allTasks, newTask];
@@ -373,7 +377,7 @@ export const useAppStore = create<AppState>((set, get) => {
           id: Date.now().toString(),
           createdAt: Date.now(),
           streak: 0,
-          priority: habit.priority || "medium",
+          priority: habit.priority || "none",
           repeatType: habit.repeatType || "daily",
           repeatDays: habit.repeatDays || [
             "sun",

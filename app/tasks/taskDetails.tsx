@@ -13,7 +13,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import { Task, useAppStore } from "../../store/useAppStore"; // تأكد من مسار الستور
+import { Task, Priority, useAppStore } from "../../store/useAppStore"; // تأكد من مسار الستور
 import { Ionicons } from "@expo/vector-icons";
 import { Calendar, Clock, Flame } from "lucide-react-native";
 import DateSheet from "../../components/DateSheet";
@@ -180,24 +180,14 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                 (language === "ar" ? " flex-row-reverse" : " flex-row")
               }
             >
-              <Flame size={40} color="#FF8400" />
-              <View className={"flex-1 "}>
+              <Flame size={36} color="#FF8400" />
                 <Text
                   className={
-                    "text-sm font-bold" +
-                    (language === "ar" ? " text-left" : " text-right") +
-                    (isDarkMode
-                      ? isStudy
-                        ? " text-study-dark-primary"
-                        : " text-coding-dark-primary"
-                      : isStudy
-                        ? " text-study-primary"
-                        : " text-coding-primary")
+                    "text-2xl font-bold text-orange-600" 
                   }
-                >
-                  {" "}
-                  {t("details.number of days")} {habit.streak}
+                > {habit.streak}
                 </Text>
+              <View className={"flex-1 "}>
                 <Text
                   className={
                     "text-orange-600 font-bold" +
@@ -214,6 +204,46 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                 >
                   {t("details.Keep it up!")}
                 </Text>
+              </View>
+            </View>
+          )}
+
+          {/* قسم الأولوية (للمهام فقط) */}
+          {!isHabit && (
+            <View className="mb-6">
+              <Text
+                className={`font-bold mb-2 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-secondary" : "text-coding-secondary"} ${language === "ar" ? "text-left" : "text-right"}`}
+              >
+                {t("details.priority")}
+              </Text>
+              <View className="flex-row justify-between">
+                {([
+                  { value: "none", label: t("priority.none") },
+                  { value: "low", label: t("priority.low") },
+                  { value: "medium", label: t("priority.medium") },
+                  { value: "high", label: t("priority.high") },
+                ] as { value: Priority; label: string }[]).map((opt) => {
+                  const isSelected = (item as Task).priority === opt.value;
+                  return (
+                    <TouchableOpacity
+                      key={opt.value}
+                      onPress={() =>
+                        updateTask(item.id, { priority: opt.value })
+                      }
+                      className={`flex-1 px-3 py-2 mx-1 rounded-2xl items-center border ${
+                        isSelected
+                          ? `border-transparent ${isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary"}`
+                          : `${isDarkMode ? (isStudy ? "border-study-dark-primary/30 bg-study-dark-primary/30" : "border-coding-dark-primary/30 bg-coding-dark-primary/30") : isStudy ? "border-study-primary/30 bg-study-accent/30" : "border-coding-primary/30 bg-coding-accent/30"}`
+                      }`}
+                    >
+                      <Text
+                        className={`text-xs font-bold ${isSelected ? "text-white" : isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-600"}`}
+                      >
+                        {opt.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
           )}

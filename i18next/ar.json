@@ -46,7 +46,8 @@
   "priority": {
     "high": "عالية",
     "medium": "متوسطة",
-    "low": "منخفضة"
+    "low": "منخفضة",
+    "none": "بلا "
   },
   "common": {
     "viewAll": "عرض الكل",

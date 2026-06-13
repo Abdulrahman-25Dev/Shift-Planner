@@ -46,7 +46,8 @@
   "priority": {
     "high": "High",
     "medium": "Medium",
-    "low": "Low"
+    "low": "Low",
+    "none": "None"
   },
   "common": {
     "viewAll": "View All",

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { View, Text, TouchableOpacity, Pressable } from "react-native";
-import { useAppStore, Task } from "../store/useAppStore";
+import { useAppStore, Task, Priority } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
 import {
   GraduationCap,
@@ -34,7 +34,8 @@ export default function Index() {
   const priorityRank = (priority: string | undefined) => {
     if (priority === "high") return 3;
     if (priority === "medium") return 2;
-    return 1;
+    if (priority === "low") return 1;
+    return 0;
   };
 
   const today = new Date().toDateString();
@@ -59,18 +60,16 @@ export default function Index() {
       ? t("progress.completeDev")
       : t("progress.devTitle");
 
-  // ترتيب العادات حسب الاكتمال ثم الاولوية (Sort habits by completion then priority)
-  const sortedHabits = [...habitsWithCompleted].sort((a, b) => {
+  // ترتيب حسب الاكتمال ثم الأولوية (Sort by completion then priority)
+  const sortByCompletionAndPriority = <T extends { completed: boolean; priority?: string }>(a: T, b: T) => {
     if (a.completed !== b.completed) {
       return Number(a.completed) - Number(b.completed);
     }
     return priorityRank(b.priority) - priorityRank(a.priority);
-  });
+  };
 
-  // ترتيب المهام حسب الاكتمال (Sort tasks by completion)
-  const sortedTasks = [...tasks].sort(
-    (a, b) => Number(a.completed) - Number(b.completed),
-  );
+  const sortedHabits = [...habitsWithCompleted].sort(sortByCompletionAndPriority);
+  const sortedTasks = [...tasks].sort(sortByCompletionAndPriority);
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const detailsSheetRef = useRef<BottomSheetModal>(null);
@@ -155,15 +154,35 @@ export default function Index() {
                 ? isDarkMode
                   ? "bg-gray-600"
                   : "bg-gray-200"
-                : isDarkMode
-                  ? "bg-gray-600"
-                  : isStudy
-                    ? "bg-study-primary/10"
-                    : "bg-coding-primary/10"
+                : item.priority === "high"
+                  ? "bg-red-500/15"
+                  : item.priority === "medium"
+                    ? "bg-amber-500/15"
+                    : item.priority === "low"
+                      ? "bg-emerald-500/15"
+                      : isDarkMode
+                        ? "bg-gray-600"
+                        : isStudy
+                          ? "bg-study-primary/10"
+                          : "bg-coding-primary/10"
             }`}
           >
             <View
-              className={`w-3 h-3 rounded-full ${item.completed ? "bg-gray-400" : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+              className={`w-4 h-4 rounded-full ${
+                item.completed
+                  ? "bg-gray-400"
+                  : item.priority === "high"
+                    ? "bg-red-500"
+                    : item.priority === "medium"
+                      ? "bg-amber-500"
+                      : item.priority === "low"
+                        ? "bg-emerald-500"
+                        : isDarkMode
+                          ? "bg-slate-500"
+                          : isStudy
+                            ? "bg-study-primary"
+                            : "bg-coding-primary"
+              }`}
             />
           </View>
 
@@ -184,8 +203,7 @@ export default function Index() {
                       : " text-gray-600")
                 }
               >
-                {dueDateLabel}-
-                {dueTimeLabel ? (
+                {dueDateLabel} | {dueTimeLabel ? (
                   <Text
                     className={
                       " text-xs" +
@@ -252,7 +270,7 @@ export default function Index() {
       id: string;
       title: string;
       streak: number;
-      priority?: "low" | "medium" | "high";
+      priority?: Priority;
       repeatType?: "daily" | "weekly" | "custom";
       repeatDays?: string[];
       reminderTime?: string;
@@ -356,13 +374,7 @@ export default function Index() {
         >
           <Flame
             size={20}
-            color={
-              item.priority === "high"
-                ? "#FF0000"
-                : item.priority === "medium"
-                  ? "#FF9500"
-                  : "#4DFF00"
-            }
+            color={isDarkMode ? "#FF8400" : "#EA580C"}
           />
         </View>
 

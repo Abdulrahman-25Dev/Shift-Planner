@@ -17,8 +17,8 @@ export const AddTaskSheet = forwardRef(
     const [type, setType] = useState<"task" | "habit">("task"); // التحكم بنوع الإضافة
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [priority, setPriority] = useState<"low" | "medium" | "high">(
-      "medium",
+    const [priority, setPriority] = useState<"low" | "medium" | "high" | "none">(
+      "none",
     );
     const { t } = useTranslation();
 
@@ -181,7 +181,7 @@ export const AddTaskSheet = forwardRef(
             </View>
           </View>
           {/* 3. اختيار الأولوية */}
-          {type === "habit" && (
+          {(type === "task" || type === "habit") && (
             <View className="mb-3">
               <Text
                 className={`font-bold px-3 mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
@@ -190,6 +190,7 @@ export const AddTaskSheet = forwardRef(
               </Text>
               <View className="flex-row justify-between">
                 {[
+                  { value: "none", label: t("priority.none") },
                   { value: "low", label: t("priority.low") },
                   { value: "medium", label: t("priority.medium") },
                   { value: "high", label: t("priority.high") },
@@ -197,7 +198,7 @@ export const AddTaskSheet = forwardRef(
                   <TouchableOpacity
                     key={item.value}
                     onPress={() =>
-                      setPriority(item.value as "low" | "medium" | "high")
+                      setPriority(item.value as "low" | "medium" | "high" | "none")
                     }
                     className={`flex-1 px-3 py-2 mx-1 rounded-2xl items-center border ${
                       priority === item.value
@@ -206,7 +207,7 @@ export const AddTaskSheet = forwardRef(
                     }`}
                   >
                     <Text
-                      className={`${priority === item.value ? "text-white" : isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-600"}`}
+                      className={`text-xs ${priority === item.value ? "text-white" : isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-600"}`}
                     >
                       {item.label}
                     </Text>
@@ -287,6 +288,7 @@ export const AddTaskSheet = forwardRef(
                     title: title.trim(),
                     description: description.trim(),
                     completed: false,
+                    priority,
                     dueDate: dueDate.getTime(),
                     reminderTime: dueDate.toISOString(),
                   });
@@ -314,7 +316,7 @@ export const AddTaskSheet = forwardRef(
                 }
                 setTitle("");
                 setDescription("");
-                setPriority("medium");
+                setPriority("none");
                 setSelectedDate(new Date());
                 setRepeatType(undefined);
                 setRepeatDays(undefined);

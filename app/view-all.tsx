@@ -3,7 +3,6 @@ import {
   Text,
   Pressable,
   TouchableOpacity,
-  I18nManager,
 } from "react-native";
 import React, { useRef, useState } from "react";
 import { FlashList } from "@shopify/flash-list";
@@ -59,14 +58,14 @@ const ShowAll = () => {
         : null;
 
     const dueDateLabel = dateSource
-      ? dateSource.toLocaleDateString(I18nManager.isRTL ? "ar-SA" : "en-US", {
+      ? dateSource.toLocaleDateString(language === "ar" ? "ar-SA" : "en-US", {
           day: "numeric",
           month: "short",
         })
       : t("task.noDate");
 
     const dueTimeLabel = dateSource
-      ? dateSource.toLocaleTimeString(I18nManager.isRTL ? "ar-SA" : "en-US", {
+      ? dateSource.toLocaleTimeString(language === "ar" ? "ar-SA" : "en-US", {
           hour: "2-digit",
           minute: "2-digit",
           hour12: true,
@@ -103,15 +102,35 @@ const ShowAll = () => {
                 ? isDarkMode
                   ? "bg-gray-600"
                   : "bg-gray-200"
-                : isDarkMode
-                  ? "bg-gray-600"
-                  : isStudy
-                    ? "bg-study-primary/10"
-                    : "bg-coding-primary/10"
+                : item.priority === "high"
+                  ? "bg-red-500/15"
+                  : item.priority === "medium"
+                    ? "bg-amber-500/15"
+                    : item.priority === "low"
+                      ? "bg-emerald-500/15"
+                      : isDarkMode
+                        ? "bg-gray-600"
+                        : isStudy
+                          ? "bg-study-primary/10"
+                          : "bg-coding-primary/10"
             }`}
           >
             <View
-              className={`w-3 h-3 rounded-full ${item.completed ? (isDarkMode ? "bg-gray-400" : "bg-gray-400") : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+              className={`w-4 h-4 rounded-full ${
+                item.completed
+                  ? "bg-gray-400"
+                  : item.priority === "high"
+                    ? "bg-red-500"
+                    : item.priority === "medium"
+                      ? "bg-amber-500"
+                      : item.priority === "low"
+                        ? "bg-emerald-500"
+                        : isDarkMode
+                          ? "bg-slate-500"
+                          : isStudy
+                            ? "bg-study-primary"
+                            : "bg-coding-primary"
+              }`}
             />
           </View>
 
@@ -124,7 +143,7 @@ const ShowAll = () => {
             <Text
               className={`${isDarkMode ? "text-gray-300" : "text-gray-600"} text-xs`}
             >
-              {dueDateLabel} -{" "}
+              {dueDateLabel} | {" "}
               {dueTimeLabel ? (
                 <Text
                   className={`${isDarkMode ? "text-gray-300" : "text-gray-600"} text-xs`}
@@ -276,13 +295,7 @@ const ShowAll = () => {
         >
           <Flame
             size={20}
-            color={
-              item.priority === "high"
-                ? "#FF0000"
-                : item.priority === "medium"
-                  ? "#FFFF00"
-                  : "#4DFF00"
-            }
+            color={isDarkMode ? "#FF8400" : "#EA580C"}
           />
         </View>
 
@@ -295,7 +308,7 @@ const ShowAll = () => {
           </Text>
           {repeatText ? (
             <View
-              className={`flex-row items-center flex-wrap gap-x-1 ${language === "ar" ? "flex-row-reverse" : ""}`}
+              className={`flex-row items-center flex-wrap gap-x-1 ${language === "ar" ? "flex-row" : ""}`}
             >
               <Text
                 className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
@@ -450,12 +463,21 @@ const ShowAll = () => {
 
       {type === "task"
         ? (() => {
-            const filteredTasks = tasks.filter((t) =>
+            const priorityRank = (p: string | undefined) => {
+              if (p === "high") return 3;
+              if (p === "medium") return 2;
+              if (p === "low") return 1;
+              return 0;
+            };
+            const baseTasks = tasks.filter((t) =>
               category === "all"
                 ? true
                 : category === "completed"
                   ? t.completed
                   : !t.completed,
+            );
+            const filteredTasks = baseTasks.sort(
+              (a, b) => priorityRank(b.priority) - priorityRank(a.priority),
             );
             return filteredTasks.length === 0 ? (
               <View className="flex-1 items-center justify-center">
@@ -486,16 +508,26 @@ const ShowAll = () => {
           })()
         : (() => {
             const today = new Date().toDateString();
-            const filteredHabits = habits.filter((h) => {
-              const isCompletedToday =
-                h.lastCompletedDate &&
-                new Date(h.lastCompletedDate).toDateString() === today;
-              return category === "all"
-                ? true
-                : category === "completed"
-                  ? isCompletedToday
-                  : !isCompletedToday;
-            });
+            const priorityRank = (p: string | undefined) => {
+              if (p === "high") return 3;
+              if (p === "medium") return 2;
+              if (p === "low") return 1;
+              return 0;
+            };
+            const filteredHabits = habits
+              .filter((h) => {
+                const isCompletedToday =
+                  h.lastCompletedDate &&
+                  new Date(h.lastCompletedDate).toDateString() === today;
+                return category === "all"
+                  ? true
+                  : category === "completed"
+                    ? isCompletedToday
+                    : !isCompletedToday;
+              })
+              .sort(
+                (a, b) => priorityRank(b.priority) - priorityRank(a.priority),
+              );
             return filteredHabits.length === 0 ? (
               <View className="flex-1 items-center justify-center">
                 <Text className={`${isDarkMode ? "text-gray-200" : "text-gray-600"}`}>{t("ViewAll.No habits")}</Text>

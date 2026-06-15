@@ -186,7 +186,7 @@ export const AddTaskSheet = forwardRef(
               <Text
                 className={`font-bold px-3 mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
               >
-                {t("details.priority")}
+                {t("details.select priority")}
               </Text>
               <View className="flex-row justify-between">
                 {[

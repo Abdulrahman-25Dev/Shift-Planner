@@ -80,7 +80,8 @@
     "description habit placeholder": "Habit Description...",
     "change date": "Change Date",
     "change time": "Change Time",
-    "priority": "Priority",
+    "select priority": "select Priority",
+    "change priority": "Change Priority",
     "delete": "Delete",
     "delete confirmation": "Are you sure you want to delete this item?",
     "cancel": "Cancel"

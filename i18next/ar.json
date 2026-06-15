@@ -80,7 +80,8 @@
     "description task placeholder": "وصف المهمة...",
     "change date": "تغيير التاريخ",
     "change time": "تغيير الوقت",
-    "priority": "الأولوية",
+    "select priority": "اختر الاولوية",
+    "change priority": "تغيير الاولوية",
     "delete": "حذف العنصر",
     "delete confirmation": "هل أنت متأكد من حذف هذا العنصر؟",
     "cancel": "إلغاء"

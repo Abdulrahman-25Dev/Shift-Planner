@@ -126,13 +126,13 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
 
     const getHourItemLayout = (_data: string[] | null, index: number) => ({
       length: ITEM_HEIGHT,
-      offset: ITEM_HEIGHT * index,
+      offset: ITEM_HEIGHT + ITEM_HEIGHT * index,
       index,
     });
 
     const getMinuteItemLayout = (_data: string[] | null, index: number) => ({
       length: ITEM_HEIGHT,
-      offset: ITEM_HEIGHT * index,
+      offset: ITEM_HEIGHT + ITEM_HEIGHT * index,
       index,
     });
 
@@ -243,6 +243,7 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
         snapPoints={["75%"]}
         backdropComponent={renderBackdrop}
         keyboardBehavior="interactive"
+        enableContentPanningGesture={false}
         backgroundStyle={{
           backgroundColor: isDarkMode
             ? isStudy
@@ -283,6 +284,7 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
                   borderRadius: 8,
                 }}
               />
+              
               <View style={{ flex: 1 }}>
                 <FlashList
                   ref={minuteRef}
@@ -290,12 +292,9 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
                   renderItem={renderMinuteItem}
                   getItemLayout={getMinuteItemLayout}
                   {...{ estimatedItemSize: ITEM_HEIGHT }}
-                  initialScrollIndex={Math.max(
-                    0,
-                    MINUTES.indexOf(selectedMinute),
-                  )}
                   snapToInterval={ITEM_HEIGHT}
                   decelerationRate="fast"
+                  nestedScrollEnabled
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{
                     paddingTop: ITEM_HEIGHT,
@@ -323,12 +322,9 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
                   renderItem={renderHourItem}
                   getItemLayout={getHourItemLayout}
                   {...{ estimatedItemSize: ITEM_HEIGHT }}
-                  initialScrollIndex={Math.max(
-                    0,
-                    HOURS_12.indexOf(selectedHour),
-                  )}
                   snapToInterval={ITEM_HEIGHT}
                   decelerationRate="fast"
+                  nestedScrollEnabled
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{
                     paddingTop: ITEM_HEIGHT,

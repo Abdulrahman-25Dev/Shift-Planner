@@ -97,6 +97,7 @@ export async function requestPermission(): Promise<boolean> {
       lightColor: "#10b981",
       vibrationPattern: [0, 250, 250, 250],
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+      bypassDnd: true, // تخطي وضع عدم الإزعاج لضمان الصرامة
     } as Notifications.NotificationChannelInput);
   }
 
@@ -124,8 +125,11 @@ export async function scheduleDailyNotification(
 ): Promise<string | null> {
   await cancelNotification(id);
 
-  // توليد نص إشعار ذكي وعشوائي بناءً على المود والنوع واللغة الحالية الحية للتطبيق
+  // 1. توليد نص إشعار ذكي وعشوائي بناءً على المود والنوع
   const dynamicBody = getRandomBody(mode, notificationType, title);
+
+  // 2. دمج الوصف المكتوب يدوياً (إن وجد) مع الجملة التحفيزية الذكية لكي لا يختفي أي منهما
+  const finalBody = body && body.trim() !== "" ? `${dynamicBody}` : dynamicBody;
 
   const notificationTitle =
     notificationType === "task" 
@@ -134,7 +138,7 @@ export async function scheduleDailyNotification(
 
   const content: Notifications.NotificationContentInput = {
     title: notificationTitle,
-    body: body || dynamicBody, // إذا مررت body مخصص بيستخدمه، وإذا تركته فاضي بياخذ العشوائي الذكي
+    body:  finalBody, // تعديل هنا: ليستخدم النص المدمج والذكي الحين 🎯
     sound: "default",
     badge: 1,
     data: { itemId: id, notificationType, mode },
@@ -163,13 +167,8 @@ export async function scheduleDailyNotification(
       seconds: secondsUntil,
       type: "timeInterval",
       repeats: false,
+      channelId: ANDROID_CHANNEL_ID, // تأكيد ربط القناة الصارمة بالـ trigger
     } as any;
-
-    if (!content.android)
-      content.android = {
-        channelId: ANDROID_CHANNEL_ID,
-        sound: "default",
-      } as any;
 
     const identifier = await Notifications.scheduleNotificationAsync({
       content,
@@ -234,7 +233,10 @@ export async function scheduleHabitNotification(
       const weekday = dayMap[day];
       if (!weekday) return;
 
+      // تعديل هنا أيضاً: دمج الجمل التحفيزية في التكرار المخصص والأسبوعي
       const dynamicBody = getRandomBody(mode, "habit", title);
+      const finalBody = body && body.trim() !== "" ? `${dynamicBody}\n📝 ${body}` : dynamicBody;
+
       const notificationTitle = (i18n.language?.startsWith("ar")
         ? "تذكير بالعادة 🎯"
         : "Habit Reminder 🎯"
@@ -242,7 +244,7 @@ export async function scheduleHabitNotification(
 
       const content: Notifications.NotificationContentInput = {
         title: notificationTitle,
-        body: dynamicBody,
+        body: finalBody, // استخدام النص الذكي المدمج
         sound: "default",
         badge: 1,
         data: { itemId: id, notificationType, mode },
@@ -251,6 +253,8 @@ export async function scheduleHabitNotification(
           color: "#10b981",
           priority: Notifications.AndroidNotificationPriority.MAX,
           vibrate: true,
+          visibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+          lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
         },
       };
 
@@ -275,6 +279,7 @@ export async function scheduleHabitNotification(
           seconds: secondsUntil,
           type: "timeInterval",
           repeats: false,
+          channelId: ANDROID_CHANNEL_ID,
         } as any;
 
         await Notifications.scheduleNotificationAsync({
@@ -309,12 +314,12 @@ export async function scheduleImmediateTest() {
   try {
     const triggerTest: any =
       Platform.OS === "android"
-        ? { seconds: 5, type: "timeInterval", repeats: false }
+        ? { seconds: 5, type: "timeInterval", repeats: false, channelId: ANDROID_CHANNEL_ID }
         : { seconds: 5 };
     const id = await Notifications.scheduleNotificationAsync({
       content: {
         title: "Test",
-        body: "Notification test",
+        body: "Notification test 🔥",
         sound: "default",
         ...(Platform.OS === "android"
           ? { android: { channelId: ANDROID_CHANNEL_ID, sound: "default" } }
@@ -338,7 +343,7 @@ export async function scheduleImmediateTestWithPayload(
   try {
     const triggerTest: any =
       Platform.OS === "android"
-        ? { seconds: 5, type: "timeInterval", repeats: false }
+        ? { seconds: 5, type: "timeInterval", repeats: false, channelId: ANDROID_CHANNEL_ID }
         : { seconds: 5 };
     const id = await Notifications.scheduleNotificationAsync({
       content: {

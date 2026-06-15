@@ -214,7 +214,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
               <Text
                 className={`font-bold mb-2 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-secondary" : "text-coding-secondary"} ${language === "ar" ? "text-left" : "text-right"}`}
               >
-                {t("details.priority")}
+                {t("details.change priority")}
               </Text>
               <View className="flex-row justify-between">
                 {([

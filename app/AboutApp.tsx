@@ -112,9 +112,6 @@ export default function AboutApp() {
 
   const mutedText = isDarkMode ? "text-slate-500" : "text-gray-400";
 
-  const badgeBg = isDarkMode
-    ? isStudy ? "bg-study-dark-primary/20" : "bg-coding-dark-primary/20"
-    : isStudy ? "bg-study-primary/10" : "bg-coding-primary/10";
 
   const completedTasks = tasks.filter((t) => t.completed).length;
   const totalTasks = tasks.length;
@@ -122,13 +119,13 @@ export default function AboutApp() {
   const stabilityPct =
     totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  const ringTrack = isStudy ? "#1e1b4b" : "#1e3a2f";
+  const ringTrack = isDarkMode ?isStudy ? "#1e1b4b" : "#1e3a2f" : isStudy ? "#e0e7ff" : "#d1fae5";
   const ringStabilityColor = isStudy ? "#818cf8" : "#10b981";
   const ringTasksColor = isStudy ? "#3b82f6" : "#0ea5e9";
   const ringHabitsColor = isStudy ? "#14b8a6" : "#8b5cf6";
   const stabilityLabel = isStudy ? t("about.stabilityStudy") : t("about.stability");
 
-  const BackChevron = language === "ar" ? ChevronRight : ChevronLeft;
+  const BackChevron = language === "ar" ? ChevronRight : ChevronRight;
 
   return (
     <View className={`flex-1 ${pageBg}`}>
@@ -205,37 +202,43 @@ export default function AboutApp() {
         <Text
           className={`text-lg font-bold ${accentText} mb-4 ${language === "ar" ? "text-left" : "text-right"}`}
         >
-          {t("about.changelog")}
+         {t("about.tools used")}
         </Text>
         <View className={`${cardBg} ${cardBorder} rounded-2xl p-5 mb-6`}>
-          <Text
-            className={`${accentText} font-semibold text-sm mb-4 ${language === "ar" ? "text-left" : "text-right"}`}
-          >
-            {t("about.currentVersionUpdates")}
-          </Text>
           <View className="gap-y-4">
             <View className={`flex-row ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
-              <View className="w-1.5 h-1.5 rounded-full mt-2.5 mx-2" style={{ backgroundColor: accentHex }} />
               <Text
                 className={`flex-1 ${bodyText} text-sm leading-6 ${language === "ar" ? "text-left" : "text-right"}`}
               >
-                {t("about.changelogItem1")}
+                {t("about.reactNative")}
               </Text>
             </View>
             <View className={`flex-row ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
-              <View className="w-1.5 h-1.5 rounded-full mt-2.5 mx-2" style={{ backgroundColor: accentHex }} />
               <Text
                 className={`flex-1 ${bodyText} text-sm leading-6 ${language === "ar" ? "text-left" : "text-right"}`}
               >
-                {t("about.changelogItem2")}
+                {t("about.zustand")}
               </Text>
             </View>
             <View className={`flex-row ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
-              <View className="w-1.5 h-1.5 rounded-full mt-2.5 mx-2" style={{ backgroundColor: accentHex }} />
               <Text
                 className={`flex-1 ${bodyText} text-sm leading-6 ${language === "ar" ? "text-left" : "text-right"}`}
               >
-                {t("about.changelogItem3")}
+                {t("about.tailwindcss")}
+              </Text>
+            </View>
+            <View className={`flex-row ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
+              <Text
+                className={`flex-1 ${bodyText} text-sm leading-6 ${language === "ar" ? "text-left" : "text-right"}`}
+              >
+                {t("about.mmkv")}
+              </Text>
+            </View>
+            <View className={`flex-row ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
+              <Text
+                className={`flex-1 ${bodyText} text-sm leading-6 ${language === "ar" ? "text-left" : "text-right"}`}
+              >
+                {t("about.i18next")}
               </Text>
             </View>
           </View>

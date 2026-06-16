@@ -1,10 +1,9 @@
-import React, { forwardRef, useMemo, useCallback } from "react";
+import React, { forwardRef, useMemo, useCallback, useState } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   Pressable,
 } from "react-native";
 import {
@@ -18,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Calendar, Clock, Flame } from "lucide-react-native";
 import DateSheet from "../../components/DateSheet";
 import TimeSheet from "../../components/TimeSheet";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import { useTranslation } from "react-i18next";
 
 interface DetailsSheetProps {
@@ -55,6 +55,19 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
 
     const dateSheetRef = React.useRef<BottomSheetModal>(null);
     const timeSheetRef = React.useRef<BottomSheetModal>(null);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+    const handleDelete = useCallback(() => {
+      if (!item) return;
+      if (isHabit) {
+        removeHabit(item.id);
+      } else {
+        removeTask(item.id);
+      }
+      setDeleteModalVisible(false);
+      // @ts-ignore
+      ref.current?.dismiss();
+    }, [isHabit, item, removeHabit, removeTask, ref]);
 
     // 2. إعدادات الشيت (Snap Points)
     const snapPoints = useMemo(() => ["85%"], []);
@@ -300,37 +313,10 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
 
           {/* زر الحذف في الأسفل */}
           <TouchableOpacity
-            onPress={() => {
-              Alert.alert(
-                t("details.delete"),
-                t("details.delete confirmation"),
-                [
-                  { text: t("details.cancel"), style: "cancel" },
-                  {
-                    text: t("details.delete"),
-                    style: "destructive",
-                    onPress: () => {
-                      if (isHabit) {
-                        removeHabit(item.id);
-                      } else {
-                        removeTask(item.id);
-                      }
-                      // @ts-ignore
-                      ref.current?.dismiss();
-                    },
-                  },
-                ],
-              );
-            }}
+            onPress={() => setDeleteModalVisible(true)}
             className={
               "mt-auto p-4 rounded-2xl items-center justify-center " +
-              (isDarkMode
-                ? isStudy
-                  ? " bg-red-600/30"
-                  : " bg-red-600/30"
-                : isStudy
-                  ? " bg-red-100"
-                  : " bg-red-100") +
+              (isDarkMode ? " bg-red-600/30" : " bg-red-100") +
               (language === "ar" ? " flex-row" : " flex-row-reverse")
             }
           >
@@ -345,6 +331,13 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
             <Ionicons name="trash-outline" size={20} color="#EF4444" />
           </TouchableOpacity>
         </BottomSheetView>
+        <ConfirmationModal
+          isVisible={deleteModalVisible}
+          title={t("details.delete")}
+          description={t("details.delete confirmation")}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteModalVisible(false)}
+        />
         <DateSheet
           type={isHabit ? "habit" : "task"}
           ref={dateSheetRef}

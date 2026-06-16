@@ -124,6 +124,23 @@
     "privacy-and-security":"Privacy and Security",
     "developer":"Developer",
     "lead-developer":"Abdulrahman",
-    "share-app":"Share App with friends"
+    "share-app":"Share App with friends",
+    "appTitle": "About Application",
+    "appVersion": "Version 1.0.0",
+    "stats": "System Statistics",
+    "activeHabits": "Active Habits",
+    "completedTasks": "Completed Tasks",
+    "stability": "System Stability",
+    "stabilityStudy": "Academic Progress",
+    "changelog": "Changelog",
+    "currentVersionUpdates": "Current Version Updates",
+    "changelogItem1": "🕒 Upgraded Time Picker to be standalone and smooth to the second.",
+    "changelogItem2": "🎯 Added smart priority system with dynamically colored cards.",
+    "changelogItem3": "🔒 Enhanced strict notification scheduling to work 100% offline.",
+    "supportFeedback": "Support & Feedback",
+    "reportBug": "Report a Bug",
+    "suggestFeature": "Suggest a Feature",
+    "developedBy": "Developed with ❤️ by Abdulrahman",
+    "copyright": "All rights reserved © 2026"
   }
 }

@@ -15,6 +15,7 @@ import {
   Flame,
 } from "lucide-react-native";
 import { AddTaskSheet } from "../components/AddTaskSheet";
+import ConfirmationModal from "../components/ConfirmationModal";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { DetailsSheet } from "./tasks/taskDetails";
@@ -23,8 +24,7 @@ const ShowAll = () => {
   const { t } = useTranslation();
   const {
     tasks,
-    removeTask,
-    removeHabit,
+    deleteSingleItem,
     habits,
     toggleTaskComplete,
     mode,
@@ -36,6 +36,11 @@ const ShowAll = () => {
   const detailsSheetRef = useRef<BottomSheetModal>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [category, setCategory] = useState<string>("all");
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string;
+    type: "task" | "habit";
+  } | null>(null);
 
   const handleOpenDetails = (id: string) => {
     setSelectedId(id);
@@ -180,7 +185,10 @@ const ShowAll = () => {
 
           {/* زر الحذف */}
           <TouchableOpacity
-            onPress={() => removeTask(item.id)}
+            onPress={() => {
+              setPendingDelete({ id: item.id, type: "task" });
+              setDeleteModalVisible(true);
+            }}
             className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
           >
             <Trash2 color="white" size={20} />
@@ -357,7 +365,10 @@ const ShowAll = () => {
 
         {/* زر الحذف */}
         <Pressable
-          onPress={() => removeHabit(item.id)}
+          onPress={() => {
+            setPendingDelete({ id: item.id, type: "habit" });
+            setDeleteModalVisible(true);
+          }}
           className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
         >
           <Trash2 color="white" size={20} />
@@ -557,6 +568,22 @@ const ShowAll = () => {
           })()}
       <AddTaskSheet ref={bottomSheetRef} />
       <DetailsSheet ref={detailsSheetRef} itemId={selectedId} />
+      <ConfirmationModal
+        isVisible={deleteModalVisible}
+        title={t("settings.delete" + (pendingDelete?.type === "task" ? "TaskTitle" : "HabitTitle"))}
+        description={t("settings.delete" + (pendingDelete?.type === "task" ? "TaskDesc" : "HabitDesc"))}
+        onConfirm={() => {
+          if (pendingDelete) {
+            deleteSingleItem(pendingDelete.id, pendingDelete.type);
+            setPendingDelete(null);
+          }
+          setDeleteModalVisible(false);
+        }}
+        onCancel={() => {
+          setPendingDelete(null);
+          setDeleteModalVisible(false);
+        }}
+      />
     </View>
   );
 };

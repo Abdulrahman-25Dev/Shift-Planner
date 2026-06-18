@@ -3,7 +3,6 @@ import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native"
 import { router } from "expo-router";
 import Svg, { Circle } from "react-native-svg";
 import {
-  ChevronLeft,
   ChevronRight,
   Code2,
   GraduationCap,
@@ -253,7 +252,7 @@ export default function AboutApp() {
           <TouchableOpacity
             onPress={() =>
               Linking.openURL(
-                "mailto:abdrhman714714@gmail.com?subject=DevLearn Bug Report",
+                "mailto:dooomww@gmail.com?subject=DevLearn Bug Report",
               )
             }
             activeOpacity={0.8}
@@ -275,7 +274,7 @@ export default function AboutApp() {
           <TouchableOpacity
             onPress={() =>
               Linking.openURL(
-                "mailto:abdrhman714714@gmail.com?subject=DevLearn Feature Suggestion",
+                "mailto:dooomww@gmail.com?subject=DevLearn Feature Suggestion",
               )
             }
             activeOpacity={0.8}

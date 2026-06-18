@@ -510,7 +510,8 @@ export default function Index() {
           </Text>
         </View>
 
-        <View>
+        <View className="flex-row items-center gap-2">
+
           <Pressable
             onPress={() => router.push("./settings")}
             className="bg-white/20 p-3 rounded-2xl"

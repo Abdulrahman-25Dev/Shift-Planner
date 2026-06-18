@@ -278,6 +278,7 @@ export const useAppStore = create<AppState>((set, get) => {
       set((state) => {
         const updatedAllTasks = state.allTasks.filter((task) => task.id !== id);
         storage.set("tasks", JSON.stringify(updatedAllTasks));
+        cancelNotification(id).catch(() => {});
         return {
           allTasks: updatedAllTasks,
           tasks: updatedAllTasks.filter((t) => t.mode === state.mode),
@@ -359,6 +360,12 @@ export const useAppStore = create<AppState>((set, get) => {
           task.id === id ? { ...task, completed: !task.completed } : task,
         );
         storage.set("tasks", JSON.stringify(updatedAllTasks));
+
+        const target = updatedAllTasks.find((t) => t.id === id);
+        if (target?.completed) {
+          cancelNotification(id).catch(() => {});
+        }
+
         return {
           allTasks: updatedAllTasks,
           tasks: updatedAllTasks.filter((t) => t.mode === state.mode),
@@ -419,6 +426,7 @@ export const useAppStore = create<AppState>((set, get) => {
           (habit) => habit.id !== id,
         );
         storage.set("habits", JSON.stringify(updatedAllHabits));
+        cancelNotification(id).catch(() => {});
         return {
           allHabits: updatedAllHabits,
           habits: updatedAllHabits.filter((h) => h.mode === state.mode),
@@ -458,6 +466,7 @@ export const useAppStore = create<AppState>((set, get) => {
       }),
     completeHabit: (id: string) =>
       set((state) => {
+        let wasCompleted = false;
         const updatedAllHabits = state.allHabits.map((habit) => {
           if (habit.id === id) {
             const today = new Date().toDateString();
@@ -474,6 +483,7 @@ export const useAppStore = create<AppState>((set, get) => {
               };
             } else {
               // Complete it
+              wasCompleted = true;
               return {
                 ...habit,
                 streak: habit.streak + 1,
@@ -484,6 +494,9 @@ export const useAppStore = create<AppState>((set, get) => {
           return habit;
         });
         storage.set("habits", JSON.stringify(updatedAllHabits));
+        if (wasCompleted) {
+          cancelNotification(id).catch(() => {});
+        }
         return {
           allHabits: updatedAllHabits,
           habits: updatedAllHabits.filter((h) => h.mode === state.mode),

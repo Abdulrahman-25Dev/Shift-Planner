@@ -180,7 +180,7 @@ export async function scheduleDailyNotification(
   const triggerIOS: any = {
     hour,
     minute,
-    repeats: true,
+    repeats: false,
     type: "calendar",
   };
 

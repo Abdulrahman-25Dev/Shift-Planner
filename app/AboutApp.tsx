@@ -252,7 +252,7 @@ export default function AboutApp() {
           <TouchableOpacity
             onPress={() =>
               Linking.openURL(
-                "mailto:dooomww@gmail.com?subject=DevLearn Bug Report",
+                "mailto:abdulrahman.dev25@gmail.com?subject=DevLearn Bug Report",
               )
             }
             activeOpacity={0.8}
@@ -274,7 +274,7 @@ export default function AboutApp() {
           <TouchableOpacity
             onPress={() =>
               Linking.openURL(
-                "mailto:dooomww@gmail.com?subject=DevLearn Feature Suggestion",
+                "mailto:abdulrahman.dev25@gmail.com?subject=DevLearn Feature Suggestion",
               )
             }
             activeOpacity={0.8}

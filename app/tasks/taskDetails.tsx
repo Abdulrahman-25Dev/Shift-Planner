@@ -221,45 +221,45 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
             </View>
           )}
 
-          {/* قسم الأولوية (للمهام فقط) */}
-          {!isHabit && (
-            <View className="mb-6">
-              <Text
-                className={`font-bold mb-2 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-secondary" : "text-coding-secondary"} ${language === "ar" ? "text-left" : "text-right"}`}
-              >
-                {t("details.change priority")}
-              </Text>
-              <View className="flex-row justify-between">
-                {([
-                  { value: "none", label: t("priority.none") },
-                  { value: "low", label: t("priority.low") },
-                  { value: "medium", label: t("priority.medium") },
-                  { value: "high", label: t("priority.high") },
-                ] as { value: Priority; label: string }[]).map((opt) => {
-                  const isSelected = (item as Task).priority === opt.value;
-                  return (
-                    <TouchableOpacity
-                      key={opt.value}
-                      onPress={() =>
-                        updateTask(item.id, { priority: opt.value })
-                      }
-                      className={`flex-1 px-3 py-2 mx-1 rounded-2xl items-center border ${
-                        isSelected
-                          ? `border-transparent ${isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary"}`
-                          : `${isDarkMode ? (isStudy ? "border-study-dark-primary/30 bg-study-dark-primary/30" : "border-coding-dark-primary/30 bg-coding-dark-primary/30") : isStudy ? "border-study-primary/30 bg-study-accent/30" : "border-coding-primary/30 bg-coding-accent/30"}`
-                      }`}
+          {/* قسم الأولوية */}
+          <View className="mb-6">
+            <Text
+              className={`font-bold mb-2 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-secondary" : "text-coding-secondary"} ${language === "ar" ? "text-left" : "text-right"}`}
+            >
+              {t("details.change priority")}
+            </Text>
+            <View className="flex-row justify-between">
+              {([
+                { value: "none", label: t("priority.none") },
+                { value: "low", label: t("priority.low") },
+                { value: "medium", label: t("priority.medium") },
+                { value: "high", label: t("priority.high") },
+              ] as { value: Priority; label: string }[]).map((opt) => {
+                const isSelected = item.priority === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    onPress={() =>
+                      isHabit
+                        ? updateHabit(item.id, { priority: opt.value })
+                        : updateTask(item.id, { priority: opt.value })
+                    }
+                    className={`flex-1 px-3 py-2 mx-1 rounded-2xl items-center border ${
+                      isSelected
+                        ? `border-transparent ${isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary"}`
+                        : `${isDarkMode ? (isStudy ? "border-study-dark-primary/30 bg-study-dark-primary/30" : "border-coding-dark-primary/30 bg-coding-dark-primary/30") : isStudy ? "border-study-primary/30 bg-study-accent/30" : "border-coding-primary/30 bg-coding-accent/30"}`
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-bold ${isSelected ? "text-white" : isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-600"}`}
                     >
-                      <Text
-                        className={`text-xs font-bold ${isSelected ? "text-white" : isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-600"}`}
-                      >
-                        {opt.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-          )}
+          </View>
 
           {/* قسم تغيير وقت التذكير (مش مفعل حالياً) */}
           <View className="mb-6">

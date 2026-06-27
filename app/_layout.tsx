@@ -15,7 +15,7 @@ import { storage, STORAGE_KEYS } from "@/src/services/storage";
 
 export default function RootLayout() {
   const { setColorScheme } = useColorScheme();
-  const { isDarkMode, checkAndResetDailyHabits } = useAppStore();
+  const { isDarkMode, checkAndResetDailyHabits, cancelPastDueNotifications } = useAppStore();
   const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
@@ -26,6 +26,7 @@ export default function RootLayout() {
         
         // تشغيل الـ Habits والـ Theme
         checkAndResetDailyHabits();
+        cancelPastDueNotifications();
         
         // الخدعة: نخفي سبلاش النظام فوراً ليظهر السبلاش المخصص حقك
         await SplashScreen.hideAsync();
@@ -35,7 +36,7 @@ export default function RootLayout() {
     }
     
     handleSplashAndReady();
-  }, [checkAndResetDailyHabits]);
+  }, [checkAndResetDailyHabits, cancelPastDueNotifications]);
 
   // ───── Onboarding redirect ─────
   useEffect(() => {

@@ -374,7 +374,12 @@ export default function Index() {
         >
           <Flame
             size={20}
-            color={isDarkMode ? "#FF8400" : "#EA580C"}
+            color={
+              item.priority === "high" ? "#EF4444" :
+              item.priority === "medium" ? "#F97316" :
+              item.priority === "low" ? "#10B981" :
+              "#000000"
+            }
           />
         </View>
 

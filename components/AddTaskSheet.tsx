@@ -169,7 +169,7 @@ export const AddTaskSheet = forwardRef(
               className={`flex-1 pl-2 border-l ${isDarkMode ? (isStudy ? "border-study-dark-primary" : "border-coding-dark-primary") : isStudy ? "border-study-primary" : "border-coding-primary"}`}
             >
               <Text
-                className={`text-sm mb-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
+                className={`text-sm mb-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"} ${language === "ar" ? "text-left" : "text-right"}`}
               >
                 {t("add.Selected time")}
               </Text>

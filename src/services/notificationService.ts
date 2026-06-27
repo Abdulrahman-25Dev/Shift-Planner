@@ -122,8 +122,13 @@ export async function scheduleDailyNotification(
   minute: number,
   notificationType: "task" | "habit" = "task",
   mode: "study" | "coding" = "study",
+  targetDate?: Date | null,
 ): Promise<string | null> {
   await cancelNotification(id);
+
+  if (targetDate && targetDate <= new Date()) {
+    return null;
+  }
 
   // 1. توليد نص إشعار ذكي وعشوائي بناءً على المود والنوع
   const dynamicBody = getRandomBody(mode, notificationType, title);
@@ -138,7 +143,7 @@ export async function scheduleDailyNotification(
 
   const content: Notifications.NotificationContentInput = {
     title: notificationTitle,
-    body:  finalBody, // تعديل هنا: ليستخدم النص المدمج والذكي الحين 🎯
+    body:  finalBody,
     sound: "default",
     badge: 1,
     data: { itemId: id, notificationType, mode },
@@ -155,24 +160,44 @@ export async function scheduleDailyNotification(
 
   if (Platform.OS === "android") {
     const now = new Date();
-    const next = new Date();
-    next.setHours(hour, minute, 0, 0);
-    if (next <= now) next.setDate(next.getDate() + 1);
-    const secondsUntil = Math.max(
-      1,
-      Math.floor((next.getTime() - now.getTime()) / 1000),
-    );
+
+    let secondsUntil: number;
+    if (targetDate) {
+      secondsUntil = Math.max(1, Math.floor((targetDate.getTime() - now.getTime()) / 1000));
+    } else {
+      const next = new Date();
+      next.setHours(hour, minute, 0, 0);
+      if (next <= now) next.setDate(next.getDate() + 1);
+      secondsUntil = Math.max(1, Math.floor((next.getTime() - now.getTime()) / 1000));
+    }
 
     const triggerAndroid: Notifications.NotificationTriggerInput = {
       seconds: secondsUntil,
       type: "timeInterval",
       repeats: false,
-      channelId: ANDROID_CHANNEL_ID, // تأكيد ربط القناة الصارمة بالـ trigger
+      channelId: ANDROID_CHANNEL_ID,
     } as any;
 
     const identifier = await Notifications.scheduleNotificationAsync({
       content,
       trigger: triggerAndroid,
+    });
+    return identifier ?? null;
+  }
+
+  if (targetDate) {
+    const triggerIOS: any = {
+      year: targetDate.getFullYear(),
+      month: targetDate.getMonth() + 1,
+      day: targetDate.getDate(),
+      hour: targetDate.getHours(),
+      minute: targetDate.getMinutes(),
+      repeats: false,
+      type: "calendar",
+    };
+    const identifier = await Notifications.scheduleNotificationAsync({
+      content,
+      trigger: triggerIOS,
     });
     return identifier ?? null;
   }

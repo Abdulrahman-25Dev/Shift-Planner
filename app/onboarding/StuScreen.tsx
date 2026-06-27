@@ -16,8 +16,8 @@ const StuScreen = () => {
       <View className="flex-1 justify-center items-center px-8">
         {/* App Icon , switch on study mode */}
         <Image
-          source={require("../../assets/images/StuScreenIcon.png")}
-          className="w-48 h-48 rounded-[46px]"
+          source={require("../../assets/images/Disk.png")}
+          className="w-56 h-56 rounded-[30px]"
           resizeMode="contain"
          />
 

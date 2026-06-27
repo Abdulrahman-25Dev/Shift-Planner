@@ -149,7 +149,7 @@ const HabitRepeatSelector = forwardRef<BottomSheetModal, DateSheetProps>(
               </Text>
 
               {/* التابات المحدثة (يومياً | أسبوعياً | مخصص) نفس الصورة بالملي */}
-              <View className={` p-1.5 border ${isDarkMode ?   'border-slate-800 bg-slate-800' : 'border-gray-200 bg-gray-200'} ${isStudy ? 'bg-study-accent' : 'bg-coding-accent'} rounded-2xl mb-6 ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
+              <View className={` p-1.5 ${isDarkMode ? isStudy ? "bg-gray-800" : "bg-gray-800" : isStudy ? "bg-study-accent" : "bg-coding-accent"} rounded-2xl mb-6 ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
                 <TouchableOpacity 
                   onPress={() => handleIntervalChange('daily')}
                   className={`flex-1 py-3 rounded-xl items-center justify-center ${repeatInterval === 'daily' ? activeBtnClass : 'bg-transparent'}`}

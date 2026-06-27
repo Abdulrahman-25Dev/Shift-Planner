@@ -22,8 +22,8 @@ const DevScreen = () => {
       <View className="flex-1 justify-center items-center px-8">
         {/* PLACE YOUR ONBOARDING ILLUSTRATION HERE */}
         <Image
-          source={require("../../assets/images/DevScreenIcon.png")}
-          className="w-48 h-48 rounded-[46px]"
+          source={require("../../assets/images/Dev.png")}
+          className="w-72 h-72 rounded-[30px]"
           resizeMode="contain"
         />
 

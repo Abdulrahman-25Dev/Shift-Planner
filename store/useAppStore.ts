@@ -84,6 +84,7 @@ interface AppState {
   completeHabit: (id: string) => void;
   resetHabitStreak: (id: string) => void;
   checkAndResetDailyHabits: () => void;
+  cancelPastDueNotifications: () => void;
 }
 
 const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
@@ -193,6 +194,7 @@ export const useAppStore = create<AppState>((set, get) => {
                   d.getMinutes(),
                   "task",
                   t.mode || "study",
+                  d,
                 );
               } catch {
                 return Promise.resolve(null);
@@ -266,6 +268,7 @@ export const useAppStore = create<AppState>((set, get) => {
               d.getMinutes(),
               "task",
               newTask.mode,
+              d,
             );
           } catch {}
         }
@@ -342,6 +345,7 @@ export const useAppStore = create<AppState>((set, get) => {
                 d.getMinutes(),
                 "task",
                 target.mode,
+                d,
               );
             } catch {}
           } else {
@@ -515,6 +519,13 @@ export const useAppStore = create<AppState>((set, get) => {
           habits: updatedAllHabits.filter((h) => h.mode === state.mode),
         };
       }),
+    cancelPastDueNotifications: () => {
+      const state = get();
+      const now = new Date();
+      state.allTasks
+        .filter((t) => t.reminderTime && new Date(t.reminderTime) <= now)
+        .forEach((t) => cancelNotification(t.id).catch(() => {}));
+    },
     checkAndResetDailyHabits: () => {
       const today = new Date().toDateString();
       const lastChecked = storage.getString("last-checked-date");

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "DevLearn",
+    "name": "BrainCode",
     "slug": "shift-planner",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,9 +14,9 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#131615",
-        "foregroundImage": "./assets/images/DevLearnIcon2.png",
-        "backgroundImage": "./assets/images/DevLearnIcon2.png",
-        "monochromeImage": "./assets/images/DevLearnIcon2.png"
+        "foregroundImage": "./assets/images/BrainCodeIcon.png",
+        "backgroundImage": "./assets/images/BrainCodeIcon.png",
+        "monochromeImage": "./assets/images/BrainCodeIcon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,

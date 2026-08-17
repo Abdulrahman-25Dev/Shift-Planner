@@ -17,6 +17,7 @@ import {
   Sun,
   GraduationCap,
   Code2,
+  LogOut,
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { useAppStore } from "../store/useAppStore";
@@ -291,6 +292,29 @@ export default function Settings() {
               </View>
             </Pressable>
           </View>
+        </View>
+
+        {/* Logout */}
+        <View className="mx-0 mb-8">
+          <TouchableOpacity
+            className={`flex-row-reverse items-center justify-between p-4 rounded-3xl border ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : "bg-white"}`}
+            style={shadowStyle}
+            onPress={() => router.replace("/Auth/Login")}
+          >
+            <View
+              className={
+                " items-center pl-4 justify-between flex-1" +
+                (language === "ar" ? " flex-row-reverse" : " flex-row")
+              }
+            >
+              <View className="w-10 h-10 rounded-2xl items-center justify-center bg-red-50 dark:bg-red-900">
+                <LogOut size={20} color={trashColor} />
+              </View>
+              <Text className="mr-3 text-red-600 text-right font-bold">
+                {t("settings.logout")}
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
       <ConfirmationModal

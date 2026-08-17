@@ -20,7 +20,8 @@
     "deleteTaskTitle": "Delete Task",
     "deleteTaskDesc": "Are you sure you want to delete this task?",
     "deleteHabitTitle": "Delete Habit",
-    "deleteHabitDesc": "Are you sure you want to delete this habit?"
+    "deleteHabitDesc": "Are you sure you want to delete this habit?",
+    "logout": "Logout"
   },
   "home": {
     "todayTasks": "Today's Tasks",

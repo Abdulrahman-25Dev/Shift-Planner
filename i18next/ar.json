@@ -19,6 +19,7 @@
     "deleteTaskDesc": "هل انت متاكد من حذف هذه المهمة؟",
     "deleteHabitTitle": "حذف العادة",
     "deleteHabitDesc": "هل انت متاكد من حذف هذه العادة؟",
+    "logout": "تسجيل الخروج",
     "cancel": "إلغاء",
     "delete": "حذف"
   },

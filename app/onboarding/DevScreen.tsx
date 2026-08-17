@@ -8,7 +8,7 @@ const DevScreen = () => {
   const { isDarkMode } = useAppStore();
   const handleGetStarted = () => {
     storage.set(STORAGE_KEYS.hasSeenOnboarding, true);
-    router.replace("/");
+    router.replace("/Auth/Register");
   };
 
   return (

@@ -4,6 +4,8 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,36 +17,90 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppStore } from "@/store/useAppStore";
+import { supabase } from "@/supabase";
 
 export default function Login() {
-  const { isDarkMode, language } = useAppStore();
+  const { isDarkMode, language, mode } = useAppStore();
+  const isStudy = mode === "study";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const titleText = isDarkMode ? "text-white" : "text-slate-900";
-  const subtitleText = isDarkMode ? "text-purple-200/70" : "text-slate-600";
-  const logoCircle = isDarkMode ? "bg-purple-900/40" : "bg-emerald-200/60";
+  /**
+   * Signs the user in via Supabase Auth.
+   * Validates inputs, shows errors, and navigates to the main app on success.
+   */
+  const handleLogin = async () => {
+    if (!email.trim() || !password) {
+      setError("الرجاء إدخال البريد الإلكتروني وكلمة المرور");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (authError) throw authError;
+
+      router.replace("/");
+    } catch (e: any) {
+      const message = e?.message || "فشل تسجيل الدخول";
+      setError(message);
+      Alert.alert("فشل تسجيل الدخول", message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const theme = isStudy
+    ? isDarkMode
+      ? { bg: "#0f172a", accent: "#1e1b4b", primary: "#818cf8", secondary: "#a5b4fc" }
+      : { bg: "#f8fafc", accent: "#e0e7ff", primary: "#4f46e5", secondary: "#6366f1" }
+    : isDarkMode
+      ? { bg: "#022c22", accent: "#064e3b", primary: "#34d399", secondary: "#6ee7b7" }
+      : { bg: "#f0fdf4", accent: "#d1fae5", primary: "#064e3b", secondary: "#047857" };
+
+  const titleText = isDarkMode
+    ? isStudy ? "text-study-dark-primary" : "text-coding-dark-primary"
+    : isStudy ? "text-study-primary" : "text-coding-primary";
+  const subtitleText = isDarkMode
+    ? isStudy ? "text-study-dark-secondary/70" : "text-coding-dark-secondary/70"
+    : isStudy ? "text-study-secondary/70" : "text-coding-secondary/70";
+  const logoCircle = isDarkMode
+    ? isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent"
+    : isStudy ? "bg-study-accent/60" : "bg-coding-accent/60";
   const glowCircle = isDarkMode
-    ? "bg-purple-500/20"
-    : "bg-emerald-200/40";
+    ? isStudy ? "bg-study-dark-primary/20" : "bg-coding-dark-primary/20"
+    : isStudy ? "bg-study-primary/10" : "bg-coding-primary/10";
   const glowCircleAlt = isDarkMode
-    ? "bg-fuchsia-500/20"
-    : "bg-teal-200/40";
-  const inputBg = isDarkMode ? "bg-purple-950/40" : "bg-white";
-  const inputBorder = isDarkMode ? "border-purple-800/50" : "border-emerald-200/60";
+    ? isStudy ? "bg-study-dark-secondary/20" : "bg-coding-dark-secondary/20"
+    : isStudy ? "bg-study-secondary/10" : "bg-coding-secondary/10";
+  const inputBg = isDarkMode
+    ? isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent"
+    : "bg-white";
+  const inputBorder = isDarkMode
+    ? isStudy ? "border-study-dark-primary/30" : "border-coding-dark-primary/30"
+    : isStudy ? "border-study-primary/20" : "border-coding-primary/20";
   const inputText = isDarkMode ? "text-white" : "text-slate-900";
-  const inputIcon = isDarkMode ? "#94A3B8" : "#475569";
+  const inputIcon = theme.secondary;
   const placeholderColor = isDarkMode ? "#94A3B8" : "#64748B";
-  const footerText = isDarkMode ? "text-purple-200/70" : "text-slate-500";
-  const linkText = isDarkMode ? "text-purple-400" : "text-emerald-600";
-  const buttonColors: [string, string] = isDarkMode
-    ? ["#7C3AED", "#C026D3"]
-    : ["#10B981", "#059669"];
+  const footerText = isDarkMode
+    ? isStudy ? "text-study-dark-secondary/70" : "text-coding-dark-secondary/70"
+    : isStudy ? "text-study-secondary/80" : "text-coding-secondary/80";
+  const linkText = titleText;
+  const buttonColors: [string, string] = [theme.primary, theme.secondary];
+  const buttonText = isDarkMode
+    ? isStudy ? "text-study-dark-bg" : "text-coding-dark-bg"
+    : "text-white";
   const buttonRadius = "rounded-full";
   const rowDirection = language === "ar" ? "flex-row-reverse" : "flex-row";
   const inputAlign = language === "ar" ? "text-right" : "text-left";
-  const screenBg = isDarkMode ? "#0F0C1B" : "#F0FDFA";
+  const screenBg = theme.bg;
 
   return (
     <SafeAreaView
@@ -57,11 +113,7 @@ export default function Login() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : -50}
       >
         <LinearGradient
-          colors={
-            isDarkMode
-              ? ["#0F0C1B", "#2E1065", "#0B0813"]
-              : ["#F0FDFA", "#E6FFFA", "#ECFDF5"]
-          }
+          colors={[theme.bg, theme.accent, theme.bg]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           className="flex-1"
@@ -148,10 +200,19 @@ export default function Login() {
               </View>
             </View>
 
+            {/* Error */}
+            {error ? (
+              <Text className={`mt-4 text-center text-sm font-semibold ${isDarkMode ? "text-red-300" : "text-red-600"}`}>
+                {error}
+              </Text>
+            ) : null}
+
             {/* CTA */}
             <TouchableOpacity
               activeOpacity={0.85}
-              className={`mt-8 overflow-hidden ${buttonRadius}`}
+              disabled={loading}
+              onPress={handleLogin}
+              className={`mt-8 overflow-hidden ${buttonRadius} ${loading ? "opacity-60" : ""}`}
             >
               <LinearGradient
                 colors={buttonColors}
@@ -159,9 +220,13 @@ export default function Login() {
                 end={{ x: 1, y: 0 }}
                 className="py-4 items-center"
               >
-                <Text className="text-white text-lg font-bold">
-                  تسجيل الدخول
-                </Text>
+                {loading ? (
+                  <ActivityIndicator color={buttonText.includes("white") ? "#ffffff" : theme.bg} />
+                ) : (
+                  <Text className={`${buttonText} text-lg font-bold`}>
+                    تسجيل الدخول
+                  </Text>
+                )}
               </LinearGradient>
             </TouchableOpacity>
 

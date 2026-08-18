@@ -22,6 +22,26 @@ export default function ConfirmationModal({
   const { t } = useTranslation();
   const isRtl = language === "ar";
 
+  const modalCardBg = isDarkMode
+    ? isStudy
+      ? "bg-study-dark-card"
+      : "bg-dev-dark-card"
+    : "bg-white";
+  const titleColor = isDarkMode
+    ? isStudy
+      ? "text-study-dark-interactive"
+      : "text-dev-dark-interactive"
+    : isStudy
+      ? "text-study-header"
+      : "text-dev-header";
+  const cancelBg = isDarkMode
+    ? isStudy
+      ? "bg-study-dark-accentSoft"
+      : "bg-dev-dark-accentSoft"
+    : isStudy
+      ? "bg-study-accent/40"
+      : "bg-dev-accent/40";
+
   return (
     <Modal
       visible={isVisible}
@@ -32,10 +52,10 @@ export default function ConfirmationModal({
     >
       <View className="flex-1 justify-center items-center bg-black/60 px-6">
         <View
-          className={`w-full rounded-3xl p-6 ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : isStudy ? "bg-study-accent" : "bg-coding-accent"}`}
+          className={`w-full rounded-3xl p-6 ${modalCardBg}`}
         >
           <Text
-            className={`text-xl font-black text-center mb-2 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"}`}
+            className={`text-xl font-black text-center mb-2 ${titleColor}`}
           >
             {title}
           </Text>
@@ -55,10 +75,10 @@ export default function ConfirmationModal({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={onCancel}
-              className={`flex-1 py-3.5 rounded-2xl items-center ${isDarkMode ? (isStudy ? "bg-study-dark-primary/20" : "bg-coding-dark-primary/20") : isStudy ? "bg-study-primary/20" : "bg-coding-primary/20"}`}
+              className={`flex-1 py-3.5 rounded-2xl items-center ${cancelBg}`}
             >
               <Text
-                className={`font-bold text-base ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"}`}
+                className={`font-bold text-base ${titleColor}`}
               >
                 {t("settings.cancel") || "إلغاء"}
               </Text>

@@ -6,6 +6,7 @@ import {
   BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
 import { useAppStore } from "../store/useAppStore";
+import { useModeTheme } from "@/src/theme";
 import { useTranslation } from "react-i18next";
 
 interface DateSheetProps {
@@ -38,13 +39,37 @@ const HabitRepeatSelector = forwardRef<BottomSheetModal, DateSheetProps>(
     );
 
     const { mode: appMode, isDarkMode, language } = useAppStore();
+    const { palette } = useModeTheme();
     const { t } = useTranslation();
     const isStudy = appMode === "study";
 
     // تلوين العناصر النشطة حسب المود
-    const activeBtnClass = isStudy 
-      ? "bg-study-primary border-study-primary" 
-      : "bg-coding-primary border-coding-primary";
+    const activeBtnClass = isDarkMode
+      ? isStudy
+        ? "bg-study-dark-interactive border-study-dark-interactive"
+        : "bg-dev-dark-interactive border-dev-dark-interactive"
+      : isStudy
+        ? "bg-study-header border-study-header"
+        : "bg-dev-header border-dev-header";
+    const activeBtnText = isDarkMode
+      ? isStudy
+        ? "text-study-header"
+        : "text-dev-header"
+      : "text-white";
+    const tabTrack = isDarkMode
+      ? isStudy
+        ? "bg-study-dark-accentSoft"
+        : "bg-dev-dark-accentSoft"
+      : isStudy
+        ? "bg-study-accentSoft"
+        : "bg-dev-accentSoft";
+    const accentText = isDarkMode
+      ? isStudy
+        ? "text-study-dark-interactive"
+        : "text-dev-dark-interactive"
+      : isStudy
+        ? "text-study-header"
+        : "text-dev-header";
 
     const daysOfWeek = language === "ar" 
       ? ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س']
@@ -113,13 +138,11 @@ const HabitRepeatSelector = forwardRef<BottomSheetModal, DateSheetProps>(
         backdropComponent={renderBackdrop}
         keyboardBehavior="interactive"
         backgroundStyle={{
-          backgroundColor: isDarkMode
-            ? isStudy ? "#0f172a" : "#022c22"
-            : isStudy ? "#f8fafc" : "#f0fdf4",
+          backgroundColor: isDarkMode ? palette.card : "#FFFFFF",
         }}
       >
         <BottomSheetView
-          className={`flex-1 p-6 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : isStudy ? "bg-study-bg" : "bg-coding-bg"}`}
+          className={`flex-1 p-6 ${isDarkMode ? (isStudy ? "bg-study-dark-card" : "bg-dev-dark-card") : "bg-white"}`}
         >
           {/* العنوان الرئيسي العلوي متعدل بالملي */}
           <Text
@@ -136,7 +159,7 @@ const HabitRepeatSelector = forwardRef<BottomSheetModal, DateSheetProps>(
             <Text className={`text-sm font-bold ${isDarkMode ? 'text-slate-400' : 'text-gray-500'}`}>
               {language === "ar" ? "التاريخ المحدد : " : "Selected Date: "}
             </Text>
-            <Text className={`text-sm font-black ${isStudy ? 'text-indigo-400' : 'text-emerald-400'} mx-2`}>
+            <Text className={`text-sm font-black ${accentText} mx-2`}>
               {formattedDateDisplay}
             </Text>
           </View>
@@ -149,12 +172,12 @@ const HabitRepeatSelector = forwardRef<BottomSheetModal, DateSheetProps>(
               </Text>
 
               {/* التابات المحدثة (يومياً | أسبوعياً | مخصص) نفس الصورة بالملي */}
-              <View className={` p-1.5 ${isDarkMode ? isStudy ? "bg-gray-800" : "bg-gray-800" : isStudy ? "bg-study-accent" : "bg-coding-accent"} rounded-2xl mb-6 ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
+              <View className={` p-1.5 ${tabTrack} rounded-2xl mb-6 ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
                 <TouchableOpacity 
                   onPress={() => handleIntervalChange('daily')}
                   className={`flex-1 py-3 rounded-xl items-center justify-center ${repeatInterval === 'daily' ? activeBtnClass : 'bg-transparent'}`}
                 >
-                  <Text className={`text-sm font-black ${repeatInterval === 'daily' ? 'text-white' : 'text-slate-400'}`}>
+                  <Text className={`text-sm font-black ${repeatInterval === 'daily' ? activeBtnText : 'text-slate-400'}`}>
                     {language === "ar" ? "يومياً" : "Daily"}
                   </Text>
                 </TouchableOpacity>
@@ -163,7 +186,7 @@ const HabitRepeatSelector = forwardRef<BottomSheetModal, DateSheetProps>(
                   onPress={() => handleIntervalChange('weekly')}
                   className={`flex-1 py-3 rounded-xl items-center justify-center ${repeatInterval === 'weekly' ? activeBtnClass : 'bg-transparent'}`}
                 >
-                  <Text className={`text-sm font-black ${repeatInterval === 'weekly' ? 'text-white' : 'text-slate-400'}`}>
+                  <Text className={`text-sm font-black ${repeatInterval === 'weekly' ? activeBtnText : 'text-slate-400'}`}>
                     {language === "ar" ? "أسبوعياً" : "Weekly"}
                   </Text>
                 </TouchableOpacity>
@@ -172,7 +195,7 @@ const HabitRepeatSelector = forwardRef<BottomSheetModal, DateSheetProps>(
                   onPress={() => handleIntervalChange('custom')}
                   className={`flex-1 py-3 rounded-xl items-center justify-center ${repeatInterval === 'custom' ? activeBtnClass : 'bg-transparent'}`}
                 >
-                  <Text className={`text-sm font-black ${repeatInterval === 'custom' ? 'text-white' : 'text-slate-400'}`}>
+                  <Text className={`text-sm font-black ${repeatInterval === 'custom' ? activeBtnText : 'text-slate-400'}`}>
                     {language === "ar" ? "مخصص" : "Custom"}
                   </Text>
                 </TouchableOpacity>
@@ -198,11 +221,11 @@ const HabitRepeatSelector = forwardRef<BottomSheetModal, DateSheetProps>(
                       activeOpacity={0.7}
                       className={`w-11 h-11 rounded-full items-center justify-center border-2 ${
                         isSelected 
-                          ? (isStudy ? 'bg-study-primary border-study-primary' : 'bg-coding-primary border-coding-primary') 
+                          ? activeBtnClass 
                           : isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-gray-100 border-gray-200'
                       }`}
                     >
-                      <Text className={`text-sm font-black ${isSelected ? 'text-white' : 'text-slate-400'}`}>
+                      <Text className={`text-sm font-black ${isSelected ? activeBtnText : 'text-slate-400'}`}>
                         {day}
                       </Text>
                     </TouchableOpacity>
@@ -217,9 +240,9 @@ const HabitRepeatSelector = forwardRef<BottomSheetModal, DateSheetProps>(
           <View className="mt-auto w-full">
             <TouchableOpacity
               onPress={handleConfirm}
-              className={`w-full py-4 rounded-2xl items-center shadow-lg ${isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+              className={`w-full py-4 rounded-2xl items-center shadow-lg ${activeBtnClass}`}
             >
-              <Text className="text-white font-black text-lg">
+              <Text className={`${activeBtnText} font-black text-lg`}>
                 {language === "ar" ? "تأكيد التاريخ" : "Confirm Date"}
               </Text>
             </TouchableOpacity>

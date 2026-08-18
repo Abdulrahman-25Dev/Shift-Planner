@@ -19,6 +19,7 @@ import DateSheet from "../../components/DateSheet";
 import TimeSheet from "../../components/TimeSheet";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { useTranslation } from "react-i18next";
+import { useModeTheme } from "@/src/theme";
 
 interface DetailsSheetProps {
   itemId: string | null;
@@ -37,6 +38,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
       language,
     } = useAppStore();
     const { t } = useTranslation();
+    const { palette } = useModeTheme();
 
     // 1. جلب البيانات والتعرف على النوع
     const task = useMemo(
@@ -89,6 +91,48 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
     const taskDueDate = !isHabit ? (item as Task).dueDate : undefined;
     const taskReminderTime = item.reminderTime;
 
+    const accentText = isDarkMode
+      ? isStudy
+        ? "text-study-dark-interactive"
+        : "text-dev-dark-interactive"
+      : isStudy
+        ? "text-study-header"
+        : "text-dev-header";
+    const inputBg = isDarkMode
+      ? isStudy
+        ? " bg-study-dark-accentSoft text-study-dark-interactive"
+        : " bg-dev-dark-accentSoft text-dev-dark-interactive"
+      : isStudy
+        ? " bg-study-accentSoft text-study-header"
+        : " bg-dev-accentSoft text-dev-header";
+    const softBoxBg = isDarkMode
+      ? isStudy
+        ? " bg-study-dark-accentSoft"
+        : " bg-dev-dark-accentSoft"
+      : isStudy
+        ? " bg-study-accentSoft"
+        : " bg-dev-accentSoft";
+    const activePill = isDarkMode
+      ? isStudy
+        ? "bg-study-dark-interactive"
+        : "bg-dev-dark-interactive"
+      : isStudy
+        ? "bg-study-header"
+        : "bg-dev-header";
+    const activePillText = isDarkMode
+      ? isStudy
+        ? "text-study-header"
+        : "text-dev-header"
+      : "text-white";
+    const unselectedPill = isDarkMode
+      ? isStudy
+        ? "border-study-dark-interactive/30 bg-study-dark-accentSoft"
+        : "border-dev-dark-interactive/30 bg-dev-dark-accentSoft"
+      : isStudy
+        ? "border-study-accent/60 bg-study-accent/30"
+        : "border-dev-accent/60 bg-dev-accent/30";
+    const iconColor = palette.accentText;
+
     return (
       <BottomSheetModal
         ref={ref}
@@ -96,13 +140,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
         snapPoints={snapPoints}
         keyboardBehavior="fillParent"
         backgroundStyle={{
-          backgroundColor: isDarkMode
-            ? isStudy
-              ? "#0f172a"
-              : "#022c22"
-            : isStudy
-              ? "#f8fafc"
-              : "#f0fdf4",
+          backgroundColor: isDarkMode ? palette.card : "#FFFFFF",
           borderRadius: 40,
         }}
         backdropComponent={renderBackdrop}
@@ -116,13 +154,8 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
               <Text
                 className={
                   " font-bold mb-3 text-left" +
-                  (isDarkMode
-                    ? isStudy
-                      ? " text-study-dark-primary"
-                      : " text-coding-dark-primary"
-                    : isStudy
-                      ? " text-study-secondary"
-                      : " text-coding-secondary") +
+                  " " +
+                  accentText +
                   (language === "ar" ? " text-left" : " text-right")
                 }
               >
@@ -135,7 +168,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                     ? updateHabit(item.id, { title: text })
                     : updateTask(item.id, { title: text })
                 }
-                className={`text-md font-black px-4 rounded-2xl ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30 text-study-dark-primary" : " bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? " bg-violet-50 text-study-primary" : " bg-green-100 text-coding-primary"}`}
+                className={`text-md font-black px-4 rounded-2xl ${inputBg}`}
                 placeholder={
                   isHabit
                     ? t("details.habit title placeholder")
@@ -149,13 +182,8 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
             <Text
               className={
                 "  font-bold mb-2" +
-                (isDarkMode
-                  ? isStudy
-                    ? " text-study-dark-primary"
-                    : " text-coding-dark-primary"
-                  : isStudy
-                    ? " text-study-secondary"
-                    : " text-coding-secondary") +
+                " " +
+                accentText +
                 (language === "ar" ? " text-left" : " text-right")
               }
             >
@@ -173,7 +201,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                 "details.description " +
                   (isHabit ? "habit placeholder" : "task placeholder"),
               )}
-              className={` p-4 text-md rounded-2xl font-semibold min-h-[120px] ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30 text-study-dark-primary" : " bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? " bg-violet-50 text-study-primary" : " bg-green-100 text-coding-primary"}`}
+              className={` p-4 text-md rounded-2xl font-semibold min-h-[120px] ${inputBg}`}
               textAlignVertical="top"
             />
           </View>
@@ -183,13 +211,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
             <View
               className={
                 " p-4 rounded-2xl items-center mb-6 justify-between" +
-                (isDarkMode
-                  ? isStudy
-                    ? " bg-study-dark-primary/30"
-                    : " bg-coding-dark-primary/30"
-                  : isStudy
-                    ? " bg-violet-50"
-                    : " bg-green-100") +
+                softBoxBg +
                 (language === "ar" ? " flex-row-reverse" : " flex-row")
               }
             >
@@ -224,7 +246,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
           {/* قسم الأولوية */}
           <View className="mb-6">
             <Text
-              className={`font-bold mb-2 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-secondary" : "text-coding-secondary"} ${language === "ar" ? "text-left" : "text-right"}`}
+              className={`font-bold mb-2 ${accentText} ${language === "ar" ? "text-left" : "text-right"}`}
             >
               {t("details.change priority")}
             </Text>
@@ -246,12 +268,12 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                     }
                     className={`flex-1 px-3 py-2 mx-1 rounded-2xl items-center border ${
                       isSelected
-                        ? `border-transparent ${isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary"}`
-                        : `${isDarkMode ? (isStudy ? "border-study-dark-primary/30 bg-study-dark-primary/30" : "border-coding-dark-primary/30 bg-coding-dark-primary/30") : isStudy ? "border-study-primary/30 bg-study-accent/30" : "border-coding-primary/30 bg-coding-accent/30"}`
+                        ? `border-transparent ${activePill}`
+                        : unselectedPill
                     }`}
                   >
                     <Text
-                      className={`text-xs font-bold ${isSelected ? "text-white" : isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-600"}`}
+                      className={`text-xs font-bold ${isSelected ? activePillText : isDarkMode ? (isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive") : "text-gray-600"}`}
                     >
                       {opt.label}
                     </Text>
@@ -265,47 +287,31 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
           <View className="mb-6">
             <Pressable
               onPress={() => dateSheetRef.current?.present()}
-              className={` gap-2 p-4 rounded-2xl items-center justify-center relative mb-3 ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : isStudy ? " bg-study-accent" : " bg-coding-accent"} ${language === "ar" ? " flex-row" : " flex-row-reverse"}`}
+              className={` gap-2 p-4 rounded-2xl items-center justify-center relative mb-3 ${softBoxBg} ${language === "ar" ? " flex-row" : " flex-row-reverse"}`}
             >
               <Text
-                className={` font-bold text-center ${isDarkMode ? (isStudy ? " text-study-dark-primary" : " text-coding-dark-primary") : isStudy ? " text-study-primary" : " text-coding-primary"}`}
+                className={` font-bold text-center ${accentText}`}
               >
                 {t("details.change date")}
               </Text>
               <Calendar
                 size={20}
-                color={
-                  isDarkMode
-                    ? isStudy
-                      ? "#E0E7FF"
-                      : "#D1FAE5"
-                    : isStudy
-                      ? "#1E40AF"
-                      : "#065F46"
-                }
+                color={iconColor}
                 className="absolute left-4 top-1/2 -translate-y-1/2"
               />
             </Pressable>
             <Pressable
               onPress={() => timeSheetRef.current?.present()}
-              className={` gap-2 p-4 rounded-2xl flex-row items-center justify-center relative ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : isStudy ? " bg-study-accent" : " bg-coding-accent"} ${language === "ar" ? " flex-row" : " flex-row-reverse"}`}
+              className={` gap-2 p-4 rounded-2xl flex-row items-center justify-center relative ${softBoxBg} ${language === "ar" ? " flex-row" : " flex-row-reverse"}`}
             >
               <Text
-                className={` font-bold text-center ${isDarkMode ? (isStudy ? " text-study-dark-primary" : " text-coding-dark-primary") : isStudy ? " text-study-primary" : " text-coding-primary"}`}
+                className={` font-bold text-center ${accentText}`}
               >
                 {t("details.change time")}
               </Text>
               <Clock
                 size={20}
-                color={
-                  isDarkMode
-                    ? isStudy
-                      ? "#E0E7FF"
-                      : "#D1FAE5"
-                    : isStudy
-                      ? "#1E40AF"
-                      : "#065F46"
-                }
+                color={iconColor}
                 className="absolute left-4 top-1/2 -translate-y-1/2"
               />
             </Pressable>

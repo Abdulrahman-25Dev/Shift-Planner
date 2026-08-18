@@ -17,10 +17,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppStore } from "@/store/useAppStore";
+import { useModeTheme } from "@/src/theme";
 import { supabase } from "@/supabase";
 
 export default function Register() {
   const { isDarkMode, language, mode } = useAppStore();
+  const { palette } = useModeTheme();
   const isStudy = mode === "study";
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -67,7 +69,7 @@ export default function Register() {
       // Email confirmation required
       Alert.alert(
         "تم إنشاء الحساب",
-        "تحقق من بريدك الإلكتروني لتأكيد الحساب ثم سجل الدخول.",
+        "لقد تم إنشاء الحساب بنجاح.",
       );
       router.replace("/Auth/Login");
     }
@@ -80,45 +82,42 @@ export default function Register() {
   }
 };
 
-  const theme = isStudy
-    ? isDarkMode
-      ? { bg: "#0f172a", accent: "#1e1b4b", primary: "#818cf8", secondary: "#a5b4fc" }
-      : { bg: "#f8fafc", accent: "#e0e7ff", primary: "#4f46e5", secondary: "#6366f1" }
-    : isDarkMode
-      ? { bg: "#022c22", accent: "#064e3b", primary: "#34d399", secondary: "#6ee7b7" }
-      : { bg: "#f0fdf4", accent: "#d1fae5", primary: "#064e3b", secondary: "#047857" };
+  const theme = {
+    bg: palette.screen,
+    accent: palette.accentSoft,
+    primary: isDarkMode ? palette.interactive : palette.header,
+    secondary: palette.secondary,
+  };
 
   const titleText = isDarkMode
-    ? isStudy ? "text-study-dark-primary" : "text-coding-dark-primary"
-    : isStudy ? "text-study-primary" : "text-coding-primary";
+    ? isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive"
+    : isStudy ? "text-study-header" : "text-dev-header";
   const subtitleText = isDarkMode
-    ? isStudy ? "text-study-dark-secondary/70" : "text-coding-dark-secondary/70"
-    : isStudy ? "text-study-secondary/70" : "text-coding-secondary/70";
+    ? isStudy ? "text-study-dark-interactive/70" : "text-dev-dark-interactive/70"
+    : isStudy ? "text-study-header/70" : "text-dev-header/70";
   const logoCircle = isDarkMode
-    ? isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent"
-    : isStudy ? "bg-study-accent/60" : "bg-coding-accent/60";
+    ? isStudy ? "bg-study-dark-accentSoft" : "bg-dev-dark-accentSoft"
+    : isStudy ? "bg-study-accentSoft" : "bg-dev-accentSoft";
   const glowCircle = isDarkMode
-    ? isStudy ? "bg-study-dark-primary/20" : "bg-coding-dark-primary/20"
-    : isStudy ? "bg-study-primary/10" : "bg-coding-primary/10";
+    ? isStudy ? "bg-study-dark-interactive/15" : "bg-dev-dark-interactive/15"
+    : isStudy ? "bg-study-accent/40" : "bg-dev-accent/40";
   const glowCircleAlt = isDarkMode
-    ? isStudy ? "bg-study-dark-secondary/20" : "bg-coding-dark-secondary/20"
-    : isStudy ? "bg-study-secondary/10" : "bg-coding-secondary/10";
+    ? isStudy ? "bg-study-dark-interactive/10" : "bg-dev-dark-interactive/10"
+    : isStudy ? "bg-study-accent/25" : "bg-dev-accent/25";
   const inputBg = isDarkMode
-    ? isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent"
+    ? isStudy ? "bg-study-dark-card" : "bg-dev-dark-card"
     : "bg-white";
   const inputBorder = isDarkMode
-    ? isStudy ? "border-study-dark-primary/30" : "border-coding-dark-primary/30"
-    : isStudy ? "border-study-primary/20" : "border-coding-primary/20";
+    ? isStudy ? "border-study-dark-interactive/30" : "border-dev-dark-interactive/30"
+    : isStudy ? "border-study-accent/60" : "border-dev-accent/60";
   const inputText = isDarkMode ? "text-white" : "text-slate-900";
   const inputIcon = theme.secondary;
   const placeholderColor = isDarkMode ? "#94A3B8" : "#64748B";
-  const footerText = isDarkMode
-    ? isStudy ? "text-study-dark-secondary/70" : "text-coding-dark-secondary/70"
-    : isStudy ? "text-study-secondary/80" : "text-coding-secondary/80";
+  const footerText = isDarkMode ? "text-gray-300" : "text-gray-500";
   const linkText = titleText;
   const buttonColors: [string, string] = [theme.primary, theme.secondary];
   const buttonText = isDarkMode
-    ? isStudy ? "text-study-dark-bg" : "text-coding-dark-bg"
+    ? isStudy ? "text-study-header" : "text-dev-header"
     : "text-white";
   const buttonRadius = "rounded-full";
   const rowDirection = language === "ar" ? "flex-row-reverse" : "flex-row";
@@ -175,7 +174,7 @@ export default function Register() {
                 BrainCode
               </Text>
               <Text className={`text-base mt-2 ${subtitleText}`}>
-                أنشئ ملفك الشخصي في هابيت سكريبت
+                أنشئ ملفك الشخصي في BrainCode
               </Text>
             </View>
 
@@ -259,7 +258,7 @@ export default function Register() {
                 className="py-4 items-center"
               >
                 {loading ? (
-                  <ActivityIndicator color={buttonText.includes("white") ? "#ffffff" : theme.bg} />
+                  <ActivityIndicator color={isDarkMode ? palette.onInteractive : "#ffffff"} />
                 ) : (
                   <Text className={`${buttonText} text-lg font-bold`}>
                     تسجيل جديد

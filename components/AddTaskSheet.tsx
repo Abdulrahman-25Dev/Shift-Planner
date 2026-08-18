@@ -8,6 +8,7 @@ import BottomSheet, {
   BottomSheetModal,
 } from "@gorhom/bottom-sheet";
 import { useAppStore } from "../store/useAppStore";
+import { useModeTheme } from "@/src/theme";
 import { useTranslation } from "react-i18next";
 import DateSheet from "../components/DateSheet";
 import TimeSheet from "../components/TimeSheet";
@@ -36,6 +37,7 @@ export const AddTaskSheet = forwardRef(
     const [repeatDays, setRepeatDays] = useState<string[] | undefined>();
     const isStudy = props.mode === "study";
     const { addTask, addHabit, isDarkMode, language } = useAppStore();
+    const { palette } = useModeTheme();
 
     // نقاط التوقف: 50% من الشاشة أو 85%
     const snapPoints = useMemo(() => ["85%"], []);
@@ -52,6 +54,44 @@ export const AddTaskSheet = forwardRef(
       [],
     );
 
+    const inputBg = isDarkMode
+      ? isStudy
+        ? "bg-study-dark-accentSoft text-study-dark-interactive"
+        : "bg-dev-dark-accentSoft text-dev-dark-interactive"
+      : isStudy
+        ? "bg-study-accentSoft text-study-header"
+        : "bg-dev-accentSoft text-dev-header";
+    const labelText = isDarkMode
+      ? isStudy
+        ? "text-study-dark-interactive"
+        : "text-dev-dark-interactive"
+      : "text-gray-500";
+    const activePill = isDarkMode
+      ? isStudy
+        ? "bg-study-dark-interactive"
+        : "bg-dev-dark-interactive"
+      : isStudy
+        ? "bg-study-header"
+        : "bg-dev-header";
+    const activePillText = isDarkMode
+      ? isStudy
+        ? "text-study-header"
+        : "text-dev-header"
+      : "text-white";
+    const pillTrack = isDarkMode
+      ? isStudy
+        ? "bg-study-dark-accentSoft"
+        : "bg-dev-dark-accentSoft"
+      : "bg-gray-100";
+    const unselectedPill = isDarkMode
+      ? isStudy
+        ? "border-study-dark-interactive/30 bg-study-dark-accentSoft"
+        : "border-dev-dark-interactive/30 bg-dev-dark-accentSoft"
+      : isStudy
+        ? "border-study-accent/60 bg-study-accent/30"
+        : "border-dev-accent/60 bg-dev-accent/30";
+    const iconColor = palette.accentText;
+
     return (
       <BottomSheet
         ref={ref}
@@ -61,54 +101,48 @@ export const AddTaskSheet = forwardRef(
         backdropComponent={renderBackdrop}
         backgroundStyle={{
           borderRadius: 40,
-          backgroundColor: isDarkMode
-            ? isStudy
-              ? "#0f172a"
-              : "#022c22"
-            : isStudy
-              ? "#f8fafc"
-              : "#f0fdf4",
+          backgroundColor: isDarkMode ? palette.card : "#FFFFFF",
         }}
         handleIndicatorStyle={{ backgroundColor: "#E5E7EB", width: 50 }}
       >
         <BottomSheetView className="p-4">
           {/* 1. السويتش (مبدل مهمة/عادة) */}
           <View
-            className={`flex-row p-1.5 rounded-2xl mb-6 ${isDarkMode ? (isStudy ? "bg-study-dark-accent/60" : "bg-coding-dark-accent/60") : "bg-gray-100"}`}
+            className={`flex-row p-1.5 rounded-2xl mb-6 ${pillTrack}`}
           >
             <TouchableOpacity
               onPress={() => setType("task")}
-              className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? (isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
+              className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? activePill : ""}`}
             >
               <Text
-                className={`font-bold ${type === "task" ? "text-white" : "text-gray-400"}`}
+                className={`font-bold ${type === "task" ? activePillText : "text-gray-400"}`}
               >
                 {t("add.task")}
               </Text>
               <CheckCircle2
                 size={20}
-                color={type === "task" ? "white" : "#9CA3AF"}
+                color={type === "task" ? (isDarkMode ? palette.onInteractive : "#FFFFFF") : "#9CA3AF"}
               />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setType("habit")}
-              className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-3 ${type === "habit" ? (isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary") : ""}`}
+              className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-3 ${type === "habit" ? activePill : ""}`}
             >
               <Text
-                className={`font-bold ${type === "habit" ? "text-white" : "text-gray-400"}`}
+                className={`font-bold ${type === "habit" ? activePillText : "text-gray-400"}`}
               >
                 {t("add.habit")}
               </Text>
               <RefreshCw
                 size={20}
-                color={type === "habit" ? "white" : "#9CA3AF"}
+                color={type === "habit" ? (isDarkMode ? palette.onInteractive : "#FFFFFF") : "#9CA3AF"}
               />
             </TouchableOpacity>
           </View>
 
           {/* 2. حقل الإدخال */}
           <Text
-            className={`font-bold px-3 mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
+            className={`font-bold px-3 mb-1 ml-1 ${labelText} ${language === "ar" ? "text-left" : "text-right"}`}
           >
             {type === "task"
               ? t("details.title task")
@@ -122,13 +156,13 @@ export const AddTaskSheet = forwardRef(
                 ? t("details.task title placeholder")
                 : t("details.habit title placeholder")
             }
-            className={`p-3 rounded-2xl ${isDarkMode ? (isStudy ? "bg-study-dark-primary/30 text-study-dark-primary" : "bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? "bg-violet-50 border-transparent text-study-primary" : "bg-green-100 border-transparent text-coding-primary"} font-bold mb-4`}
+            className={`p-3 rounded-2xl ${inputBg} font-bold mb-4`}
             placeholderTextColor="#9CA3AF"
           />
 
           {/* 3. القسم المتغير (وصف المهمة | وصف العادة) */}
           <Text
-            className={`font-bold px-3 mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
+            className={`font-bold px-3 mb-1 ml-1 ${labelText} ${language === "ar" ? "text-left" : "text-right"}`}
           >
             {type === "task"
               ? t("details.description task")
@@ -142,21 +176,29 @@ export const AddTaskSheet = forwardRef(
                 ? t("details.description task placeholder")
                 : t("details.description habit placeholder")
             }
-            className={`p-3 rounded-2xl ${isDarkMode ? (isStudy ? "bg-study-dark-primary/30 text-study-dark-primary" : "bg-coding-dark-primary/30 text-coding-dark-primary") : isStudy ? "bg-violet-50 border-transparent text-study-primary" : "bg-green-100 border-transparent text-coding-primary"} font-bold mb-4`}
+            className={`p-3 rounded-2xl ${inputBg} font-bold mb-4`}
             placeholderTextColor="#9CA3AF"
           />
 
           <View
-            className={`flex-row justify-between items-center rounded-2xl p-3 mb-4 ${isDarkMode ? (isStudy ? " bg-study-dark-primary/30" : " bg-coding-dark-primary/30") : isStudy ? " bg-violet-50" : " bg-green-100"}`}
+            className={`flex-row justify-between items-center rounded-2xl p-3 mb-4 ${
+              isDarkMode
+                ? isStudy
+                  ? " bg-study-dark-accentSoft"
+                  : " bg-dev-dark-accentSoft"
+                : isStudy
+                  ? " bg-study-accentSoft"
+                  : " bg-dev-accentSoft"
+            }`}
           >
             <View className="flex-1 pr-2">
               <Text
-                className={`text-sm mb-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"} ${language === "ar" ? "text-left" : "text-right"}`}
+                className={`text-sm mb-1 ${labelText} ${language === "ar" ? "text-left" : "text-right"}`}
               >
                 {t("add.Selected date")}
               </Text>
               <Text
-                className={`font-bold text-center ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-800"}`}
+                className={`font-bold text-center ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}
               >
                 {selectedDate.toLocaleDateString("en-US", {
                   day: "2-digit",
@@ -166,15 +208,23 @@ export const AddTaskSheet = forwardRef(
               </Text>
             </View>
             <View
-              className={`flex-1 pl-2 border-l ${isDarkMode ? (isStudy ? "border-study-dark-primary" : "border-coding-dark-primary") : isStudy ? "border-study-primary" : "border-coding-primary"}`}
+              className={`flex-1 pl-2 border-l ${
+                isDarkMode
+                  ? isStudy
+                    ? "border-study-dark-interactive/40"
+                    : "border-dev-dark-interactive/40"
+                  : isStudy
+                    ? "border-study-accent"
+                    : "border-dev-accent"
+              }`}
             >
               <Text
-                className={`text-sm mb-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"} ${language === "ar" ? "text-left" : "text-right"}`}
+                className={`text-sm mb-1 ${labelText} ${language === "ar" ? "text-left" : "text-right"}`}
               >
                 {t("add.Selected time")}
               </Text>
               <Text
-                className={`font-bold text-center ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-800"}`}
+                className={`font-bold text-center ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}
               >
                 {selectedTime}
               </Text>
@@ -184,7 +234,7 @@ export const AddTaskSheet = forwardRef(
           {(type === "task" || type === "habit") && (
             <View className="mb-3">
               <Text
-                className={`font-bold px-3 mb-1 ml-1 ${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-400"} ${language === "ar" ? "text-left" : "text-right"}`}
+                className={`font-bold px-3 mb-1 ml-1 ${labelText} ${language === "ar" ? "text-left" : "text-right"}`}
               >
                 {t("details.select priority")}
               </Text>
@@ -202,12 +252,12 @@ export const AddTaskSheet = forwardRef(
                     }
                     className={`flex-1 px-3 py-2 mx-1 rounded-2xl items-center border ${
                       priority === item.value
-                        ? `border-transparent ${isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary"} text-white`
-                        : `${isDarkMode ? (isStudy ? "border-study-dark-primary/30 bg-study-dark-primary/30" : "border-coding-dark-primary/30 bg-coding-dark-primary/30") : isStudy ? "border-study-primary/30 bg-study-accent/30" : " border-coding-primary/30 bg-coding-accent/30"} text-gray-600`
+                        ? `border-transparent ${activePill}`
+                        : unselectedPill
                     }`}
                   >
                     <Text
-                      className={`text-xs ${priority === item.value ? "text-white" : isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : "text-gray-600"}`}
+                      className={`text-xs ${priority === item.value ? activePillText : isDarkMode ? (isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive") : "text-gray-600"}`}
                     >
                       {item.label}
                     </Text>
@@ -223,47 +273,41 @@ export const AddTaskSheet = forwardRef(
               <View className="rounded-3xl">
                 <Pressable
                   onPress={() => dateSheetRef.current?.present()}
-                  className={`p-4 items-center flex-row gap-2 justify-center rounded-2xl mb-3 ${isDarkMode ? (isStudy ? "bg-study-dark-primary/30" : "bg-coding-dark-primary/30") : isStudy ? "bg-study-accent" : "bg-coding-accent"}`}
+                  className={`p-4 items-center flex-row gap-2 justify-center rounded-2xl mb-3 ${
+                    isDarkMode
+                      ? isStudy
+                        ? "bg-study-dark-accentSoft"
+                        : "bg-dev-dark-accentSoft"
+                      : isStudy
+                        ? "bg-study-accentSoft"
+                        : "bg-dev-accentSoft"
+                  }`}
                 >
                   <Text
-                    className={`${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"} font-bold text-center`}
+                    className={`${isDarkMode ? (isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive") : isStudy ? "text-study-header" : "text-dev-header"} font-bold text-center`}
                   >
                     {t("add.Set date")}
                   </Text>
-                  <Calendar
-                    size={20}
-                    color={
-                      isDarkMode
-                        ? isStudy
-                          ? "#E0E7FF"
-                          : "#D1FAE5"
-                        : isStudy
-                          ? "#1E40AF"
-                          : "#065F46"
-                    }
-                  />
+                  <Calendar size={20} color={iconColor} />
                 </Pressable>
                 <Pressable
                   onPress={() => timeSheetRef.current?.present()}
-                  className={`p-4 items-center flex-row gap-2 justify-center rounded-2xl ${isDarkMode ? (isStudy ? "bg-study-dark-primary/30" : "bg-coding-dark-primary/30") : isStudy ? "bg-study-accent" : "bg-coding-accent"}`}
+                  className={`p-4 items-center flex-row gap-2 justify-center rounded-2xl ${
+                    isDarkMode
+                      ? isStudy
+                        ? "bg-study-dark-accentSoft"
+                        : "bg-dev-dark-accentSoft"
+                      : isStudy
+                        ? "bg-study-accentSoft"
+                        : "bg-dev-accentSoft"
+                  }`}
                 >
                   <Text
-                    className={`${isDarkMode ? (isStudy ? "text-study-dark-primary" : "text-coding-dark-primary") : isStudy ? "text-study-primary" : "text-coding-primary"} font-bold text-center`}
+                    className={`${isDarkMode ? (isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive") : isStudy ? "text-study-header" : "text-dev-header"} font-bold text-center`}
                   >
                     {t("add.Set time")}
                   </Text>
-                  <Clock1
-                    size={20}
-                    color={
-                      isDarkMode
-                        ? isStudy
-                          ? "#E0E7FF"
-                          : "#D1FAE5"
-                        : isStudy
-                          ? "#1E40AF"
-                          : "#065F46"
-                    }
-                  />
+                  <Clock1 size={20} color={iconColor} />
                 </Pressable>
               </View>
             </View>
@@ -330,10 +374,10 @@ export const AddTaskSheet = forwardRef(
                 (ref as React.RefObject<BottomSheet>)?.current?.close();
               }
             }}
-            className={`w-full py-4 rounded-[20px] items-center mt-4 ${isDarkMode ? (isStudy ? "bg-study-dark-primary shadow-indigo-200" : "bg-coding-dark-primary shadow-emerald-200") : isStudy ? "bg-study-primary shadow-indigo-200" : "bg-coding-primary shadow-emerald-200"}`}
+            className={`w-full py-4 rounded-[20px] items-center mt-4 ${activePill}`}
             style={{ elevation: 5 }}
           >
-            <Text className="text-white font-black text-lg">
+            <Text className={`${activePillText} font-black text-lg`}>
               {type === "task" ? t("add.add task") : t("add.add habit")}
             </Text>
           </TouchableOpacity>

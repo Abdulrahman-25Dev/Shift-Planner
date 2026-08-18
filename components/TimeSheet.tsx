@@ -13,6 +13,7 @@ import {
   BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
 import { useAppStore } from "../store/useAppStore";
+import { useModeTheme } from "@/src/theme";
 import { useTranslation } from "react-i18next";
 
 interface TimeSheetProps {
@@ -99,22 +100,48 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
     );
 
     const { mode: appMode, isDarkMode, language } = useAppStore();
+    const { palette } = useModeTheme();
     const { t } = useTranslation();
     const isStudy = appMode === "study";
 
-    const primaryColor = isStudy
-      ? isDarkMode
-        ? "#818cf8"
-        : "#4f46e5"
-      : isDarkMode
-        ? "#34d399"
-        : "#064e3b";
+    const primaryColor = isDarkMode ? palette.interactive : palette.header;
     const placeholderColor = isDarkMode ? "#94a3b8" : "#9CA3AF";
     const sheetBgClass = isDarkMode
       ? isStudy
-        ? "bg-study-dark-bg"
-        : "bg-coding-dark-bg"
+        ? "bg-study-dark-card"
+        : "bg-dev-dark-card"
       : "bg-white";
+    const accentText = isDarkMode
+      ? isStudy
+        ? "text-study-dark-interactive"
+        : "text-dev-dark-interactive"
+      : isStudy
+        ? "text-study-header"
+        : "text-dev-header";
+    const activePill = isDarkMode
+      ? isStudy
+        ? "bg-study-dark-interactive"
+        : "bg-dev-dark-interactive"
+      : isStudy
+        ? "bg-study-header"
+        : "bg-dev-header";
+    const activePillText = isDarkMode
+      ? isStudy
+        ? "text-study-header"
+        : "text-dev-header"
+      : "text-white";
+    const confirmBtn = isDarkMode
+      ? isStudy
+        ? "bg-study-dark-interactive"
+        : "bg-dev-dark-interactive"
+      : isStudy
+        ? "bg-study-header"
+        : "bg-dev-header";
+    const confirmBtnText = isDarkMode
+      ? isStudy
+        ? "text-study-header"
+        : "text-dev-header"
+      : "text-white";
 
     const to24Hour = (h12: string, pm: boolean): string => {
       const num = parseInt(h12, 10);
@@ -245,11 +272,7 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
         keyboardBehavior="interactive"
         enableContentPanningGesture={false}
         backgroundStyle={{
-          backgroundColor: isDarkMode
-            ? isStudy
-              ? "#0f172a"
-              : "#022c22"
-            : "#ffffff",
+          backgroundColor: isDarkMode ? palette.card : "#FFFFFF",
         }}
       >
         <BottomSheetView className={`flex-1 p-5 ${sheetBgClass}`}>
@@ -339,20 +362,20 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
             <View className="flex-row justify-center mt-3">
               <TouchableOpacity
                 onPress={() => setIsPM(false)}
-                className={`px-5 py-2 rounded-xl mx-1 ${!isPM ? (isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary") : isDarkMode ? "bg-gray-700" : "bg-gray-100"}`}
+                className={`px-5 py-2 rounded-xl mx-1 ${!isPM ? activePill : isDarkMode ? "bg-gray-700" : "bg-gray-100"}`}
               >
                 <Text
-                  className={`font-bold ${!isPM ? "text-white" : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
+                  className={`font-bold ${!isPM ? activePillText : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
                 >
                   {language === "ar" ? "ص" : "AM"}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setIsPM(true)}
-                className={`px-5 py-2 rounded-xl mx-1 ${isPM ? (isDarkMode ? (isStudy ? "bg-study-dark-primary" : "bg-coding-dark-primary") : isStudy ? "bg-study-primary" : "bg-coding-primary") : isDarkMode ? "bg-gray-700" : "bg-gray-100"}`}
+                className={`px-5 py-2 rounded-xl mx-1 ${isPM ? activePill : isDarkMode ? "bg-gray-700" : "bg-gray-100"}`}
               >
                 <Text
-                  className={`font-bold ${isPM ? "text-white" : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
+                  className={`font-bold ${isPM ? activePillText : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
                 >
                   {language === "ar" ? "م" : "PM"}
                 </Text>
@@ -373,7 +396,7 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
                 {t("add.Selected time")} :
               </Text>
               <Text
-                className={`font-black ${isDarkMode ? (isStudy ? "text-study-accent" : "text-coding-accent") : isStudy ? "text-study-primary" : "text-coding-primary"}`}
+                className={`font-black ${accentText}`}
               >
                 {`${selectedHour}:${selectedMinute} ${isPM ? "PM" : "AM"}`}
               </Text>
@@ -381,9 +404,9 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
 
             <TouchableOpacity
               onPress={handleConfirm}
-              className={`py-4 rounded-2xl items-center shadow-lg ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+              className={`py-4 rounded-2xl items-center shadow-lg ${confirmBtn}`}
             >
-              <Text className="text-white font-black text-lg">
+              <Text className={`${confirmBtnText} font-black text-lg`}>
                 {t("add.Confirm time")}
               </Text>
             </TouchableOpacity>

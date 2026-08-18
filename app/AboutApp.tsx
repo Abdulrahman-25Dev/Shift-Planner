@@ -11,6 +11,7 @@ import {
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/useAppStore";
+import { useModeTheme } from "@/src/theme";
 
 const RING_RADIUS = 30;
 const RING_STROKE = 6;
@@ -77,35 +78,42 @@ function ProgressRing({
 export default function AboutApp() {
   const { t } = useTranslation();
   const { isDarkMode, mode, language, tasks, habits } = useAppStore();
+  const { palette } = useModeTheme();
   const isStudy = mode === "study";
 
-  const accentHex = isStudy
-    ? isDarkMode ? "#818cf8" : "#4f46e5"
-    : isDarkMode ? "#34d399" : "#064e3b";
+  const accentHex = palette.accentText;
 
-  const pageBg = isDarkMode
-    ? isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg"
-    : isStudy ? "bg-study-bg" : "bg-coding-bg";
+  const pageBg = isDarkMode ? "bg-screen-dark" : "bg-screen-light";
 
   const cardBg = isDarkMode
-    ? isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent"
+    ? isStudy
+      ? "bg-study-dark-card"
+      : "bg-dev-dark-card"
     : "bg-white";
 
   const cardBorder = isDarkMode
-    ? isStudy ? "border-study-dark-accent/50" : "border-coding-dark-accent/50"
+    ? isStudy
+      ? "border-study-dark-accentSoft"
+      : "border-dev-dark-accentSoft"
     : "border-gray-200/50";
 
   const accentText = isDarkMode
-    ? isStudy ? "text-study-dark-primary" : "text-coding-dark-primary"
-    : isStudy ? "text-study-primary" : "text-coding-primary";
+    ? isStudy
+      ? "text-study-dark-interactive"
+      : "text-dev-dark-interactive"
+    : isStudy
+      ? "text-study-header"
+      : "text-dev-header";
 
   const iconContainerBg = isDarkMode
-    ? isStudy ? "bg-study-dark-primary/20" : "bg-coding-dark-primary/20"
-    : isStudy ? "bg-study-primary/10" : "bg-coding-primary/10";
+    ? isStudy
+      ? "bg-study-dark-accentSoft"
+      : "bg-dev-dark-accentSoft"
+    : isStudy
+      ? "bg-study-accentSoft"
+      : "bg-dev-accentSoft";
 
-  const titleText = isDarkMode
-    ? isStudy ? "text-study-dark-primary" : "text-coding-dark-primary"
-    : "text-gray-800";
+  const titleText = isDarkMode ? "text-gray-100" : "text-gray-800";
 
   const bodyText = isDarkMode ? "text-slate-300" : "text-gray-700";
 
@@ -118,8 +126,8 @@ export default function AboutApp() {
   const stabilityPct =
     totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  const ringTrack = isDarkMode ?isStudy ? "#1e1b4b" : "#1e3a2f" : isStudy ? "#e0e7ff" : "#d1fae5";
-  const ringStabilityColor = isStudy ? "#818cf8" : "#10b981";
+  const ringTrack = isDarkMode ? "#475569" : "#E2E8F0";
+  const ringStabilityColor = palette.accentText;
   const ringTasksColor = isStudy ? "#3b82f6" : "#0ea5e9";
   const ringHabitsColor = isStudy ? "#14b8a6" : "#8b5cf6";
   const stabilityLabel = isStudy ? t("about.stabilityStudy") : t("about.stability");

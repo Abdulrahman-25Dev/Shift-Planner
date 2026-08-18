@@ -1,48 +1,54 @@
 /** @type {import('tailwindcss').Config} */
-// tailwind.config.js
 module.exports = {
   presets: [require("nativewind/preset")],
   content: [
     "./app/**/*.{js,jsx,ts,tsx}",
     "./src/**/*.{js,jsx,ts,tsx}",
-    "./components/**/*.{js,jsx,ts,tsx}" // أضف هذا لضمان قراءة صف الايام
+    "./components/**/*.{js,jsx,ts,tsx}",
   ],
-  // ... الإعدادات السابقة
   theme: {
-  extend: {
-    colors: {
-      study: {
-        // الوضع الفاتح (Light Mode)
-        primary: '#4f46e5',
-        secondary: '#6366f1',
-        accent: '#e0e7ff',
-        bg: '#f8fafc',
-        
-        // الوضع الداكن (Dark Mode)
-        dark: {
-          primary: '#818cf8',
-          secondary: '#a5b4fc',
-          accent: '#1e1b4b',
-          bg: '#0f172a',
-        }
-      },
-      coding: {
-        // الوضع الفاتح (Light Mode)
-        primary: '#064e3b',
-        secondary: '#047857',
-        accent: '#d1fae5',
-        bg: '#f0fdf4',
-        
-        // الوضع الداكن (Dark Mode)
-        dark: {
-          primary: '#34d399',
-          secondary: '#6ee7b7',
-          accent: '#064e3b',
-          bg: '#022c22',
-        }
+    extend: {
+      colors: {
+        // Global screen backgrounds (all modes)
+        screen: {
+          light: "#F2F2F2", // slate-200
+          dark: "#1E293B", // slate-800
+        },
+        // Dev Mode
+        dev: {
+          header: "#07191E", // Deep Onyx
+          accent: "#02F5A1", // Medium Spring Green
+          accentSoft: "#E0FBF2", // Light Spring Green tint
+          dark: {
+            card: "#13252C", // Dark Slate / Onyx
+            interactive: "#02F5A1", // Vibrant Spring Green
+            accentSoft: "#12312E", // Dark Spring Green tint
+          },
+        },
+        // Study Mode
+        study: {
+          header: "#240A30", // Blacklist Purple
+          accent: "#FFDCEF", // Transparent Pink
+          accentSoft: "#FFF1F8", // Light Pink tint
+          dark: {
+            card: "#1D0B29", // Deep Dark Purple
+            interactive: "#FFCBE7", // Light Pink / Lavender
+            accentSoft: "#2B103A", // Dark Purple tint
+          },
+        },
+        // Faith Mode
+        faith: {
+          header: "#003152", // Prestige Mauve / Navy
+          accent: "#ADDFF1", // Gabriella Soft Blue
+          accentSoft: "#EAF6FB", // Light Blue tint
+          dark: {
+            card: "#003152", // Deep Navy
+            interactive: "#ADDFF1", // Soft Blue
+            accentSoft: "#0C3A58", // Dark Navy tint
+          },
+        },
       },
     },
   },
-  darkMode: 'class', 
-}
-}
+  darkMode: "class",
+};

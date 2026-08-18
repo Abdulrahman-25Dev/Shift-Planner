@@ -7,6 +7,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { Calendar } from "react-native-calendars";
 import { useAppStore } from "../store/useAppStore";
+import { useModeTheme } from "@/src/theme";
 
 interface DateClockSheetProps {
   onSave: (date: Date) => void;
@@ -40,8 +41,31 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
     );
 
     const { mode: appMode, isDarkMode } = useAppStore();
+    const { palette } = useModeTheme();
 
     const isStudy = appMode === "study";
+
+    const selectedColor = isDarkMode ? palette.interactive : palette.header;
+    const sheetCardBg = isDarkMode ? palette.card : "#FFFFFF";
+    const accentText = isDarkMode
+      ? isStudy
+        ? "text-study-dark-interactive"
+        : "text-dev-dark-interactive"
+      : isStudy
+        ? "text-study-header"
+        : "text-dev-header";
+    const confirmBtn = isDarkMode
+      ? isStudy
+        ? "bg-study-dark-interactive"
+        : "bg-dev-dark-interactive"
+      : isStudy
+        ? "bg-study-header"
+        : "bg-dev-header";
+    const confirmBtnText = isDarkMode
+      ? isStudy
+        ? "text-study-header"
+        : "text-dev-header"
+      : "text-white";
 
     const handleConfirm = () => {
       onSave(tempDate);
@@ -55,15 +79,11 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
         backdropComponent={renderBackdrop}
         keyboardBehavior="interactive"
         backgroundStyle={{
-          backgroundColor: isDarkMode
-            ? isStudy
-              ? "#0f172a"
-              : "#022c22"
-            : "#ffffff",
+          backgroundColor: isDarkMode ? sheetCardBg : "#FFFFFF",
         }}
       >
         <BottomSheetView
-          className={`flex-1 p-5 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : "bg-white"}`}
+          className={`flex-1 p-5 ${isDarkMode ? (isStudy ? "bg-study-dark-card" : "bg-dev-dark-card") : "bg-white"}`}
         >
           <View
             className={`flex-row-reverse p-1 rounded-2xl mb-6 ${isDarkMode ? "bg-gray-800" : "bg-gray-100"}`}
@@ -73,7 +93,7 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
               className={`flex-1 py-3 rounded-xl items-center ${mode === "date" ? (isDarkMode ? "bg-gray-700" : "bg-white shadow-sm") : ""}`}
             >
               <Text
-                className={`font-bold ${mode === "date" ? (isStudy ? "text-study-primary" : "text-coding-primary/80") : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
+                className={`font-bold ${mode === "date" ? accentText : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
               >
                 التاريخ
               </Text>
@@ -83,7 +103,7 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
               className={`flex-1 py-3 rounded-xl items-center ${mode === "time" ? (isDarkMode ? "bg-gray-700" : "bg-white shadow-sm") : ""}`}
             >
               <Text
-                className={`font-bold ${mode === "time" ? (isStudy ? "text-study-primary" : "text-coding-primary/80") : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
+                className={`font-bold ${mode === "time" ? accentText : isDarkMode ? "text-gray-300" : "text-gray-500"}`}
               >
                 الوقت
               </Text>
@@ -102,34 +122,16 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
                 markedDates={{
                   [formatDateString(tempDate)]: {
                     selected: true,
-                    selectedColor: isStudy
-                      ? isDarkMode
-                        ? "#818cf8"
-                        : "#4F46E5"
-                      : isDarkMode
-                        ? "#34d399"
-                        : "#047857",
+                    selectedColor,
                   },
                 }}
                 theme={{
-                  calendarBackground: isDarkMode
-                    ? isStudy
-                      ? "#0f172a"
-                      : "#022c22"
-                    : "#ffffff",
-                  todayTextColor: isStudy ? "#4F46E5" : "#047857",
+                  calendarBackground: isDarkMode ? sheetCardBg : "#ffffff",
+                  todayTextColor: selectedColor,
                   dayTextColor: isDarkMode ? "#e2e8f0" : "#0f172a",
                   textSectionTitleColor: isDarkMode ? "#94a3b8" : "#64748b",
-                  monthTextColor: isDarkMode
-                    ? "#e2e8f0"
-                    : isStudy
-                      ? "#4F46E5"
-                      : "#047857",
-                  arrowColor: isDarkMode
-                    ? "#e2e8f0"
-                    : isStudy
-                      ? "#4F46E5"
-                      : "#047857",
+                  monthTextColor: isDarkMode ? "#e2e8f0" : selectedColor,
+                  arrowColor: isDarkMode ? "#e2e8f0" : selectedColor,
                   selectedDayTextColor: "#ffffff",
                   textDisabledColor: isDarkMode ? "#64748b" : "#9ca3af",
                 }}
@@ -143,7 +145,7 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
             <View className="flex-row justify-between items-center mb-4 px-2">
               <Text className="text-gray-500 font-bold">الموعد:</Text>
               <Text
-                className={`font-black ${isStudy ? "text-study-primary" : "text-coding-primary"}`}
+                className={`font-black ${accentText}`}
               >
                 {tempDate.toLocaleTimeString("en-US", {
                   hour: "2-digit",
@@ -160,9 +162,9 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
 
             <TouchableOpacity
               onPress={handleConfirm}
-              className={`py-4 rounded-2xl items-center shadow-lg ${isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+              className={`py-4 rounded-2xl items-center shadow-lg ${confirmBtn}`}
             >
-              <Text className="text-white font-black text-lg">تأكيد وحفظ</Text>
+              <Text className={`${confirmBtnText} font-black text-lg`}>تأكيد وحفظ</Text>
             </TouchableOpacity>
           </View>
         </BottomSheetView>

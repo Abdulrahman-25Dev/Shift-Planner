@@ -7,6 +7,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { Calendar } from "react-native-calendars";
 import { useAppStore } from "../store/useAppStore";
+import { useModeTheme } from "@/src/theme";
 import { useTranslation } from "react-i18next";
 import HabitRepeatSelector from "./HabitRepeatSelector";
 
@@ -55,8 +56,24 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
     const isHabit = type === "habit";
 
     const { mode: appMode, isDarkMode, language } = useAppStore();
+    const { palette } = useModeTheme();
     const { t } = useTranslation();
     const isStudy = appMode === "study";
+
+    const selectedColor = isDarkMode ? palette.interactive : palette.header;
+    const sheetCardBg = isDarkMode ? palette.card : "#FFFFFF";
+    const btnClass = isDarkMode
+      ? isStudy
+        ? "bg-study-dark-interactive"
+        : "bg-dev-dark-interactive"
+      : isStudy
+        ? "bg-study-header"
+        : "bg-dev-header";
+    const btnTextClass = isDarkMode
+      ? isStudy
+        ? "text-study-header"
+        : "text-dev-header"
+      : "text-white";
 
     const handleConfirm = () => {
       onSave(new Date(selectedDate));
@@ -70,15 +87,11 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
         backdropComponent={renderBackdrop}
         keyboardBehavior="interactive"
         backgroundStyle={{
-          backgroundColor: isDarkMode
-            ? isStudy
-              ? "#0f172a"
-              : "#022c22"
-            : "#ffffff",
+          backgroundColor: isDarkMode ? sheetCardBg : "#FFFFFF",
         }}
       >
         <BottomSheetView
-          className={`flex-1 p-5 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : "bg-white"}`}
+          className={`flex-1 p-5 ${isDarkMode ? (isStudy ? "bg-study-dark-card" : "bg-dev-dark-card") : "bg-white"}`}
         >
           <Text
             className={`text-lg px-3 font-black mb-4 ${isDarkMode ? "text-gray-100" : "text-gray-900"} ${language === "ar" ? "text-left" : "text-right"}`}
@@ -97,34 +110,16 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
             markedDates={{
               [formatDateString(selectedDate)]: {
                 selected: true,
-                selectedColor: isStudy
-                  ? isDarkMode
-                    ? "#818cf8"
-                    : "#4F46E5"
-                  : isDarkMode
-                    ? "#34d399"
-                    : "#047857",
+                selectedColor,
               },
             }}
             theme={{
-              calendarBackground: isDarkMode
-                ? isStudy
-                  ? "#0f172a"
-                  : "#022c22"
-                : "#ffffff",
-              todayTextColor: isStudy ? "#4F46E5" : "#047857",
+              calendarBackground: isDarkMode ? sheetCardBg : "#ffffff",
+              todayTextColor: selectedColor,
               dayTextColor: isDarkMode ? "#e2e8f0" : "#0f172a",
               textSectionTitleColor: isDarkMode ? "#94a3b8" : "#64748b",
-              monthTextColor: isDarkMode
-                ? "#e2e8f0"
-                : isStudy
-                  ? "#4F46E5"
-                  : "#047857",
-              arrowColor: isDarkMode
-                ? "#e2e8f0"
-                : isStudy
-                  ? "#4F46E5"
-                  : "#047857",
+              monthTextColor: isDarkMode ? "#e2e8f0" : selectedColor,
+              arrowColor: isDarkMode ? "#e2e8f0" : selectedColor,
               selectedDayTextColor: "#ffffff",
               textDisabledColor: isDarkMode ? "#64748b" : "#9ca3af",
             }}
@@ -139,11 +134,11 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
             >
               {isHabit && (
                 <TouchableOpacity
-                  className={`w-full py-4 rounded-2xl items-center shadow-lg ${isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+                  className={`w-full py-4 rounded-2xl items-center shadow-lg ${btnClass}`}
                   onPress={() => {
                     handleOpenRepeatSheet();}}
                 >
-                  <Text className="text-white font-black text-lg">
+                  <Text className={`${btnTextClass} font-black text-lg`}>
                     {t("common.repeat")}
                   </Text>
                 </TouchableOpacity>
@@ -152,9 +147,9 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
 
             <TouchableOpacity
               onPress={handleConfirm}
-              className={`py-4 rounded-2xl items-center shadow-lg ${isStudy ? "bg-study-primary" : "bg-coding-primary"} `}
+              className={`py-4 rounded-2xl items-center shadow-lg ${btnClass} `}
             >
-              <Text className="text-white font-black text-lg">
+              <Text className={`${btnTextClass} font-black text-lg`}>
                 {t("add.Confirm date")}
               </Text>
             </TouchableOpacity>

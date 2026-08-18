@@ -15,6 +15,7 @@ import { AddTaskSheet } from "../components/AddTaskSheet";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { DetailsSheet } from "./tasks/taskDetails";
 import ConfirmationModal from "../components/ConfirmationModal";
+import { useModeTheme } from "@/src/theme";
 
 export default function Index() {
   const {
@@ -29,6 +30,7 @@ export default function Index() {
     language,
   } = useAppStore();
   const isStudy = mode === "study";
+  const { palette } = useModeTheme();
   const { t } = useTranslation();
 
   const priorityRank = (priority: string | undefined) => {
@@ -61,14 +63,21 @@ export default function Index() {
       : t("progress.devTitle");
 
   // ترتيب حسب الاكتمال ثم الأولوية (Sort by completion then priority)
-  const sortByCompletionAndPriority = <T extends { completed: boolean; priority?: string }>(a: T, b: T) => {
+  const sortByCompletionAndPriority = <
+    T extends { completed: boolean; priority?: string },
+  >(
+    a: T,
+    b: T,
+  ) => {
     if (a.completed !== b.completed) {
       return Number(a.completed) - Number(b.completed);
     }
     return priorityRank(b.priority) - priorityRank(a.priority);
   };
 
-  const sortedHabits = [...habitsWithCompleted].sort(sortByCompletionAndPriority);
+  const sortedHabits = [...habitsWithCompleted].sort(
+    sortByCompletionAndPriority,
+  );
   const sortedTasks = [...tasks].sort(sortByCompletionAndPriority);
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -135,11 +144,11 @@ export default function Index() {
                 : "bg-gray-100 border-gray-200"
               : isDarkMode
                 ? isStudy
-                  ? "bg-study-dark-bg/60 border-gray-700"
-                  : "bg-coding-dark-bg/60 border-gray-700"
+                  ? "bg-study-dark-card border-gray-600/50"
+                  : "bg-dev-dark-card border-gray-600/50"
                 : isStudy
-                  ? "bg-violet-100 border-study-primary/20"
-                  : "bg-green-50 border-coding-primary/20"
+                  ? "bg-white border-study-accent/60"
+                  : "bg-white border-dev-accent/60"
           }`}
           style={{
             elevation: 2,
@@ -161,10 +170,12 @@ export default function Index() {
                     : item.priority === "low"
                       ? "bg-emerald-500/15"
                       : isDarkMode
-                        ? "bg-gray-600"
+                        ? isStudy
+                          ? "bg-study-dark-accentSoft"
+                          : "bg-dev-dark-accentSoft"
                         : isStudy
-                          ? "bg-study-primary/10"
-                          : "bg-coding-primary/10"
+                          ? "bg-study-accent/40"
+                          : "bg-dev-accent/40"
             }`}
           >
             <View
@@ -178,17 +189,19 @@ export default function Index() {
                       : item.priority === "low"
                         ? "bg-emerald-500"
                         : isDarkMode
-                          ? "bg-slate-500"
+                          ? isStudy
+                            ? "bg-study-dark-interactive"
+                            : "bg-dev-dark-interactive"
                           : isStudy
-                            ? "bg-study-primary"
-                            : "bg-coding-primary"
+                            ? "bg-study-header"
+                            : "bg-dev-header"
               }`}
             />
           </View>
 
           <View className="flex-1 ml-3">
             <Text
-              className={`font-bold text-base ${item.completed ? "line-through text-gray-500" : isDarkMode ? "line through text-gray-200" : "text-gray-800"}`}
+              className={`font-bold text-base ${item.completed ? "line-through text-gray-500" : isDarkMode ? "text-gray-100" : "text-gray-800"}`}
             >
               {item.title}
             </Text>
@@ -200,10 +213,11 @@ export default function Index() {
                     ? " text-gray-400"
                     : isDarkMode
                       ? " text-gray-400"
-                      : " text-gray-600")
+                      : " text-gray-500")
                 }
               >
-                {dueDateLabel} | {dueTimeLabel ? (
+                {dueDateLabel} |{" "}
+                {dueTimeLabel ? (
                   <Text
                     className={
                       " text-xs" +
@@ -211,7 +225,7 @@ export default function Index() {
                         ? " text-gray-400"
                         : isDarkMode
                           ? " text-gray-400"
-                          : " text-gray-600")
+                          : " text-gray-500")
                     }
                   >
                     {dueTimeLabel}
@@ -226,19 +240,17 @@ export default function Index() {
             className={`flex-row items-center p-1 mb-2 rounded-[24px] ${
               item.completed
                 ? isDarkMode
-                  ? "bg-gray-700 border-gray-600"
-                  : "bg-gray-100 border-gray-200"
+                  ? "border-gray-600"
+                  : "border-gray-200"
                 : isDarkMode
-                  ? isStudy
-                    ? "bg-study-dark-bg/60 border-gray-700"
-                    : "bg-coding-dark-bg/60 border-gray-700"
+                  ? "border-gray-600/50"
                   : isStudy
-                    ? "bg-violet-100 border-study-primary/20"
-                    : "bg-green-50 border-coding-primary/20"
+                    ? "border-study-accent/60"
+                    : "border-dev-accent/60"
             }`}
           >
             <View
-              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? "border-gray-500" : isStudy ? "border-study-primary/20" : "border-coding-primary/20"}`}
+              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? (isStudy ? "border-study-dark-interactive/60" : "border-dev-dark-interactive/60") : isStudy ? "border-study-header/30" : "border-dev-header/30"}`}
             >
               {item.completed && (
                 <Text className="text-white text-xs font-bold text-center">
@@ -346,11 +358,11 @@ export default function Index() {
               : "bg-gray-100 border-gray-200"
             : isDarkMode
               ? isStudy
-                ? "bg-study-dark-bg/60 border-gray-700"
-                : "bg-coding-dark-bg/60 border-gray-700"
+                ? "bg-study-dark-card border-gray-600/50"
+                : "bg-dev-dark-card border-gray-600/50"
               : isStudy
-                ? "bg-violet-100 border-study-primary/20"
-                : "bg-green-50 border-coding-primary/20"
+                ? "bg-white border-study-accent/60"
+                : "bg-white border-dev-accent/60"
         }`}
         style={{
           elevation: 2,
@@ -366,19 +378,26 @@ export default function Index() {
                 ? "bg-gray-600"
                 : "bg-gray-200"
               : isDarkMode
-                ? "bg-gray-600"
+                ? isStudy
+                  ? "bg-study-dark-accentSoft"
+                  : "bg-dev-dark-accentSoft"
                 : isStudy
-                  ? "bg-study-primary/10"
-                  : "bg-coding-primary/10"
+                  ? "bg-study-accent/40"
+                  : "bg-dev-accent/40"
           }`}
         >
           <Flame
             size={20}
             color={
-              item.priority === "high" ? "#EF4444" :
-              item.priority === "medium" ? "#F97316" :
-              item.priority === "low" ? "#10B981" :
-              "#000000"
+              item.priority === "high"
+                ? "#EF4444"
+                : item.priority === "medium"
+                  ? "#F97316"
+                  : item.priority === "low"
+                    ? "#10B981"
+                    : isDarkMode
+                      ? "#FFFFFF"
+                      : "#000000"
             }
           />
         </View>
@@ -394,7 +413,7 @@ export default function Index() {
               className={`flex-row items-center flex-wrap gap-x-1 ${language === "ar" ? "flex-row" : ""}`}
             >
               <Text
-                className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
+                className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-500"}`}
               >
                 {repeatText}
               </Text>
@@ -406,7 +425,7 @@ export default function Index() {
                     {" | "}
                   </Text>
                   <Text
-                    className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
+                    className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-500"}`}
                   >
                     {reminderTimeText}
                   </Text>
@@ -421,17 +440,17 @@ export default function Index() {
           className={`flex-row items-center ${
             item.completed
               ? isDarkMode
-                ? "bg-gray-700 border-gray-600"
-                : "bg-white border-gray-200"
+                ? "border-gray-600"
+                : "border-gray-200"
               : isDarkMode
-                ? "bg-transparent"
+                ? "border-gray-600/50"
                 : isStudy
-                  ? "bg-violet-100 border-study-primary/20"
-                  : "bg-green-50 border-coding-primary/20"
+                  ? "border-study-accent/60"
+                  : "border-dev-accent/60"
           }`}
         >
           <View
-            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? (isStudy ? "bg-study-primary border-study-primary" : "bg-coding-primary border-coding-primary") : isDarkMode ? "border-gray-500" : isStudy ? "border-study-primary/20" : "border-coding-primary/20"}`}
+            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? (isStudy ? "border-study-dark-interactive/60" : "border-dev-dark-interactive/60") : isStudy ? "border-study-header/30" : "border-dev-header/30"}`}
           >
             {item.completed && (
               <Text className="text-white text-xs font-bold text-center">
@@ -457,23 +476,55 @@ export default function Index() {
   // داشبورد التقدم بدلاً من شريط الأيام (Progress Dashboard replacing Days Row)
   const ProgressDashboard = () => (
     <View
-      className={`my-4 rounded-3xl px-4 py-4 ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : isStudy ? "bg-violet-300" : "bg-green-300"}`}
+      className={`my-4 rounded-3xl px-4 py-4 border ${
+        isDarkMode
+          ? isStudy
+            ? "bg-study-dark-card border-study-dark-accentSoft"
+            : "bg-dev-dark-card border-dev-dark-accentSoft"
+          : isStudy
+            ? "bg-study-accentSoft border-study-accent/60"
+            : "bg-dev-accentSoft border-dev-accent/60"
+      }`}
       style={{ minHeight: 128 }}
     >
       <View className="flex-row justify-between items-start">
         <View className="flex-1 pr-3">
           <Text
-            className={`text-sm font-bold uppercase ${language === "ar" ? "text-left" : "text-right"} ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-600") : isStudy ? "text-violet-600" : "text-green-600"}`}
+            className={`text-sm font-bold uppercase ${language === "ar" ? "text-left" : "text-right"} ${
+              isDarkMode
+                ? isStudy
+                  ? "text-study-dark-interactive"
+                  : "text-dev-dark-interactive"
+                : isStudy
+                  ? "text-study-header"
+                  : "text-dev-header"
+            }`}
           >
             {progressLabel}
           </Text>
           <Text
-            className={`mt-2 text-3xl font-black ${language === "ar" ? "text-left" : "text-right"} ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
+            className={`mt-2 text-3xl font-black ${language === "ar" ? "text-left" : "text-right"} ${
+              isDarkMode
+                ? isStudy
+                  ? "text-study-dark-interactive"
+                  : "text-dev-dark-interactive"
+                : isStudy
+                  ? "text-study-header"
+                  : "text-dev-header"
+            }`}
           >
             {progressPercentage}%
           </Text>
           <Text
-            className={`mt-1 text-sm ${language === "ar" ? "text-left" : "text-right"} ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-700" : "text-green-700"}`}
+            className={`mt-1 text-sm ${language === "ar" ? "text-left" : "text-right"} ${
+              isDarkMode
+                ? isStudy
+                  ? "text-study-dark-interactive/80"
+                  : "text-dev-dark-interactive/80"
+                : isStudy
+                  ? "text-study-header/80"
+                  : "text-dev-header/80"
+            }`}
           >
             {completedItems} / {totalItems || 0} {t("progress.completed")}
           </Text>
@@ -482,7 +533,15 @@ export default function Index() {
 
       <View className="mt-4 h-3 w-full overflow-hidden rounded-full bg-white/20">
         <View
-          className={`h-full rounded-full ${language === "ar" ? "mr-auto" : "ml-auto"} ${isStudy ? "bg-violet-700" : "bg-green-600"}`}
+          className={`h-full rounded-full ${language === "ar" ? "mr-auto" : "ml-auto"} ${
+            isDarkMode
+              ? isStudy
+                ? "bg-study-dark-interactive"
+                : "bg-dev-dark-interactive"
+              : isStudy
+                ? "bg-study-header"
+                : "bg-dev-header"
+          }`}
           style={{ width: `${progressPercentage}%` }}
         />
       </View>
@@ -491,8 +550,9 @@ export default function Index() {
 
   const HeaderSection = () => (
     <View
-      className={`pt-12 pb-5 px-6 shadow-2xl 
-        ${isDarkMode ? (isStudy ? "bg-study-dark-accent" : "bg-coding-dark-accent") : isStudy ? "bg-study-primary" : "bg-coding-primary"}`}
+      className={`pt-12 pb-5 px-6 shadow-2xl ${
+        isStudy ? "bg-study-header" : "bg-dev-header"
+      }`}
     >
       <View className="flex-row justify-between items-center">
         <TouchableOpacity
@@ -516,7 +576,6 @@ export default function Index() {
         </View>
 
         <View className="flex-row items-center gap-2">
-
           <Pressable
             onPress={() => router.push("./settings")}
             className="bg-white/20 p-3 rounded-2xl"
@@ -530,7 +589,7 @@ export default function Index() {
 
   return (
     <View
-      className={`flex-1 ${isDarkMode ? (isStudy ? "bg-study-dark-bg" : "bg-coding-dark-bg") : isStudy ? "bg-study-accent" : "bg-coding-accent"}`}
+      className={`flex-1 ${isDarkMode ? "bg-screen-dark" : "bg-screen-light"}`}
     >
       <HeaderSection />
 
@@ -544,7 +603,15 @@ export default function Index() {
           }
         >
           <Text
-            className={`text-lg font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
+            className={`text-lg font-bold ${
+              isDarkMode
+                ? isStudy
+                  ? "text-study-dark-interactive"
+                  : "text-dev-dark-interactive"
+                : isStudy
+                  ? "text-study-header"
+                  : "text-dev-header"
+            }`}
           >
             {t("common.Tasks")}
           </Text>
@@ -553,7 +620,15 @@ export default function Index() {
             className="px-3 py-1 rounded-lg"
           >
             <Text
-              className={`text-sm font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
+              className={`text-sm font-bold ${
+                isDarkMode
+                  ? isStudy
+                    ? "text-study-dark-interactive"
+                    : "text-dev-dark-interactive"
+                  : isStudy
+                    ? "text-study-header"
+                    : "text-dev-header"
+              }`}
             >
               {t("common.viewAll")}
             </Text>
@@ -577,7 +652,15 @@ export default function Index() {
           }
         >
           <Text
-            className={`text-lg font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
+            className={`text-lg font-bold ${
+              isDarkMode
+                ? isStudy
+                  ? "text-study-dark-interactive"
+                  : "text-dev-dark-interactive"
+                : isStudy
+                  ? "text-study-header"
+                  : "text-dev-header"
+            }`}
           >
             {t("common.Habits")}
           </Text>
@@ -587,7 +670,15 @@ export default function Index() {
             className="px-3 py-1 rounded-lg"
           >
             <Text
-              className={`text-sm font-bold ${isDarkMode ? (isStudy ? "text-violet-500" : "text-green-500") : isStudy ? "text-violet-900" : "text-green-800"}`}
+              className={`text-sm font-bold ${
+                isDarkMode
+                  ? isStudy
+                    ? "text-study-dark-interactive"
+                    : "text-dev-dark-interactive"
+                  : isStudy
+                    ? "text-study-header"
+                    : "text-dev-header"
+              }`}
             >
               {t("common.viewAll")}
             </Text>
@@ -606,11 +697,27 @@ export default function Index() {
         <TouchableOpacity
           onPress={openAddTaskSheet}
           className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
-            isStudy ? "bg-study-primary" : "bg-coding-primary"
+            isDarkMode
+              ? isStudy
+                ? "bg-study-dark-interactive"
+                : "bg-dev-dark-interactive"
+              : isStudy
+                ? "bg-study-header"
+                : "bg-dev-header"
           }`}
           style={{ elevation: 5 }}
         >
-          <Text className="text-white text-3xl font-bold">+</Text>
+          <Text
+            className={`text-3xl font-bold ${
+              isDarkMode
+                ? isStudy
+                  ? "text-study-header"
+                  : "text-dev-header"
+                : "text-white"
+            }`}
+          >
+            +
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -618,8 +725,16 @@ export default function Index() {
       <DetailsSheet ref={detailsSheetRef} itemId={selectedId} />
       <ConfirmationModal
         isVisible={deleteModalVisible}
-        title={t("settings.delete" + (pendingDelete?.type === "task" ? "Task" : "Habit") + "Title")}
-        description={t("settings.delete" + (pendingDelete?.type === "task" ? "Task" : "Habit") + "Desc")}
+        title={t(
+          "settings.delete" +
+            (pendingDelete?.type === "task" ? "Task" : "Habit") +
+            "Title",
+        )}
+        description={t(
+          "settings.delete" +
+            (pendingDelete?.type === "task" ? "Task" : "Habit") +
+            "Desc",
+        )}
         onConfirm={() => {
           if (pendingDelete) {
             deleteSingleItem(pendingDelete.id, pendingDelete.type);

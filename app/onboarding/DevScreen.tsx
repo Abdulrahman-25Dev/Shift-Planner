@@ -14,7 +14,7 @@ const DevScreen = () => {
   return (
     <View
       className={
-        "flex-1" + (isDarkMode ? " bg-coding-dark-bg" : " bg-coding-bg")
+        "flex-1" + (isDarkMode ? " bg-screen-dark" : " bg-screen-light")
       }
     >
       {/* PLACE YOUR PURPLE GRADIENT BACKGROUND HERE */}
@@ -31,7 +31,7 @@ const DevScreen = () => {
         <Text
           className={
             "text-2xl text-center font-bold mt-6 " +
-            (isDarkMode ? " text-coding-dark-primary" : " text-coding-primary")
+            (isDarkMode ? " text-dev-dark-interactive" : " text-dev-header")
           }
         >
           انطلق في عالم التطوير
@@ -42,8 +42,8 @@ const DevScreen = () => {
           className={
             "text-base text-center mt-3" +
             (isDarkMode
-              ? " text-coding-dark-secondary"
-              : " text-coding-secondary")
+              ? " text-dev-dark-interactive/70"
+              : " text-dev-header/70")
           }
         >
           نظّم أوقات كتابة الكود، وتعلّم اللغات البرمجية المفضلة لديك لتصنع
@@ -55,7 +55,7 @@ const DevScreen = () => {
           <View
             className={
               "w-6 h-2 rounded-full mx-1" +
-              (isDarkMode ? " bg-coding-dark-primary" : " bg-coding-primary")
+              (isDarkMode ? " bg-dev-dark-interactive" : " bg-dev-header")
             }
           />
           <View
@@ -71,15 +71,13 @@ const DevScreen = () => {
           onPress={handleGetStarted}
           className={
             "mt-12 py-4 px-12 rounded-full w-full items-center" +
-            (isDarkMode ? " bg-coding-dark-primary" : " bg-coding-primary")
+            (isDarkMode ? " bg-dev-dark-interactive" : " bg-dev-header")
           }
         >
           <Text
             className={
               " text-lg font-bold" +
-              (isDarkMode
-                ? " text-coding-primary"
-                : " text-coding-dark-primary")
+              (isDarkMode ? " text-dev-header" : " text-white")
             }
           >إبدأ الآن</Text>
         </TouchableOpacity>

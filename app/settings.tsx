@@ -5,6 +5,7 @@ import {
   Switch,
   ScrollView,
   Pressable,
+  Image,
 } from "react-native";
 import React, { useState, useCallback } from "react";
 import {
@@ -18,11 +19,20 @@ import {
   LogOut,
 } from "lucide-react-native";
 import { router } from "expo-router";
-import { useAppStore } from "../store/useAppStore";
+import { useAppStore, type AppUser } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { useModeTheme, useModeClasses } from "@/src/theme";
-import { MODE_META } from "../components/ModeSelectionModal";
+
+const getInitials = (user: AppUser | null): string => {
+  if (!user) return "?";
+  const name = user.fullName || user.username || user.email || "";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  if (user.email) return user.email.slice(0, 2).toUpperCase();
+  return "?";
+};
 
 export default function Settings() {
   const {
@@ -33,6 +43,8 @@ export default function Settings() {
     setLanguage,
     notificationsEnabled,
     setNotificationsEnabled,
+    user,
+    logout,
   } = useAppStore();
   const { palette } = useModeTheme();
   const mc = useModeClasses();
@@ -50,7 +62,9 @@ export default function Settings() {
   const openClearTasksModal = useCallback(() => {
     setModalConfig({
       title: t("settings.deleteAllTasks"),
-      description: t("settings.deleteAllTasksDesc") || "Are you sure you want to delete all tasks? This action cannot be undone.",
+      description:
+        t("settings.deleteAllTasksDesc") ||
+        "Are you sure you want to delete all tasks? This action cannot be undone.",
       onConfirm: () => {
         clearAllTasks(mode);
         setModalVisible(false);
@@ -63,7 +77,9 @@ export default function Settings() {
   const openClearHabitsModal = useCallback(() => {
     setModalConfig({
       title: t("settings.deleteAllHabits"),
-      description: t("settings.deleteAllHabitsDesc") || "Are you sure you want to delete all habits? This action cannot be undone.",
+      description:
+        t("settings.deleteAllHabitsDesc") ||
+        "Are you sure you want to delete all habits? This action cannot be undone.",
       onConfirm: () => {
         clearAllHabits(mode);
         setModalVisible(false);
@@ -116,21 +132,47 @@ export default function Settings() {
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-4">
         {/* User Profile */}
-        <View className="items-center mb-6 mt-2">
-          <View
-            className={`w-20 h-20 rounded-full items-center justify-center ${iconCircleBg}`}
-          >
-            {(() => {
-              const ModeIcon = MODE_META[mode].icon;
-              return <ModeIcon size={32} color={iconColor} />;
-            })()}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => {}}
+          className={`${cardBg} rounded-2xl p-4 mb-6 items-center justify-between flex-row`}
+        >
+          <View className="flex-col items-end">
+            <Text
+              className={`text-lg font-bold mb-1 ${isDarkMode ? "text-white" : "text-gray-900"}`}
+              numberOfLines={1}
+            >
+              {user?.fullName || user?.username || t("settings.username")}
+            </Text>
+            <Text
+              className={`text-sm ${isDarkMode ? "text-slate-400" : "text-gray-500"}`}
+              numberOfLines={1}
+            >
+              {user?.email || ""}
+            </Text>
           </View>
-          <Text
-            className={` text-base font-bold mt-3 ${titleText}`}
+          <View
+            className={`w-14 h-14 rounded-full border items-center justify-center ${iconCircleBg} ${isDarkMode ? mc.accentBorderFull : mc.accentBorder}`}
           >
-            {t("settings.username")}
-          </Text>
-        </View>
+            {user?.avatarUrl ? (
+              <Image
+                source={{ uri: user.avatarUrl }}
+                className="w-14 h-14 rounded-full"
+              />
+            ) : (
+              <Text
+                className={`font-bold text-xl ${isDarkMode ? mc.darkInteractiveText : mc.textHeader}`}
+              >
+                {getInitials(user)}
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
+        <Text
+          className={` text-sm text-center font-bold px-3 mb-4 ${isDarkMode ? "text-slate-400" : "text-gray-500"} ${language === "ar" ? "text-left" : "text-right"}`}
+        >
+          {t("settings.editProfile")}
+        </Text>
 
         {/* Settings Grid - 2 Columns */}
         <Text
@@ -173,9 +215,7 @@ export default function Settings() {
               <Globe size={24} color={iconColor} />
             </View>
             <View className="mt-3 items-center justify-center">
-              <Text
-                className={` text-sm font-bold text-center ${titleText}`}
-              >
+              <Text className={` text-sm font-bold text-center ${titleText}`}>
                 {t("settings.language")}
               </Text>
               <View className="mt-2 flex-row items-center justify-center">
@@ -299,7 +339,10 @@ export default function Settings() {
           <TouchableOpacity
             className={`flex-row-reverse items-center justify-between p-4 rounded-3xl border ${cardBg} ${isDarkMode ? "border-gray-600/50" : "border-gray-200/50"}`}
             style={shadowStyle}
-            onPress={() => router.replace("/Auth/Login")}
+            onPress={() => {
+              logout();
+              router.replace("/Auth/Login");
+            }}
           >
             <View
               className={

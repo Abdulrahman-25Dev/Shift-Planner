@@ -176,9 +176,13 @@ export default function Index() {
                     ? "bg-amber-500/15"
                     : item.priority === "low"
                       ? "bg-emerald-500/15"
-                      : isDarkMode
-                        ? mc.darkAccentSoft
-                        : mc.accentBg40
+                      : mode === "coding"
+                        ? isDarkMode
+                          ? "bg-gray-600/25"
+                          : "bg-gray-200"
+                        : isDarkMode
+                          ? mc.darkAccentSoft
+                          : mc.accentBg40
             }`}
           >
             <View
@@ -191,9 +195,11 @@ export default function Index() {
                       ? "bg-amber-500"
                       : item.priority === "low"
                         ? "bg-emerald-500"
-                        : isDarkMode
-                          ? mc.darkInteractive
-                          : mc.headerBg
+                        : mode === "coding"
+                          ? "bg-gray-400"
+                          : isDarkMode
+                            ? mc.darkInteractive
+                            : mc.headerBg
               }`}
             />
           </View>

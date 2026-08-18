@@ -1,11 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -19,6 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppStore } from "@/store/useAppStore";
 import { useModeTheme, useModeClasses } from "@/src/theme";
 import { supabase } from "@/supabase";
+import CustomAlert from "@/components/CustomAlert";
 
 export default function Login() {
   const { isDarkMode, language } = useAppStore();
@@ -29,6 +29,13 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [alert, setAlert] = useState<{
+    visible: boolean;
+    title: string;
+    description: string;
+    type: "success" | "error" | "info";
+    navigateTo?: Href;
+  }>({ visible: false, title: "", description: "", type: "info" });
 
   /**
    * Signs the user in via Supabase Auth.
@@ -49,11 +56,22 @@ export default function Login() {
       });
       if (authError) throw authError;
 
-      router.replace("/");
+      setAlert({
+        visible: true,
+        title: "تم تسجيل الدخول",
+        description: "تم تسجيل الدخول بنجاح.",
+        type: "success",
+        navigateTo: "/",
+      });
     } catch (e: any) {
       const message = e?.message || "فشل تسجيل الدخول";
       setError(message);
-      Alert.alert("فشل تسجيل الدخول", message);
+      setAlert({
+        visible: true,
+        title: "فشل تسجيل الدخول",
+        description: message,
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -226,6 +244,25 @@ export default function Login() {
           </ScrollView>
       </LinearGradient>
       </KeyboardAvoidingView>
+      <CustomAlert
+        isVisible={alert.visible}
+        title={alert.title}
+        description={alert.description}
+        type={alert.type}
+        onClose={() => {
+          const dest = alert.navigateTo;
+          setAlert({
+            visible: false,
+            title: "",
+            description: "",
+            type: "info",
+            navigateTo: undefined,
+          });
+          if (dest) {
+            router.replace(dest);
+          }
+        }}
+      />
     </SafeAreaView>
   );
 }

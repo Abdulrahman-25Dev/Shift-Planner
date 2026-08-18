@@ -1,11 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -19,6 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppStore } from "@/store/useAppStore";
 import { useModeTheme, useModeClasses } from "@/src/theme";
 import { supabase } from "@/supabase";
+import CustomAlert from "@/components/CustomAlert";
 
 export default function Register() {
   const { isDarkMode, language } = useAppStore();
@@ -30,6 +30,13 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [alert, setAlert] = useState<{
+    visible: boolean;
+    title: string;
+    description: string;
+    type: "success" | "error" | "info";
+    navigateTo?: Href;
+  }>({ visible: false, title: "", description: "", type: "info" });
 
   /**
    * Creates a new account via Supabase Auth.
@@ -64,19 +71,32 @@ export default function Register() {
 
     if (data.session) {
       // Session is active immediately (email confirmation disabled)
-      router.replace("/");
+      setAlert({
+        visible: true,
+        title: "تم إنشاء الحساب",
+        description: "لقد تم إنشاء الحساب بنجاح.",
+        type: "success",
+        navigateTo: "/",
+      });
     } else {
       // Email confirmation required
-      Alert.alert(
-        "تم إنشاء الحساب",
-        "لقد تم إنشاء الحساب بنجاح.",
-      );
-      router.replace("/Auth/Login");
+      setAlert({
+        visible: true,
+        title: "تم إنشاء الحساب",
+        description: "لقد تم إنشاء الحساب بنجاح.",
+        type: "success",
+        navigateTo: "/Auth/Login",
+      });
     }
   } catch (e: any) {
     const message = e?.message || "حدث خطأ غير متوقع";
     setError(message);
-    Alert.alert("فشل التسجيل", message);
+    setAlert({
+      visible: true,
+      title: "فشل التسجيل",
+      description: message,
+      type: "error",
+    });
   } finally {
     setLoading(false);
   }
@@ -264,6 +284,25 @@ export default function Register() {
           </ScrollView>
       </LinearGradient>
       </KeyboardAvoidingView>
+      <CustomAlert
+        isVisible={alert.visible}
+        title={alert.title}
+        description={alert.description}
+        type={alert.type}
+        onClose={() => {
+          const dest = alert.navigateTo;
+          setAlert({
+            visible: false,
+            title: "",
+            description: "",
+            type: "info",
+            navigateTo: undefined,
+          });
+          if (dest) {
+            router.replace(dest);
+          }
+        }}
+      />
     </SafeAreaView>
   );
 }

@@ -2,6 +2,7 @@
   "settings": {
     "title": "Settings",
     "username": "Default Username",
+    "editProfile": "Edit Profile",
     "preferences": "Preferences",
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
@@ -69,7 +70,8 @@
     "viewAll": "View All",
     "Tasks": "My Tasks",
     "Habits": "My Habits",
-    "repeat":"Repeat selection"
+    "repeat":"Repeat selection",
+    "ok": "OK"
   },
   "ViewAll": {
     "Tasks": "All Tasks",

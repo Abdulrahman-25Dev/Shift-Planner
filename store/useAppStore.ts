@@ -7,6 +7,7 @@ import {
   scheduleHabitNotification,
   cancelNotification,
 } from "../src/services/notificationService";
+import { supabase } from "../supabase";
 
 const storage = createMMKV();
 const storedLanguage = (storage.getString("language") as "ar" | "en") || "ar";
@@ -15,8 +16,20 @@ const storedLanguage = (storage.getString("language") as "ar" | "en") || "ar";
 export type Priority = 'high' | 'medium' | 'low' | 'none';
 export type Mode = "study" | "coding" | "faith";
 
+// Fallback id used when no user is signed in (data stays local-only)
+export const GUEST_USER_ID = "guest";
+
+export interface AppUser {
+  id: string;
+  email?: string;
+  username?: string;
+  fullName?: string;
+  avatarUrl?: string;
+}
+
 export interface Task {
   id: string;
+  userId: string;
   title: string;
   description?: string;
   completed: boolean;
@@ -29,6 +42,7 @@ export interface Task {
 
 export interface Habit {
   id: string;
+  userId: string;
   title: string;
   description?: string;
   streak: number;
@@ -46,6 +60,11 @@ interface AppState {
   mode: Mode;
   toggleMode: () => void;
   setMode: (m: Mode) => void;
+
+  // Authenticated user (null when signed out)
+  user: AppUser | null;
+  setUser: (user: AppUser | null) => void;
+  logout: () => Promise<void>;
 
   isDarkMode: boolean;
   toggleDarkMode: () => void;
@@ -65,21 +84,21 @@ interface AppState {
   clearAllTasks: (mode: Mode) => void;
   clearAllHabits: (mode: Mode) => void;
 
-  // All data (unfiltered)
+  // All data (unfiltered, scoped to current user)
   allTasks: Task[];
   allHabits: Habit[];
 
-  // Tasks (filtered by current mode)
+  // Tasks (filtered by current user and mode)
   tasks: Task[];
-  addTask: (task: Omit<Task, "id" | "createdAt" | "mode">) => void;
+  addTask: (task: Omit<Task, "id" | "userId" | "createdAt" | "mode">) => void;
   removeTask: (id: string) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   toggleTaskComplete: (id: string) => void;
   getTodayTasks: () => Task[];
 
-  // Habits (filtered by current mode)
+  // Habits (filtered by current user and mode)
   habits: Habit[];
-  addHabit: (habit: Omit<Habit, "id" | "createdAt" | "mode">) => void;
+  addHabit: (habit: Omit<Habit, "id" | "userId" | "createdAt" | "mode">) => void;
   removeHabit: (id: string) => void;
   updateHabit: (id: string, updates: Partial<Habit>) => void;
   completeHabit: (id: string) => void;
@@ -88,7 +107,10 @@ interface AppState {
   cancelPastDueNotifications: () => void;
 }
 
-const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
+const loadFromStorage = <T extends { mode?: string }>(
+  key: string,
+  userId: string,
+): T[] => {
   const data = storage.getString(key);
   if (!data) return [];
   try {
@@ -96,8 +118,9 @@ const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
     // Ensure backward compatibility for legacy items
     return parsed.map((item: any) => ({
       ...item,
+      userId: item.userId || userId,
       mode: item.mode || "study",
-      ...(key === "habits"
+      ...(key.startsWith("habits")
         ? {
             repeatType: item.repeatType || "daily",
             repeatDays: item.repeatDays || [
@@ -117,12 +140,21 @@ const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
   }
 };
 
+const getUserId = (user: AppUser | null): string => user?.id ?? GUEST_USER_ID;
+
+const taskStorageKey = (userId: string) => `tasks:${userId}`;
+const habitStorageKey = (userId: string) => `habits:${userId}`;
+
+const filterByUserAndMode = <T extends { userId?: string; mode?: Mode }>(
+  items: T[],
+  userId: string,
+  mode: Mode,
+): T[] => items.filter((item) => item.userId === userId && item.mode === mode);
+
 const initialMode =
   (storage.getString("app_mode") as Mode) || "study";
 
 export const useAppStore = create<AppState>((set, get) => {
-  const allTasks = loadFromStorage<Task>("tasks");
-  const allHabits = loadFromStorage<Habit>("habits");
   const storedDark = storage.getString("dark_mode");
   const initialDark = storedDark === "true";
   const storedNotifications = storage.getString("notifications_enabled");
@@ -136,21 +168,84 @@ export const useAppStore = create<AppState>((set, get) => {
         const idx = order.indexOf(state.mode);
         const nextMode = order[(idx + 1) % order.length];
         storage.set("app_mode", nextMode);
+        const uid = getUserId(state.user);
         return {
           mode: nextMode,
-          tasks: state.allTasks.filter((task) => task.mode === nextMode),
-          habits: state.allHabits.filter((habit) => habit.mode === nextMode),
+          tasks: filterByUserAndMode(state.allTasks, uid, nextMode),
+          habits: filterByUserAndMode(state.allHabits, uid, nextMode),
         };
       }),
     setMode: (m) =>
       set((state) => {
         storage.set("app_mode", m);
+        const uid = getUserId(state.user);
         return {
           mode: m,
-          tasks: state.allTasks.filter((task) => task.mode === m),
-          habits: state.allHabits.filter((habit) => habit.mode === m),
+          tasks: filterByUserAndMode(state.allTasks, uid, m),
+          habits: filterByUserAndMode(state.allHabits, uid, m),
         };
       }),
+
+    // ============ User & Auth ============
+    user: null,
+    setUser: (user) =>
+      set((state) => {
+        if (!user) {
+          // Signed out / switched account: drop in-memory data
+          return {
+            user: null,
+            allTasks: [],
+            allHabits: [],
+            tasks: [],
+            habits: [],
+          };
+        }
+
+        // Load only this user's data (stored under user-scoped keys)
+        const tasksKey = taskStorageKey(user.id);
+        const habitsKey = habitStorageKey(user.id);
+        let tasks = loadFromStorage<Task>(tasksKey, user.id);
+        let habits = loadFromStorage<Habit>(habitsKey, user.id);
+
+        // One-time adoption of legacy (pre-userId) data stored under the old keys
+        if (tasks.length === 0 && storage.getString("tasks")) {
+          tasks = loadFromStorage<Task>("tasks", user.id);
+          if (tasks.length > 0) {
+            storage.set(tasksKey, JSON.stringify(tasks));
+            storage.remove("tasks");
+          }
+        }
+        if (habits.length === 0 && storage.getString("habits")) {
+          habits = loadFromStorage<Habit>("habits", user.id);
+          if (habits.length > 0) {
+            storage.set(habitsKey, JSON.stringify(habits));
+            storage.remove("habits");
+          }
+        }
+
+        return {
+          user,
+          allTasks: tasks,
+          allHabits: habits,
+          tasks: filterByUserAndMode(tasks, user.id, state.mode),
+          habits: filterByUserAndMode(habits, user.id, state.mode),
+        };
+      }),
+    logout: async () => {
+      const state = get();
+      // Cancel notifications scheduled for the signed-out user
+      // to prevent cross-account leaks
+      await Promise.all([
+        ...state.allTasks.map((t) => cancelNotification(t.id).catch(() => {})),
+        ...state.allHabits.map((h) => cancelNotification(h.id).catch(() => {})),
+      ]);
+      set({ user: null, allTasks: [], allHabits: [], tasks: [], habits: [] });
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn("Sign out failed:", e);
+      }
+    },
 
     isDarkMode: initialDark,
     toggleDarkMode: () =>
@@ -238,26 +333,28 @@ export const useAppStore = create<AppState>((set, get) => {
       set({ notificationsEnabled: enabled });
     },
 
-    // ============ All Data (unfiltered) ============
-    allTasks,
-    allHabits,
+    // ============ All Data (unfiltered, scoped to current user) ============
+    allTasks: [],
+    allHabits: [],
 
-    // ============ Filtered Data (by current mode) ============
-    tasks: allTasks.filter((task) => task.mode === initialMode),
-    habits: allHabits.filter((habit) => habit.mode === initialMode),
+    // ============ Filtered Data (by current user and mode) ============
+    tasks: [],
+    habits: [],
 
     // ============ Tasks Management ============
     addTask: (task) =>
       set((state) => {
+        const uid = getUserId(state.user);
         const newTask: Task = {
           ...task,
           id: Date.now().toString(),
+          userId: uid,
           createdAt: Date.now(),
           priority: task.priority || "none",
           mode: state.mode,
         };
         const updatedAllTasks = [...state.allTasks, newTask];
-        storage.set("tasks", JSON.stringify(updatedAllTasks));
+        storage.set(taskStorageKey(uid), JSON.stringify(updatedAllTasks));
 
         // Schedule notification if enabled and reminder provided
         if (state.notificationsEnabled && newTask.reminderTime) {
@@ -277,62 +374,69 @@ export const useAppStore = create<AppState>((set, get) => {
         }
         return {
           allTasks: updatedAllTasks,
-          tasks: updatedAllTasks.filter((t) => t.mode === state.mode),
+          tasks: filterByUserAndMode(updatedAllTasks, uid, state.mode),
         };
       }),
     removeTask: (id: string) =>
       set((state) => {
+        const uid = getUserId(state.user);
         const updatedAllTasks = state.allTasks.filter((task) => task.id !== id);
-        storage.set("tasks", JSON.stringify(updatedAllTasks));
+        storage.set(taskStorageKey(uid), JSON.stringify(updatedAllTasks));
         cancelNotification(id).catch(() => {});
         return {
           allTasks: updatedAllTasks,
-          tasks: updatedAllTasks.filter((t) => t.mode === state.mode),
+          tasks: filterByUserAndMode(updatedAllTasks, uid, state.mode),
         };
       }),
     deleteSingleItem: (id: string, type: "task" | "habit") =>
       set((state) => {
+        const uid = getUserId(state.user);
         if (type === "task") {
           const updated = state.allTasks.filter((t) => t.id !== id);
-          storage.set("tasks", JSON.stringify(updated));
+          storage.set(taskStorageKey(uid), JSON.stringify(updated));
           cancelNotification(id).catch(() => {});
           return {
             allTasks: updated,
-            tasks: updated.filter((t) => t.mode === state.mode),
+            tasks: filterByUserAndMode(updated, uid, state.mode),
           };
         }
         const updated = state.allHabits.filter((h) => h.id !== id);
-        storage.set("habits", JSON.stringify(updated));
+        storage.set(habitStorageKey(uid), JSON.stringify(updated));
         cancelNotification(id).catch(() => {});
         return {
           allHabits: updated,
-          habits: updated.filter((h) => h.mode === state.mode),
+          habits: filterByUserAndMode(updated, uid, state.mode),
         };
       }),
     clearAllTasks: (mode: Mode) =>
       set((state) => {
+        const uid = getUserId(state.user);
         const updated = state.allTasks.filter((t) => t.mode !== mode);
-        storage.set("tasks", JSON.stringify(updated));
+        storage.set(taskStorageKey(uid), JSON.stringify(updated));
         return {
           allTasks: updated,
-          tasks: updated.filter((t) => t.mode === state.mode),
+          tasks: filterByUserAndMode(updated, uid, state.mode),
         };
       }),
     clearAllHabits: (mode: Mode) =>
       set((state) => {
+        const uid = getUserId(state.user);
         const updated = state.allHabits.filter((h) => h.mode !== mode);
-        storage.set("habits", JSON.stringify(updated));
+        storage.set(habitStorageKey(uid), JSON.stringify(updated));
         return {
           allHabits: updated,
-          habits: updated.filter((h) => h.mode === state.mode),
+          habits: filterByUserAndMode(updated, uid, state.mode),
         };
       }),
     updateTask: (id: string, updates: Partial<Task>) =>
       set((state) => {
+        const uid = getUserId(state.user);
+        // Never allow a task to be reassigned to another user
+        const { userId: _ignored, ...safeUpdates } = updates;
         const updatedAllTasks = state.allTasks.map((task) =>
-          task.id === id ? { ...task, ...updates } : task,
+          task.id === id ? { ...task, ...safeUpdates } : task,
         );
-        storage.set("tasks", JSON.stringify(updatedAllTasks));
+        storage.set(taskStorageKey(uid), JSON.stringify(updatedAllTasks));
 
         // Manage notification scheduling when reminderTime changed
         const target = updatedAllTasks.find((t) => t.id === id);
@@ -358,15 +462,16 @@ export const useAppStore = create<AppState>((set, get) => {
         }
         return {
           allTasks: updatedAllTasks,
-          tasks: updatedAllTasks.filter((t) => t.mode === state.mode),
+          tasks: filterByUserAndMode(updatedAllTasks, uid, state.mode),
         };
       }),
     toggleTaskComplete: (id: string) =>
       set((state) => {
+        const uid = getUserId(state.user);
         const updatedAllTasks = state.allTasks.map((task) =>
           task.id === id ? { ...task, completed: !task.completed } : task,
         );
-        storage.set("tasks", JSON.stringify(updatedAllTasks));
+        storage.set(taskStorageKey(uid), JSON.stringify(updatedAllTasks));
 
         const target = updatedAllTasks.find((t) => t.id === id);
         if (target?.completed) {
@@ -375,7 +480,7 @@ export const useAppStore = create<AppState>((set, get) => {
 
         return {
           allTasks: updatedAllTasks,
-          tasks: updatedAllTasks.filter((t) => t.mode === state.mode),
+          tasks: filterByUserAndMode(updatedAllTasks, uid, state.mode),
         };
       }),
     getTodayTasks: () => {
@@ -386,9 +491,11 @@ export const useAppStore = create<AppState>((set, get) => {
     // ============ Habits Management ============
     addHabit: (habit) =>
       set((state) => {
+        const uid = getUserId(state.user);
         const newHabit: Habit = {
           ...habit,
           id: Date.now().toString(),
+          userId: uid,
           createdAt: Date.now(),
           streak: 0,
           priority: habit.priority || "none",
@@ -405,7 +512,7 @@ export const useAppStore = create<AppState>((set, get) => {
           mode: state.mode,
         };
         const updatedAllHabits = [...state.allHabits, newHabit];
-        storage.set("habits", JSON.stringify(updatedAllHabits));
+        storage.set(habitStorageKey(uid), JSON.stringify(updatedAllHabits));
 
         if (state.notificationsEnabled && newHabit.reminderTime) {
           try {
@@ -424,27 +531,31 @@ export const useAppStore = create<AppState>((set, get) => {
         }
         return {
           allHabits: updatedAllHabits,
-          habits: updatedAllHabits.filter((h) => h.mode === state.mode),
+          habits: filterByUserAndMode(updatedAllHabits, uid, state.mode),
         };
       }),
     removeHabit: (id: string) =>
       set((state) => {
+        const uid = getUserId(state.user);
         const updatedAllHabits = state.allHabits.filter(
           (habit) => habit.id !== id,
         );
-        storage.set("habits", JSON.stringify(updatedAllHabits));
+        storage.set(habitStorageKey(uid), JSON.stringify(updatedAllHabits));
         cancelNotification(id).catch(() => {});
         return {
           allHabits: updatedAllHabits,
-          habits: updatedAllHabits.filter((h) => h.mode === state.mode),
+          habits: filterByUserAndMode(updatedAllHabits, uid, state.mode),
         };
       }),
     updateHabit: (id: string, updates: Partial<Habit>) =>
       set((state) => {
+        const uid = getUserId(state.user);
+        // Never allow a habit to be reassigned to another user
+        const { userId: _ignored, ...safeUpdates } = updates;
         const updatedAllHabits = state.allHabits.map((habit) =>
-          habit.id === id ? { ...habit, ...updates } : habit,
+          habit.id === id ? { ...habit, ...safeUpdates } : habit,
         );
-        storage.set("habits", JSON.stringify(updatedAllHabits));
+        storage.set(habitStorageKey(uid), JSON.stringify(updatedAllHabits));
 
         const target = updatedAllHabits.find((h) => h.id === id);
         if (target) {
@@ -468,11 +579,12 @@ export const useAppStore = create<AppState>((set, get) => {
         }
         return {
           allHabits: updatedAllHabits,
-          habits: updatedAllHabits.filter((h) => h.mode === state.mode),
+          habits: filterByUserAndMode(updatedAllHabits, uid, state.mode),
         };
       }),
     completeHabit: (id: string) =>
       set((state) => {
+        const uid = getUserId(state.user);
         let wasCompleted = false;
         const updatedAllHabits = state.allHabits.map((habit) => {
           if (habit.id === id) {
@@ -500,26 +612,27 @@ export const useAppStore = create<AppState>((set, get) => {
           }
           return habit;
         });
-        storage.set("habits", JSON.stringify(updatedAllHabits));
+        storage.set(habitStorageKey(uid), JSON.stringify(updatedAllHabits));
         if (wasCompleted) {
           cancelNotification(id).catch(() => {});
         }
         return {
           allHabits: updatedAllHabits,
-          habits: updatedAllHabits.filter((h) => h.mode === state.mode),
+          habits: filterByUserAndMode(updatedAllHabits, uid, state.mode),
         };
       }),
     resetHabitStreak: (id: string) =>
       set((state) => {
+        const uid = getUserId(state.user);
         const updatedAllHabits = state.allHabits.map((habit) =>
           habit.id === id
             ? { ...habit, streak: 0, lastCompletedDate: undefined }
             : habit,
         );
-        storage.set("habits", JSON.stringify(updatedAllHabits));
+        storage.set(habitStorageKey(uid), JSON.stringify(updatedAllHabits));
         return {
           allHabits: updatedAllHabits,
-          habits: updatedAllHabits.filter((h) => h.mode === state.mode),
+          habits: filterByUserAndMode(updatedAllHabits, uid, state.mode),
         };
       }),
     cancelPastDueNotifications: () => {
@@ -539,6 +652,7 @@ export const useAppStore = create<AppState>((set, get) => {
       }
 
       set((state) => {
+        const uid = getUserId(state.user);
         // Calculate yesterday for streak maintenance check
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -567,12 +681,12 @@ export const useAppStore = create<AppState>((set, get) => {
         });
 
         // Persist changes
-        storage.set("habits", JSON.stringify(updatedAllHabits));
+        storage.set(habitStorageKey(uid), JSON.stringify(updatedAllHabits));
         storage.set("last-checked-date", today);
 
         return {
           allHabits: updatedAllHabits,
-          habits: updatedAllHabits.filter((h) => h.mode === state.mode),
+          habits: filterByUserAndMode(updatedAllHabits, uid, state.mode),
         };
       });
     },

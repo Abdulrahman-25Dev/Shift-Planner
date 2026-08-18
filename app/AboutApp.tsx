@@ -6,6 +6,12 @@ import {
   ChevronRight,
   Bug,
   Lightbulb,
+  Atom,
+  PawPrint,
+  Palette,
+  HardDrive,
+  Languages,
+  Compass,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/useAppStore";
@@ -94,9 +100,16 @@ export default function AboutApp() {
 
   const titleText = isDarkMode ? "text-gray-100" : "text-gray-800";
 
-  const bodyText = isDarkMode ? "text-slate-300" : "text-gray-700";
-
   const mutedText = isDarkMode ? "text-slate-500" : "text-gray-400";
+
+  const techStack = [
+    { name: "React Native & Expo", category: "واجهة التطبيق", icon: Atom },
+    { name: "Zustand", category: "إدارة الحالة", icon: PawPrint },
+    { name: "Tailwind CSS", category: "التصميم والواجهات", icon: Palette },
+    { name: "MMKV", category: "التخزين المحلي", icon: HardDrive },
+    { name: "i18next", category: "الترجمة واللغات", icon: Languages },
+    { name: "Expo router", category: "التنقل", icon: Compass },
+  ];
 
 
   const completedTasks = tasks.filter((t) => t.completed).length;
@@ -190,44 +203,24 @@ export default function AboutApp() {
         >
          {t("about.tools used")}
         </Text>
-        <View className={`${cardBg} ${cardBorder} rounded-2xl p-5 mb-6`}>
-          <View className="gap-y-4">
-            <View className={`flex-row ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
-              <Text
-                className={`flex-1 ${bodyText} text-sm leading-6 ${language === "ar" ? "text-left" : "text-right"}`}
+        <View className="flex-row flex-wrap justify-around gap-2 mb-3">
+          {techStack.map((tech) => {
+            const TechIcon = tech.icon;
+            return (
+              <View
+                key={tech.name}
+                className={`w-[47%] ${cardBg} ${cardBorder} p-3 rounded-3xl items-center justify-center`}
               >
-                {t("about.reactNative")}
-              </Text>
-            </View>
-            <View className={`flex-row ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
-              <Text
-                className={`flex-1 ${bodyText} text-sm leading-6 ${language === "ar" ? "text-left" : "text-right"}`}
-              >
-                {t("about.zustand")}
-              </Text>
-            </View>
-            <View className={`flex-row ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
-              <Text
-                className={`flex-1 ${bodyText} text-sm leading-6 ${language === "ar" ? "text-left" : "text-right"}`}
-              >
-                {t("about.tailwindcss")}
-              </Text>
-            </View>
-            <View className={`flex-row ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
-              <Text
-                className={`flex-1 ${bodyText} text-sm leading-6 ${language === "ar" ? "text-left" : "text-right"}`}
-              >
-                {t("about.mmkv")}
-              </Text>
-            </View>
-            <View className={`flex-row ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
-              <Text
-                className={`flex-1 ${bodyText} text-sm leading-6 ${language === "ar" ? "text-left" : "text-right"}`}
-              >
-                {t("about.i18next")}
-              </Text>
-            </View>
-          </View>
+                <TechIcon size={24} color={accentHex} />
+                <Text className={`${titleText} font-bold text-sm mt-1 mb-0.5 text-center`}>
+                  {tech.name}
+                </Text>
+                <Text className={`${mutedText} text-xs text-center`}>
+                  {tech.category}
+                </Text>
+              </View>
+            );
+          })}
         </View>
 
         <Text

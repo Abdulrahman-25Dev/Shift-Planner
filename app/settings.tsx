@@ -135,7 +135,7 @@ export default function Settings() {
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => {}}
-          className={`${cardBg} rounded-2xl p-4 mb-6 items-center justify-between flex-row`}
+          className={`${cardBg} rounded-3xl p-4 mb-6 mt-2 items-center justify-between flex-row`}
         >
           <View className="flex-col items-end">
             <Text

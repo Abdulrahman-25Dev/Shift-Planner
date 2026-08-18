@@ -4,14 +4,13 @@ import { router } from "expo-router";
 import Svg, { Circle } from "react-native-svg";
 import {
   ChevronRight,
-  Code2,
-  GraduationCap,
   Bug,
   Lightbulb,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/useAppStore";
-import { useModeTheme } from "@/src/theme";
+import { useModeTheme, useModeClasses } from "@/src/theme";
+import { MODE_META } from "../components/ModeSelectionModal";
 
 const RING_RADIUS = 30;
 const RING_STROKE = 6;
@@ -79,39 +78,19 @@ export default function AboutApp() {
   const { t } = useTranslation();
   const { isDarkMode, mode, language, tasks, habits } = useAppStore();
   const { palette } = useModeTheme();
-  const isStudy = mode === "study";
+  const mc = useModeClasses();
 
   const accentHex = palette.accentText;
 
   const pageBg = isDarkMode ? "bg-screen-dark" : "bg-screen-light";
 
-  const cardBg = isDarkMode
-    ? isStudy
-      ? "bg-study-dark-card"
-      : "bg-dev-dark-card"
-    : "bg-white";
+  const cardBg = isDarkMode ? mc.darkCard : "bg-white";
 
-  const cardBorder = isDarkMode
-    ? isStudy
-      ? "border-study-dark-accentSoft"
-      : "border-dev-dark-accentSoft"
-    : "border-gray-200/50";
+  const cardBorder = isDarkMode ? mc.darkAccentBorder : "border-gray-200/50";
 
-  const accentText = isDarkMode
-    ? isStudy
-      ? "text-study-dark-interactive"
-      : "text-dev-dark-interactive"
-    : isStudy
-      ? "text-study-header"
-      : "text-dev-header";
+  const accentText = isDarkMode ? mc.darkInteractiveText : mc.textHeader;
 
-  const iconContainerBg = isDarkMode
-    ? isStudy
-      ? "bg-study-dark-accentSoft"
-      : "bg-dev-dark-accentSoft"
-    : isStudy
-      ? "bg-study-accentSoft"
-      : "bg-dev-accentSoft";
+  const iconContainerBg = isDarkMode ? mc.darkAccentSoft : mc.accentSoft;
 
   const titleText = isDarkMode ? "text-gray-100" : "text-gray-800";
 
@@ -128,9 +107,10 @@ export default function AboutApp() {
 
   const ringTrack = isDarkMode ? "#475569" : "#E2E8F0";
   const ringStabilityColor = palette.accentText;
-  const ringTasksColor = isStudy ? "#3b82f6" : "#0ea5e9";
-  const ringHabitsColor = isStudy ? "#14b8a6" : "#8b5cf6";
-  const stabilityLabel = isStudy ? t("about.stabilityStudy") : t("about.stability");
+  const ringTasksColor = palette.secondary;
+  const ringHabitsColor = palette.accentText;
+  const stabilityLabel =
+    mode === "study" ? t("about.stabilityStudy") : t("about.stability");
 
   const BackChevron = language === "ar" ? ChevronRight : ChevronRight;
 
@@ -157,14 +137,13 @@ export default function AboutApp() {
             className={`w-20 h-20 ${cardBg} rounded-2xl items-center justify-center mb-3`}
             style={{ borderWidth: 1, borderColor: `${accentHex}40` }}
           >
-            {isStudy ? (
-              <GraduationCap size={40} color={accentHex} />
-            ) : (
-              <Code2 size={40} color={accentHex} />
-            )}
+            {(() => {
+              const ModeIcon = MODE_META[mode].icon;
+              return <ModeIcon size={40} color={accentHex} />;
+            })()}
           </View>
           <Text className={`text-2xl font-black ${accentText} tracking-widest`}>
-            DevLearn
+            BrainCode
           </Text>
           <View
             className={`${iconContainerBg} px-3 py-1 rounded-full mt-3`}

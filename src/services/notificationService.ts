@@ -2,6 +2,7 @@ import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { Platform, Alert } from "react-native";
 import i18n from "i18next"; // استيراد مكتبة اللغات لقراءة اللغة الحالية ديناميكياً
+import { Mode } from "../../store/useAppStore";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -66,11 +67,37 @@ const NOTIFICATION_MESSAGES = {
         "Daily discipline makes the difference. Habit time: {title} 🏆"
       ]
     }
+  },
+  faith: {
+    task: {
+      ar: [
+        "لا تنسَ وردك اليومي، ابدأ الآن بـ: {title} 🤲",
+        "الذكر يطمئن القلب، حان وقت: {title} ✨",
+        "قرب نفسك إلى الله خطوة اليوم: {title} 🕌"
+      ],
+      en: [
+        "Don't forget your daily dhikr, start now: {title} 🤲",
+        "Remembrance brings peace to the heart. Time for: {title} ✨",
+        "Take today's step closer to Allah: {title} 🕌"
+      ]
+    },
+    habit: {
+      ar: [
+        "العبادة غذاء الروح، حافظ على عادة: {title} 🕋",
+        "خير الأعمال أدومها وإن قل، وقت عادة: {title} 🌙",
+        "من حافظ على عبادته نال الطمأنينة، وقت: {title} 🤍"
+      ],
+      en: [
+        "Worship nourishes the soul. Keep your habit: {title} 🕋",
+        "The best deeds are the most consistent. Habit time: {title} 🌙",
+        "Consistency in worship brings peace. Time for: {title} 🤍"
+      ]
+    }
   }
 };
 
 // دالة مساعدة لاختيار رسالة عشوائية
-function getRandomBody(mode: "study" | "coding", type: "task" | "habit", title: string): string {
+function getRandomBody(mode: Mode, type: "task" | "habit", title: string): string {
   const currentLng = (i18n.language === "ar" || i18n.language?.startsWith("ar")) ? "ar" : "en";
   const list = NOTIFICATION_MESSAGES[mode][type][currentLng];
   const randomIndex = Math.floor(Math.random() * list.length);
@@ -121,7 +148,7 @@ export async function scheduleDailyNotification(
   hour: number,
   minute: number,
   notificationType: "task" | "habit" = "task",
-  mode: "study" | "coding" = "study",
+  mode: Mode = "study",
   targetDate?: Date | null,
 ): Promise<string | null> {
   await cancelNotification(id);
@@ -224,7 +251,7 @@ export async function scheduleHabitNotification(
   minute: number,
   repeatType: "daily" | "weekly" | "custom",
   repeatDays: string[],
-  mode: "study" | "coding" = "study",
+  mode: Mode = "study",
 ): Promise<void> {
   await cancelNotification(id);
 
@@ -363,7 +390,7 @@ export async function scheduleImmediateTest() {
 export async function scheduleImmediateTestWithPayload(
   itemId: string,
   notificationType: "task" | "habit",
-  mode: "study" | "coding" = "study",
+  mode: Mode = "study",
 ) {
   try {
     const triggerTest: any =

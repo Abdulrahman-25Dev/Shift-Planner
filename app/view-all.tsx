@@ -20,7 +20,7 @@ import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { DetailsSheet } from "./tasks/taskDetails";
 import BottomSheetModal from "@gorhom/bottom-sheet/lib/typescript/components/bottomSheetModal/BottomSheetModal";
-import { useModeTheme } from "@/src/theme";
+import { useModeTheme, useModeClasses } from "@/src/theme";
 const ShowAll = () => {
   const { t } = useTranslation();
   const {
@@ -28,12 +28,12 @@ const ShowAll = () => {
     deleteSingleItem,
     habits,
     toggleTaskComplete,
-    mode,
     completeHabit,
     isDarkMode,
     language,
   } = useAppStore();
   const { palette } = useModeTheme();
+  const mc = useModeClasses();
   const [type, setType] = useState<"task" | "habit">("task");
   const detailsSheetRef = useRef<BottomSheetModal>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -54,8 +54,6 @@ const ShowAll = () => {
   const openAddTaskSheet = () => {
     bottomSheetRef.current?.snapToIndex(0);
   };
-
-  const isStudy = mode === "study";
 
   const renderTasks = ({ item }: { item: Task }) => {
     const dateSource = item.dueDate
@@ -88,12 +86,8 @@ const ShowAll = () => {
                 ? "bg-gray-700 border-gray-600"
                 : "bg-gray-100 border-gray-200"
               : isDarkMode
-                ? isStudy
-                  ? "bg-study-dark-card border-gray-600/50"
-                  : "bg-dev-dark-card border-gray-600/50"
-                : isStudy
-                  ? "bg-white border-study-accent/60"
-                  : "bg-white border-dev-accent/60"
+                ? `${mc.darkCard} border-gray-600/50`
+                : `bg-white ${mc.accentBorder}`
           }`}
           style={{
             elevation: 2,
@@ -116,12 +110,8 @@ const ShowAll = () => {
                     : item.priority === "low"
                       ? "bg-emerald-500/15"
                       : isDarkMode
-                        ? isStudy
-                          ? "bg-study-dark-accentSoft"
-                          : "bg-dev-dark-accentSoft"
-                        : isStudy
-                          ? "bg-study-accent/40"
-                          : "bg-dev-accent/40"
+                        ? mc.darkAccentSoft
+                        : mc.accentBg40
             }`}
           >
             <View
@@ -135,12 +125,8 @@ const ShowAll = () => {
                       : item.priority === "low"
                         ? "bg-emerald-500"
                         : isDarkMode
-                          ? isStudy
-                            ? "bg-study-dark-interactive"
-                            : "bg-dev-dark-interactive"
-                          : isStudy
-                            ? "bg-study-header"
-                            : "bg-dev-header"
+                          ? mc.darkInteractive
+                          : mc.headerBg
               }`}
             />
           </View>
@@ -175,13 +161,11 @@ const ShowAll = () => {
                   : "border-gray-200"
                 : isDarkMode
                   ? "border-gray-600/50"
-                  : isStudy
-                    ? "border-study-accent/60"
-                    : "border-dev-accent/60"
+                  : mc.accentBorder
             }`}
           >
             <View
-              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? (isStudy ? "border-study-dark-interactive/60" : "border-dev-dark-interactive/60") : isStudy ? "border-study-header/30" : "border-dev-header/30"}`}
+              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? mc.darkInteractiveBorder : mc.headerBorder}`}
             >
               {item.completed && (
                 <Text className="text-white text-xs font-bold text-center">
@@ -281,12 +265,8 @@ const ShowAll = () => {
               ? "bg-gray-700 border-gray-600"
               : "bg-gray-100 border-gray-200"
             : isDarkMode
-              ? isStudy
-                ? "bg-study-dark-card border-gray-600/50"
-                : "bg-dev-dark-card border-gray-600/50"
-              : isStudy
-                ? "bg-white border-study-accent/60"
-                : "bg-white border-dev-accent/60"
+              ? `${mc.darkCard} border-gray-600/50`
+              : `bg-white ${mc.accentBorder}`
         }`}
         style={{
           elevation: 2,
@@ -303,12 +283,8 @@ const ShowAll = () => {
                 ? "bg-gray-600"
                 : "bg-gray-200"
               : isDarkMode
-                ? isStudy
-                  ? "bg-study-dark-accentSoft"
-                  : "bg-dev-dark-accentSoft"
-                : isStudy
-                  ? "bg-study-accent/40"
-                  : "bg-dev-accent/40"
+                ? mc.darkAccentSoft
+                : mc.accentBg40
           }`}
         >
           <Flame
@@ -369,13 +345,11 @@ const ShowAll = () => {
                 : "border-gray-200"
               : isDarkMode
                 ? "border-gray-600/50"
-                : isStudy
-                  ? "border-study-accent/60"
-                  : "border-dev-accent/60"
+                : mc.accentBorder
           }`}
         >
 <View
-            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${completed ? "bg-green-700 border-green-700" : isDarkMode ? (isStudy ? "border-study-dark-interactive/60" : "border-dev-dark-interactive/60") : isStudy ? "border-study-header/30" : "border-dev-header/30"}`}
+            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${completed ? "bg-green-700 border-green-700" : isDarkMode ? mc.darkInteractiveBorder : mc.headerBorder}`}
           >
             {completed && (
               <Text className="text-white text-xs font-bold text-center">
@@ -407,13 +381,7 @@ const ShowAll = () => {
         <Text
           className={`text-xl font-bold my-6 mlr-3 text-center 
           ${
-            isDarkMode
-              ? isStudy
-                ? "text-study-dark-interactive"
-                : "text-dev-dark-interactive"
-              : isStudy
-                ? "text-study-header"
-                : "text-dev-header"
+            isDarkMode ? mc.darkInteractiveText : mc.textHeader
           }`}
         >
           {type === "task" ? t("ViewAll.Tasks") : t("ViewAll.Habits")}
@@ -422,13 +390,7 @@ const ShowAll = () => {
           onPress={() => router.back()}
           className={
             "absolute right-4 top-6 p-2 rounded-full " +
-            (isDarkMode
-              ? isStudy
-                ? "bg-study-dark-interactive"
-                : "bg-dev-dark-interactive"
-              : isStudy
-                ? "bg-study-header"
-                : "bg-dev-header")
+            (isDarkMode ? mc.darkInteractive : mc.headerBg)
           }
         >
           <ChevronLeft
@@ -442,19 +404,15 @@ const ShowAll = () => {
       <View
         className={
           "flex-row p-1.5 rounded-2xl mb-4 " +
-          (isDarkMode
-            ? isStudy
-              ? "bg-study-dark-accentSoft"
-              : "bg-dev-dark-accentSoft"
-            : "bg-gray-200")
+          (isDarkMode ? mc.darkAccentSoft : "bg-gray-200")
         }
       >
         <TouchableOpacity
           onPress={() => setType("task")}
-          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${language === "ar" ? "flex-row" : "flex-row-reverse"} space-x-2 ${type === "task" ? (isDarkMode ? (isStudy ? "bg-study-dark-interactive" : "bg-dev-dark-interactive") : isStudy ? "bg-study-header" : "bg-dev-header") : ""}`}
+          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${language === "ar" ? "flex-row" : "flex-row-reverse"} space-x-2 ${type === "task" ? (isDarkMode ? mc.darkInteractive : mc.headerBg) : ""}`}
         >
           <Text
-            className={`font-bold ${type === "task" ? (isDarkMode ? (isStudy ? "text-study-header" : "text-dev-header") : "text-white") : "text-gray-400"}`}
+            className={`font-bold ${type === "task" ? (isDarkMode ? mc.textHeader : "text-white") : "text-gray-400"}`}
           >
             {t("ViewAll.inProgress")}
           </Text>
@@ -465,10 +423,10 @@ const ShowAll = () => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setType("habit")}
-          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${language === "ar" ? "flex-row" : "flex-row-reverse"} ${type === "habit" ? (isDarkMode ? (isStudy ? "bg-study-dark-interactive" : "bg-dev-dark-interactive") : isStudy ? "bg-study-header" : "bg-dev-header") : ""}`}
+          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${language === "ar" ? "flex-row" : "flex-row-reverse"} ${type === "habit" ? (isDarkMode ? mc.darkInteractive : mc.headerBg) : ""}`}
         >
           <Text
-            className={`font-bold ${type === "habit" ? (isDarkMode ? (isStudy ? "text-study-header" : "text-dev-header") : "text-white") : "text-gray-400"}`}
+            className={`font-bold ${type === "habit" ? (isDarkMode ? mc.textHeader : "text-white") : "text-gray-400"}`}
           >
             {t("ViewAll.daily routine")}
           </Text>
@@ -479,21 +437,17 @@ const ShowAll = () => {
       <View
         className={
           "flex-row p-1.5 rounded-2xl mb-4 " +
-          (isDarkMode
-            ? isStudy
-              ? "bg-study-dark-accentSoft"
-              : "bg-dev-dark-accentSoft"
-            : "bg-gray-200")
+          (isDarkMode ? mc.darkAccentSoft : "bg-gray-200")
         }
       >
         {["all", "completed", "incompleted"].map((cat) => (
           <TouchableOpacity
             key={cat}
             onPress={() => setCategory(cat)}
-            className={`flex-1 py-2 rounded-xl items-center justify-center ${category === cat ? (isDarkMode ? (isStudy ? "bg-study-dark-interactive/60" : "bg-dev-dark-interactive/60") : isStudy ? "bg-study-header" : "bg-dev-header") : ""}`}
+            className={`flex-1 py-2 rounded-xl items-center justify-center ${category === cat ? (isDarkMode ? mc.darkInteractive60 : mc.headerBg) : ""}`}
           >
             <Text
-              className={`font-bold text-center text-sm ${category === cat ? (isDarkMode ? (isStudy ? "text-study-header" : "text-dev-header") : "text-white") : "text-gray-400"}`}
+              className={`font-bold text-center text-sm ${category === cat ? (isDarkMode ? mc.textHeader : "text-white") : "text-gray-400"}`}
             >
               {cat === "all"
                 ? t("ViewAll.all")
@@ -529,23 +483,13 @@ const ShowAll = () => {
                 <TouchableOpacity
                   onPress={openAddTaskSheet}
                   className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
-                    isDarkMode
-                      ? isStudy
-                        ? "bg-study-dark-interactive"
-                        : "bg-dev-dark-interactive"
-                      : isStudy
-                        ? "bg-study-header"
-                        : "bg-dev-header"
+                    isDarkMode ? mc.darkInteractive : mc.headerBg
                   }`}
                   style={{ elevation: 5 }}
                 >
                   <Text
                     className={`text-3xl font-bold ${
-                      isDarkMode
-                        ? isStudy
-                          ? "text-study-header"
-                          : "text-dev-header"
-                        : "text-white"
+                      isDarkMode ? mc.textHeader : "text-white"
                     }`}
                   >
                     +
@@ -588,23 +532,13 @@ const ShowAll = () => {
                 <TouchableOpacity
                   onPress={openAddTaskSheet}
                   className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
-                    isDarkMode
-                      ? isStudy
-                        ? "bg-study-dark-interactive"
-                        : "bg-dev-dark-interactive"
-                      : isStudy
-                        ? "bg-study-header"
-                        : "bg-dev-header"
+                    isDarkMode ? mc.darkInteractive : mc.headerBg
                   }`}
                   style={{ elevation: 5 }}
                 >
                   <Text
                     className={`text-3xl font-bold ${
-                      isDarkMode
-                        ? isStudy
-                          ? "text-study-header"
-                          : "text-dev-header"
-                        : "text-white"
+                      isDarkMode ? mc.textHeader : "text-white"
                     }`}
                   >
                     +

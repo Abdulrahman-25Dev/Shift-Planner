@@ -58,7 +58,12 @@ export default function RootLayout() {
         try {
           const data = response.notification.request.content.data as any;
           if (data?.itemId) {
-            const mode = data.mode === "coding" ? "coding" : "study";
+            const mode: "study" | "coding" | "faith" =
+              data.mode === "coding"
+                ? "coding"
+                : data.mode === "faith"
+                  ? "faith"
+                  : "study";
             const type = data.notificationType === "habit" ? "habit" : "task";
             useAppStore.getState().setMode(mode);
             useAppStore

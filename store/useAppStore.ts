@@ -13,6 +13,7 @@ const storedLanguage = (storage.getString("language") as "ar" | "en") || "ar";
 
 // ============ Interfaces ============
 export type Priority = 'high' | 'medium' | 'low' | 'none';
+export type Mode = "study" | "coding" | "faith";
 
 export interface Task {
   id: string;
@@ -23,7 +24,7 @@ export interface Task {
   createdAt: number;
   reminderTime?: string; // ISO string for reminder
   priority?: Priority;
-  mode: "study" | "coding"; // Separate tasks by mode
+  mode: Mode; // Separate tasks by mode
 }
 
 export interface Habit {
@@ -38,13 +39,13 @@ export interface Habit {
   reminderTime?: string; // ISO string for reminder
   repeatType?: "daily" | "weekly" | "custom";
   repeatDays?: string[];
-  mode: "study" | "coding"; // Separate habits by mode
+  mode: Mode; // Separate habits by mode
 }
 
 interface AppState {
-  mode: "study" | "coding";
+  mode: Mode;
   toggleMode: () => void;
-  setMode: (m: "study" | "coding") => void;
+  setMode: (m: Mode) => void;
 
   isDarkMode: boolean;
   toggleDarkMode: () => void;
@@ -61,8 +62,8 @@ interface AppState {
   ) => void;
 
   deleteSingleItem: (id: string, type: "task" | "habit") => void;
-  clearAllTasks: (mode: "coding" | "study") => void;
-  clearAllHabits: (mode: "coding" | "study") => void;
+  clearAllTasks: (mode: Mode) => void;
+  clearAllHabits: (mode: Mode) => void;
 
   // All data (unfiltered)
   allTasks: Task[];
@@ -117,7 +118,7 @@ const loadFromStorage = <T extends { mode?: string }>(key: string): T[] => {
 };
 
 const initialMode =
-  (storage.getString("app_mode") as "study" | "coding") || "study";
+  (storage.getString("app_mode") as Mode) || "study";
 
 export const useAppStore = create<AppState>((set, get) => {
   const allTasks = loadFromStorage<Task>("tasks");
@@ -131,7 +132,9 @@ export const useAppStore = create<AppState>((set, get) => {
     mode: initialMode,
     toggleMode: () =>
       set((state) => {
-        const nextMode = state.mode === "study" ? "coding" : "study";
+        const order: Mode[] = ["study", "coding", "faith"];
+        const idx = order.indexOf(state.mode);
+        const nextMode = order[(idx + 1) % order.length];
         storage.set("app_mode", nextMode);
         return {
           mode: nextMode,
@@ -306,7 +309,7 @@ export const useAppStore = create<AppState>((set, get) => {
           habits: updated.filter((h) => h.mode === state.mode),
         };
       }),
-    clearAllTasks: (mode: "coding" | "study") =>
+    clearAllTasks: (mode: Mode) =>
       set((state) => {
         const updated = state.allTasks.filter((t) => t.mode !== mode);
         storage.set("tasks", JSON.stringify(updated));
@@ -315,7 +318,7 @@ export const useAppStore = create<AppState>((set, get) => {
           tasks: updated.filter((t) => t.mode === state.mode),
         };
       }),
-    clearAllHabits: (mode: "coding" | "study") =>
+    clearAllHabits: (mode: Mode) =>
       set((state) => {
         const updated = state.allHabits.filter((h) => h.mode !== mode);
         storage.set("habits", JSON.stringify(updated));

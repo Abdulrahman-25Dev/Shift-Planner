@@ -33,6 +33,8 @@
     "daily": "Daily Goal",
     "completeDev": "All your tasks are complete!",
     "devTitle": "System Stability",
+    "completeFaith": "Your daily worship is complete!",
+    "faithTitle": "Worship Commitment",
     "completed": "completed"
   },
   "task": {
@@ -41,8 +43,21 @@
   "header": {
     "modeShortStudy": "بيئة الدراسة",
     "modeShortDev": "بيئة البرمجة",
+    "modeShortFaith": "بيئة العبادات",
     "modeTitleStudy": "STUDY MODE",
-    "modeTitleDev": "DEV MODE"
+    "modeTitleDev": "DEV MODE",
+    "modeTitleFaith": "FAITH MODE"
+  },
+  "modeModal": {
+    "title": "Choose Mode",
+    "subtitle": "A separate environment for each side of your life",
+    "study": "Study Mode",
+    "coding": "Dev Mode",
+    "faith": "Faith Mode",
+    "studyDesc": "Focus on academics and daily study",
+    "codingDesc": "Programming environment with full focus",
+    "faithDesc": "Organize your worship, athkar and daily routine",
+    "cancel": "Cancel"
   },
   "priority": {
     "high": "High",

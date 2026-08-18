@@ -2,25 +2,19 @@ import React, { useRef, useState } from "react";
 import { View, Text, TouchableOpacity, Pressable } from "react-native";
 import { useAppStore, Task, Priority } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
-import {
-  GraduationCap,
-  Code2,
-  Settings,
-  Trash2,
-  Flame,
-} from "lucide-react-native";
+import { Settings, Trash2, Flame } from "lucide-react-native";
 import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
 import { AddTaskSheet } from "../components/AddTaskSheet";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { DetailsSheet } from "./tasks/taskDetails";
 import ConfirmationModal from "../components/ConfirmationModal";
-import { useModeTheme } from "@/src/theme";
+import ModeSwitcherButton from "../components/ModeSwitcherButton";
+import { useModeClasses } from "../src/theme";
 
 export default function Index() {
   const {
     mode,
-    toggleMode,
     tasks,
     habits,
     isDarkMode,
@@ -29,8 +23,7 @@ export default function Index() {
     deleteSingleItem,
     language,
   } = useAppStore();
-  const isStudy = mode === "study";
-  const { palette } = useModeTheme();
+  const mc = useModeClasses();
   const { t } = useTranslation();
 
   const priorityRank = (priority: string | undefined) => {
@@ -54,13 +47,31 @@ export default function Index() {
   const completedItems = completedTasksCount;
   const progressRatio = totalItems === 0 ? 0 : completedItems / totalItems;
   const progressPercentage = Math.round(progressRatio * 100);
-  const progressLabel = isStudy
-    ? progressPercentage === 100
-      ? t("progress.completeStudy")
-      : t("progress.daily")
-    : progressPercentage === 100
-      ? t("progress.completeDev")
-      : t("progress.devTitle");
+  const progressLabel =
+    mode === "study"
+      ? progressPercentage === 100
+        ? t("progress.completeStudy")
+        : t("progress.daily")
+      : mode === "coding"
+        ? progressPercentage === 100
+          ? t("progress.completeDev")
+          : t("progress.devTitle")
+        : progressPercentage === 100
+          ? t("progress.completeFaith")
+          : t("progress.faithTitle");
+
+  const headerShortKey =
+    mode === "study"
+      ? "header.modeShortStudy"
+      : mode === "coding"
+        ? "header.modeShortDev"
+        : "header.modeShortFaith";
+  const headerTitleKey =
+    mode === "study"
+      ? "header.modeTitleStudy"
+      : mode === "coding"
+        ? "header.modeTitleDev"
+        : "header.modeTitleFaith";
 
   // ترتيب حسب الاكتمال ثم الأولوية (Sort by completion then priority)
   const sortByCompletionAndPriority = <
@@ -143,12 +154,8 @@ export default function Index() {
                 ? "bg-gray-700 border-gray-600"
                 : "bg-gray-100 border-gray-200"
               : isDarkMode
-                ? isStudy
-                  ? "bg-study-dark-card border-gray-600/50"
-                  : "bg-dev-dark-card border-gray-600/50"
-                : isStudy
-                  ? "bg-white border-study-accent/60"
-                  : "bg-white border-dev-accent/60"
+                ? `${mc.darkCard} border-gray-600/50`
+                : `bg-white ${mc.accentBorder}`
           }`}
           style={{
             elevation: 2,
@@ -170,12 +177,8 @@ export default function Index() {
                     : item.priority === "low"
                       ? "bg-emerald-500/15"
                       : isDarkMode
-                        ? isStudy
-                          ? "bg-study-dark-accentSoft"
-                          : "bg-dev-dark-accentSoft"
-                        : isStudy
-                          ? "bg-study-accent/40"
-                          : "bg-dev-accent/40"
+                        ? mc.darkAccentSoft
+                        : mc.accentBg40
             }`}
           >
             <View
@@ -189,12 +192,8 @@ export default function Index() {
                       : item.priority === "low"
                         ? "bg-emerald-500"
                         : isDarkMode
-                          ? isStudy
-                            ? "bg-study-dark-interactive"
-                            : "bg-dev-dark-interactive"
-                          : isStudy
-                            ? "bg-study-header"
-                            : "bg-dev-header"
+                          ? mc.darkInteractive
+                          : mc.headerBg
               }`}
             />
           </View>
@@ -244,13 +243,11 @@ export default function Index() {
                   : "border-gray-200"
                 : isDarkMode
                   ? "border-gray-600/50"
-                  : isStudy
-                    ? "border-study-accent/60"
-                    : "border-dev-accent/60"
+                  : mc.accentBorder
             }`}
           >
             <View
-              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? (isStudy ? "border-study-dark-interactive/60" : "border-dev-dark-interactive/60") : isStudy ? "border-study-header/30" : "border-dev-header/30"}`}
+              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? mc.darkInteractiveBorder : mc.headerBorder}`}
             >
               {item.completed && (
                 <Text className="text-white text-xs font-bold text-center">
@@ -357,12 +354,8 @@ export default function Index() {
               ? "bg-gray-700 border-gray-600"
               : "bg-gray-100 border-gray-200"
             : isDarkMode
-              ? isStudy
-                ? "bg-study-dark-card border-gray-600/50"
-                : "bg-dev-dark-card border-gray-600/50"
-              : isStudy
-                ? "bg-white border-study-accent/60"
-                : "bg-white border-dev-accent/60"
+              ? `${mc.darkCard} border-gray-600/50`
+              : `bg-white ${mc.accentBorder}`
         }`}
         style={{
           elevation: 2,
@@ -378,12 +371,8 @@ export default function Index() {
                 ? "bg-gray-600"
                 : "bg-gray-200"
               : isDarkMode
-                ? isStudy
-                  ? "bg-study-dark-accentSoft"
-                  : "bg-dev-dark-accentSoft"
-                : isStudy
-                  ? "bg-study-accent/40"
-                  : "bg-dev-accent/40"
+                ? mc.darkAccentSoft
+                : mc.accentBg40
           }`}
         >
           <Flame
@@ -444,13 +433,11 @@ export default function Index() {
                 : "border-gray-200"
               : isDarkMode
                 ? "border-gray-600/50"
-                : isStudy
-                  ? "border-study-accent/60"
-                  : "border-dev-accent/60"
+                : mc.accentBorder
           }`}
         >
           <View
-            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? (isStudy ? "border-study-dark-interactive/60" : "border-dev-dark-interactive/60") : isStudy ? "border-study-header/30" : "border-dev-header/30"}`}
+            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? mc.darkInteractiveBorder : mc.headerBorder}`}
           >
             {item.completed && (
               <Text className="text-white text-xs font-bold text-center">
@@ -478,12 +465,8 @@ export default function Index() {
     <View
       className={`my-4 rounded-3xl px-4 py-4 border ${
         isDarkMode
-          ? isStudy
-            ? "bg-study-dark-card border-study-dark-accentSoft"
-            : "bg-dev-dark-card border-dev-dark-accentSoft"
-          : isStudy
-            ? "bg-study-accentSoft border-study-accent/60"
-            : "bg-dev-accentSoft border-dev-accent/60"
+          ? `${mc.darkCard} ${mc.darkAccentBorder}`
+          : `${mc.accentSoft} ${mc.accentBorder}`
       }`}
       style={{ minHeight: 128 }}
     >
@@ -491,39 +474,21 @@ export default function Index() {
         <View className="flex-1 pr-3">
           <Text
             className={`text-sm font-bold uppercase ${language === "ar" ? "text-left" : "text-right"} ${
-              isDarkMode
-                ? isStudy
-                  ? "text-study-dark-interactive"
-                  : "text-dev-dark-interactive"
-                : isStudy
-                  ? "text-study-header"
-                  : "text-dev-header"
+              isDarkMode ? mc.darkInteractiveText : mc.textHeader
             }`}
           >
             {progressLabel}
           </Text>
           <Text
             className={`mt-2 text-3xl font-black ${language === "ar" ? "text-left" : "text-right"} ${
-              isDarkMode
-                ? isStudy
-                  ? "text-study-dark-interactive"
-                  : "text-dev-dark-interactive"
-                : isStudy
-                  ? "text-study-header"
-                  : "text-dev-header"
+              isDarkMode ? mc.darkInteractiveText : mc.textHeader
             }`}
           >
             {progressPercentage}%
           </Text>
           <Text
             className={`mt-1 text-sm ${language === "ar" ? "text-left" : "text-right"} ${
-              isDarkMode
-                ? isStudy
-                  ? "text-study-dark-interactive/80"
-                  : "text-dev-dark-interactive/80"
-                : isStudy
-                  ? "text-study-header/80"
-                  : "text-dev-header/80"
+              isDarkMode ? mc.darkInteractiveText80 : mc.textHeader80
             }`}
           >
             {completedItems} / {totalItems || 0} {t("progress.completed")}
@@ -534,13 +499,7 @@ export default function Index() {
       <View className="mt-4 h-3 w-full overflow-hidden rounded-full bg-white/20">
         <View
           className={`h-full rounded-full ${language === "ar" ? "mr-auto" : "ml-auto"} ${
-            isDarkMode
-              ? isStudy
-                ? "bg-study-dark-interactive"
-                : "bg-dev-dark-interactive"
-              : isStudy
-                ? "bg-study-header"
-                : "bg-dev-header"
+            isDarkMode ? mc.darkInteractive : mc.headerBg
           }`}
           style={{ width: `${progressPercentage}%` }}
         />
@@ -549,29 +508,16 @@ export default function Index() {
   );
 
   const HeaderSection = () => (
-    <View
-      className={`pt-12 pb-5 px-6 shadow-2xl ${
-        isStudy ? "bg-study-header" : "bg-dev-header"
-      }`}
-    >
+    <View className={`pt-12 pb-5 px-6 shadow-2xl ${mc.headerBg}`}>
       <View className="flex-row justify-between items-center">
-        <TouchableOpacity
-          onPress={toggleMode}
-          className="bg-white/20 p-3 rounded-2xl"
-        >
-          {isStudy ? (
-            <GraduationCap color="white" size={26} />
-          ) : (
-            <Code2 color="white" size={26} />
-          )}
-        </TouchableOpacity>
+        <ModeSwitcherButton />
 
         <View className="flex-1 items-center">
           <Text className="text-white/70 text-xs font-bold mb-1">
-            {isStudy ? t("header.modeShortStudy") : t("header.modeShortDev")}
+            {t(headerShortKey)}
           </Text>
           <Text className="text-white text-2xl font-black">
-            {isStudy ? t("header.modeTitleStudy") : t("header.modeTitleDev")}
+            {t(headerTitleKey)}
           </Text>
         </View>
 
@@ -604,13 +550,7 @@ export default function Index() {
         >
           <Text
             className={`text-lg font-bold ${
-              isDarkMode
-                ? isStudy
-                  ? "text-study-dark-interactive"
-                  : "text-dev-dark-interactive"
-                : isStudy
-                  ? "text-study-header"
-                  : "text-dev-header"
+              isDarkMode ? mc.darkInteractiveText : mc.textHeader
             }`}
           >
             {t("common.Tasks")}
@@ -621,13 +561,7 @@ export default function Index() {
           >
             <Text
               className={`text-sm font-bold ${
-                isDarkMode
-                  ? isStudy
-                    ? "text-study-dark-interactive"
-                    : "text-dev-dark-interactive"
-                  : isStudy
-                    ? "text-study-header"
-                    : "text-dev-header"
+                isDarkMode ? mc.darkInteractiveText : mc.textHeader
               }`}
             >
               {t("common.viewAll")}
@@ -653,13 +587,7 @@ export default function Index() {
         >
           <Text
             className={`text-lg font-bold ${
-              isDarkMode
-                ? isStudy
-                  ? "text-study-dark-interactive"
-                  : "text-dev-dark-interactive"
-                : isStudy
-                  ? "text-study-header"
-                  : "text-dev-header"
+              isDarkMode ? mc.darkInteractiveText : mc.textHeader
             }`}
           >
             {t("common.Habits")}
@@ -671,13 +599,7 @@ export default function Index() {
           >
             <Text
               className={`text-sm font-bold ${
-                isDarkMode
-                  ? isStudy
-                    ? "text-study-dark-interactive"
-                    : "text-dev-dark-interactive"
-                  : isStudy
-                    ? "text-study-header"
-                    : "text-dev-header"
+                isDarkMode ? mc.darkInteractiveText : mc.textHeader
               }`}
             >
               {t("common.viewAll")}
@@ -697,23 +619,13 @@ export default function Index() {
         <TouchableOpacity
           onPress={openAddTaskSheet}
           className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
-            isDarkMode
-              ? isStudy
-                ? "bg-study-dark-interactive"
-                : "bg-dev-dark-interactive"
-              : isStudy
-                ? "bg-study-header"
-                : "bg-dev-header"
+            isDarkMode ? mc.darkInteractive : mc.headerBg
           }`}
           style={{ elevation: 5 }}
         >
           <Text
             className={`text-3xl font-bold ${
-              isDarkMode
-                ? isStudy
-                  ? "text-study-header"
-                  : "text-dev-header"
-                : "text-white"
+              isDarkMode ? mc.textHeader : "text-white"
             }`}
           >
             +

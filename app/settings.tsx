@@ -15,15 +15,14 @@ import {
   Trash2,
   Moon,
   Sun,
-  GraduationCap,
-  Code2,
   LogOut,
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { useAppStore } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
 import ConfirmationModal from "../components/ConfirmationModal";
-import { useModeTheme } from "@/src/theme";
+import { useModeTheme, useModeClasses } from "@/src/theme";
+import { MODE_META } from "../components/ModeSelectionModal";
 
 export default function Settings() {
   const {
@@ -36,8 +35,8 @@ export default function Settings() {
     setNotificationsEnabled,
   } = useAppStore();
   const { palette } = useModeTheme();
+  const mc = useModeClasses();
   const { t } = useTranslation();
-  const isStudy = mode === "study";
   const notifications = notificationsEnabled;
   const [modalVisible, setModalVisible] = useState(false);
   const [modalConfig, setModalConfig] = useState<{
@@ -81,26 +80,10 @@ export default function Settings() {
   const iconColor = isDarkMode ? palette.accentText : palette.header;
   const trashColor = isDarkMode ? "#fca5a5" : "#dc2626";
 
-  const cardBg = isDarkMode
-    ? isStudy
-      ? "bg-study-dark-card"
-      : "bg-dev-dark-card"
-    : "bg-white";
-  const iconCircleBg = isDarkMode
-    ? isStudy
-      ? "bg-study-dark-accentSoft"
-      : "bg-dev-dark-accentSoft"
-    : isStudy
-      ? "bg-study-accentSoft"
-      : "bg-dev-accentSoft";
+  const cardBg = isDarkMode ? mc.darkCard : "bg-white";
+  const iconCircleBg = isDarkMode ? mc.darkAccentSoft : mc.accentSoft;
   const titleText = isDarkMode ? "text-gray-100" : "text-gray-800";
-  const labelText = isDarkMode
-    ? isStudy
-      ? "text-study-dark-interactive"
-      : "text-dev-dark-interactive"
-    : isStudy
-      ? "text-study-header"
-      : "text-dev-header";
+  const labelText = isDarkMode ? mc.darkInteractiveText : mc.textHeader;
 
   const shadowStyle = {
     elevation: 2,
@@ -137,11 +120,10 @@ export default function Settings() {
           <View
             className={`w-20 h-20 rounded-full items-center justify-center ${iconCircleBg}`}
           >
-            {isStudy ? (
-              <GraduationCap size={32} color={iconColor} />
-            ) : (
-              <Code2 size={32} color={iconColor} />
-            )}
+            {(() => {
+              const ModeIcon = MODE_META[mode].icon;
+              return <ModeIcon size={32} color={iconColor} />;
+            })()}
           </View>
           <Text
             className={` text-base font-bold mt-3 ${titleText}`}
@@ -198,7 +180,7 @@ export default function Settings() {
               </Text>
               <View className="mt-2 flex-row items-center justify-center">
                 <Text
-                  className={`text-base font-bold p-2 rounded-3xl ${language === "ar" ? (isDarkMode ? (isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive") : isStudy ? "text-study-header" : "text-dev-header") : isDarkMode ? "text-slate-300" : "text-slate-500"}`}
+                  className={`text-base font-bold p-2 rounded-3xl ${language === "ar" ? (isDarkMode ? mc.darkInteractiveText : mc.textHeader) : isDarkMode ? "text-slate-300" : "text-slate-500"}`}
                 >
                   ع
                 </Text>
@@ -208,7 +190,7 @@ export default function Settings() {
                   |
                 </Text>
                 <Text
-                  className={`text-base font-bold p-2 rounded-3xl ${language === "en" ? (isDarkMode ? (isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive") : isStudy ? "text-study-header" : "text-dev-header") : isDarkMode ? "text-slate-300" : "text-slate-500"}`}
+                  className={`text-base font-bold p-2 rounded-3xl ${language === "en" ? (isDarkMode ? mc.darkInteractiveText : mc.textHeader) : isDarkMode ? "text-slate-300" : "text-slate-500"}`}
                 >
                   En
                 </Text>

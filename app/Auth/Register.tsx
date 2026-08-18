@@ -17,13 +17,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppStore } from "@/store/useAppStore";
-import { useModeTheme } from "@/src/theme";
+import { useModeTheme, useModeClasses } from "@/src/theme";
 import { supabase } from "@/supabase";
 
 export default function Register() {
-  const { isDarkMode, language, mode } = useAppStore();
+  const { isDarkMode, language } = useAppStore();
   const { palette } = useModeTheme();
-  const isStudy = mode === "study";
+  const mc = useModeClasses();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -89,36 +89,20 @@ export default function Register() {
     secondary: palette.secondary,
   };
 
-  const titleText = isDarkMode
-    ? isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive"
-    : isStudy ? "text-study-header" : "text-dev-header";
-  const subtitleText = isDarkMode
-    ? isStudy ? "text-study-dark-interactive/70" : "text-dev-dark-interactive/70"
-    : isStudy ? "text-study-header/70" : "text-dev-header/70";
-  const logoCircle = isDarkMode
-    ? isStudy ? "bg-study-dark-accentSoft" : "bg-dev-dark-accentSoft"
-    : isStudy ? "bg-study-accentSoft" : "bg-dev-accentSoft";
-  const glowCircle = isDarkMode
-    ? isStudy ? "bg-study-dark-interactive/15" : "bg-dev-dark-interactive/15"
-    : isStudy ? "bg-study-accent/40" : "bg-dev-accent/40";
-  const glowCircleAlt = isDarkMode
-    ? isStudy ? "bg-study-dark-interactive/10" : "bg-dev-dark-interactive/10"
-    : isStudy ? "bg-study-accent/25" : "bg-dev-accent/25";
-  const inputBg = isDarkMode
-    ? isStudy ? "bg-study-dark-card" : "bg-dev-dark-card"
-    : "bg-white";
-  const inputBorder = isDarkMode
-    ? isStudy ? "border-study-dark-interactive/30" : "border-dev-dark-interactive/30"
-    : isStudy ? "border-study-accent/60" : "border-dev-accent/60";
+  const titleText = isDarkMode ? mc.darkInteractiveText : mc.textHeader;
+  const subtitleText = isDarkMode ? mc.darkInteractiveText70 : mc.textHeader70;
+  const logoCircle = isDarkMode ? mc.darkAccentSoft : mc.accentSoft;
+  const glowCircle = isDarkMode ? mc.darkInteractive15 : mc.accentBg40;
+  const glowCircleAlt = isDarkMode ? mc.darkInteractive10 : mc.accentBg30;
+  const inputBg = isDarkMode ? mc.darkCard : "bg-white";
+  const inputBorder = isDarkMode ? mc.darkInteractiveBorder30 : mc.accentBorder;
   const inputText = isDarkMode ? "text-white" : "text-slate-900";
   const inputIcon = theme.secondary;
   const placeholderColor = isDarkMode ? "#94A3B8" : "#64748B";
   const footerText = isDarkMode ? "text-gray-300" : "text-gray-500";
   const linkText = titleText;
   const buttonColors: [string, string] = [theme.primary, theme.secondary];
-  const buttonText = isDarkMode
-    ? isStudy ? "text-study-header" : "text-dev-header"
-    : "text-white";
+  const buttonText = isDarkMode ? mc.textHeader : "text-white";
   const buttonRadius = "rounded-full";
   const rowDirection = language === "ar" ? "flex-row-reverse" : "flex-row";
   const inputAlign = language === "ar" ? "text-right" : "text-left";

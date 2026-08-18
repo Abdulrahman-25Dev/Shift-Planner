@@ -19,7 +19,7 @@ import DateSheet from "../../components/DateSheet";
 import TimeSheet from "../../components/TimeSheet";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { useTranslation } from "react-i18next";
-import { useModeTheme } from "@/src/theme";
+import { useModeTheme, useModeClasses } from "@/src/theme";
 
 interface DetailsSheetProps {
   itemId: string | null;
@@ -34,11 +34,11 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
       updateHabit,
       removeTask,
       removeHabit,
-      mode,
       language,
     } = useAppStore();
     const { t } = useTranslation();
     const { palette } = useModeTheme();
+    const mc = useModeClasses();
 
     // 1. جلب البيانات والتعرف على النوع
     const task = useMemo(
@@ -52,8 +52,6 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
 
     const item = task || habit;
     const isHabit = !!habit;
-
-    const isStudy = mode === "study";
 
     const dateSheetRef = React.useRef<BottomSheetModal>(null);
     const timeSheetRef = React.useRef<BottomSheetModal>(null);
@@ -91,46 +89,16 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
     const taskDueDate = !isHabit ? (item as Task).dueDate : undefined;
     const taskReminderTime = item.reminderTime;
 
-    const accentText = isDarkMode
-      ? isStudy
-        ? "text-study-dark-interactive"
-        : "text-dev-dark-interactive"
-      : isStudy
-        ? "text-study-header"
-        : "text-dev-header";
+    const accentText = isDarkMode ? mc.darkInteractiveText : mc.textHeader;
     const inputBg = isDarkMode
-      ? isStudy
-        ? " bg-study-dark-accentSoft text-study-dark-interactive"
-        : " bg-dev-dark-accentSoft text-dev-dark-interactive"
-      : isStudy
-        ? " bg-study-accentSoft text-study-header"
-        : " bg-dev-accentSoft text-dev-header";
-    const softBoxBg = isDarkMode
-      ? isStudy
-        ? " bg-study-dark-accentSoft"
-        : " bg-dev-dark-accentSoft"
-      : isStudy
-        ? " bg-study-accentSoft"
-        : " bg-dev-accentSoft";
-    const activePill = isDarkMode
-      ? isStudy
-        ? "bg-study-dark-interactive"
-        : "bg-dev-dark-interactive"
-      : isStudy
-        ? "bg-study-header"
-        : "bg-dev-header";
-    const activePillText = isDarkMode
-      ? isStudy
-        ? "text-study-header"
-        : "text-dev-header"
-      : "text-white";
+      ? ` ${mc.darkAccentSoft} ${mc.darkInteractiveText}`
+      : ` ${mc.accentSoft} ${mc.textHeader}`;
+    const softBoxBg = isDarkMode ? mc.darkAccentSoft : mc.accentSoft;
+    const activePill = isDarkMode ? mc.darkInteractive : mc.headerBg;
+    const activePillText = isDarkMode ? mc.textHeader : "text-white";
     const unselectedPill = isDarkMode
-      ? isStudy
-        ? "border-study-dark-interactive/30 bg-study-dark-accentSoft"
-        : "border-dev-dark-interactive/30 bg-dev-dark-accentSoft"
-      : isStudy
-        ? "border-study-accent/60 bg-study-accent/30"
-        : "border-dev-accent/60 bg-dev-accent/30";
+      ? `${mc.darkInteractiveBorder30} ${mc.darkAccentSoft}`
+      : `${mc.accentBorder} ${mc.accentBg30}`;
     const iconColor = palette.accentText;
 
     return (
@@ -273,7 +241,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                     }`}
                   >
                     <Text
-                      className={`text-xs font-bold ${isSelected ? activePillText : isDarkMode ? (isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive") : "text-gray-600"}`}
+                      className={`text-xs font-bold ${isSelected ? activePillText : isDarkMode ? mc.darkInteractiveText : "text-gray-600"}`}
                     >
                       {opt.label}
                     </Text>

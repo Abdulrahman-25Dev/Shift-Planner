@@ -13,7 +13,7 @@ import {
   BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
 import { useAppStore } from "../store/useAppStore";
-import { useModeTheme } from "@/src/theme";
+import { useModeTheme, useModeClasses } from "@/src/theme";
 import { useTranslation } from "react-i18next";
 
 interface TimeSheetProps {
@@ -99,49 +99,19 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
       [],
     );
 
-    const { mode: appMode, isDarkMode, language } = useAppStore();
+    const { isDarkMode, language } = useAppStore();
     const { palette } = useModeTheme();
+    const mc = useModeClasses();
     const { t } = useTranslation();
-    const isStudy = appMode === "study";
 
     const primaryColor = isDarkMode ? palette.interactive : palette.header;
     const placeholderColor = isDarkMode ? "#94a3b8" : "#9CA3AF";
-    const sheetBgClass = isDarkMode
-      ? isStudy
-        ? "bg-study-dark-card"
-        : "bg-dev-dark-card"
-      : "bg-white";
-    const accentText = isDarkMode
-      ? isStudy
-        ? "text-study-dark-interactive"
-        : "text-dev-dark-interactive"
-      : isStudy
-        ? "text-study-header"
-        : "text-dev-header";
-    const activePill = isDarkMode
-      ? isStudy
-        ? "bg-study-dark-interactive"
-        : "bg-dev-dark-interactive"
-      : isStudy
-        ? "bg-study-header"
-        : "bg-dev-header";
-    const activePillText = isDarkMode
-      ? isStudy
-        ? "text-study-header"
-        : "text-dev-header"
-      : "text-white";
-    const confirmBtn = isDarkMode
-      ? isStudy
-        ? "bg-study-dark-interactive"
-        : "bg-dev-dark-interactive"
-      : isStudy
-        ? "bg-study-header"
-        : "bg-dev-header";
-    const confirmBtnText = isDarkMode
-      ? isStudy
-        ? "text-study-header"
-        : "text-dev-header"
-      : "text-white";
+    const sheetBgClass = isDarkMode ? mc.darkCard : "bg-white";
+    const accentText = isDarkMode ? mc.darkInteractiveText : mc.textHeader;
+    const activePill = isDarkMode ? mc.darkInteractive : mc.headerBg;
+    const activePillText = isDarkMode ? mc.textHeader : "text-white";
+    const confirmBtn = isDarkMode ? mc.darkInteractive : mc.headerBg;
+    const confirmBtnText = isDarkMode ? mc.textHeader : "text-white";
 
     const to24Hour = (h12: string, pm: boolean): string => {
       const num = parseInt(h12, 10);

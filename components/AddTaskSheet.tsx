@@ -8,7 +8,7 @@ import BottomSheet, {
   BottomSheetModal,
 } from "@gorhom/bottom-sheet";
 import { useAppStore } from "../store/useAppStore";
-import { useModeTheme } from "@/src/theme";
+import { useModeTheme, useModeClasses } from "@/src/theme";
 import { useTranslation } from "react-i18next";
 import DateSheet from "../components/DateSheet";
 import TimeSheet from "../components/TimeSheet";
@@ -35,9 +35,9 @@ export const AddTaskSheet = forwardRef(
     );
     const [repeatType, setRepeatType] = useState<"daily" | "weekly" | "custom" | undefined>();
     const [repeatDays, setRepeatDays] = useState<string[] | undefined>();
-    const isStudy = props.mode === "study";
     const { addTask, addHabit, isDarkMode, language } = useAppStore();
     const { palette } = useModeTheme();
+    const mc = useModeClasses();
 
     // نقاط التوقف: 50% من الشاشة أو 85%
     const snapPoints = useMemo(() => ["85%"], []);
@@ -55,41 +55,15 @@ export const AddTaskSheet = forwardRef(
     );
 
     const inputBg = isDarkMode
-      ? isStudy
-        ? "bg-study-dark-accentSoft text-study-dark-interactive"
-        : "bg-dev-dark-accentSoft text-dev-dark-interactive"
-      : isStudy
-        ? "bg-study-accentSoft text-study-header"
-        : "bg-dev-accentSoft text-dev-header";
-    const labelText = isDarkMode
-      ? isStudy
-        ? "text-study-dark-interactive"
-        : "text-dev-dark-interactive"
-      : "text-gray-500";
-    const activePill = isDarkMode
-      ? isStudy
-        ? "bg-study-dark-interactive"
-        : "bg-dev-dark-interactive"
-      : isStudy
-        ? "bg-study-header"
-        : "bg-dev-header";
-    const activePillText = isDarkMode
-      ? isStudy
-        ? "text-study-header"
-        : "text-dev-header"
-      : "text-white";
-    const pillTrack = isDarkMode
-      ? isStudy
-        ? "bg-study-dark-accentSoft"
-        : "bg-dev-dark-accentSoft"
-      : "bg-gray-100";
+      ? `${mc.darkAccentSoft} ${mc.darkInteractiveText}`
+      : `${mc.accentSoft} ${mc.textHeader}`;
+    const labelText = isDarkMode ? mc.darkInteractiveText : "text-gray-500";
+    const activePill = isDarkMode ? mc.darkInteractive : mc.headerBg;
+    const activePillText = isDarkMode ? mc.textHeader : "text-white";
+    const pillTrack = isDarkMode ? mc.darkAccentSoft : "bg-gray-100";
     const unselectedPill = isDarkMode
-      ? isStudy
-        ? "border-study-dark-interactive/30 bg-study-dark-accentSoft"
-        : "border-dev-dark-interactive/30 bg-dev-dark-accentSoft"
-      : isStudy
-        ? "border-study-accent/60 bg-study-accent/30"
-        : "border-dev-accent/60 bg-dev-accent/30";
+      ? `${mc.darkInteractiveBorder30} ${mc.darkAccentSoft}`
+      : `${mc.accentBorder} ${mc.accentBg30}`;
     const iconColor = palette.accentText;
 
     return (
@@ -182,13 +156,7 @@ export const AddTaskSheet = forwardRef(
 
           <View
             className={`flex-row justify-between items-center rounded-2xl p-3 mb-4 ${
-              isDarkMode
-                ? isStudy
-                  ? " bg-study-dark-accentSoft"
-                  : " bg-dev-dark-accentSoft"
-                : isStudy
-                  ? " bg-study-accentSoft"
-                  : " bg-dev-accentSoft"
+              isDarkMode ? mc.darkAccentSoft : mc.accentSoft
             }`}
           >
             <View className="flex-1 pr-2">
@@ -209,13 +177,7 @@ export const AddTaskSheet = forwardRef(
             </View>
             <View
               className={`flex-1 pl-2 border-l ${
-                isDarkMode
-                  ? isStudy
-                    ? "border-study-dark-interactive/40"
-                    : "border-dev-dark-interactive/40"
-                  : isStudy
-                    ? "border-study-accent"
-                    : "border-dev-accent"
+                isDarkMode ? mc.darkInteractiveBorder40 : mc.accentBorderFull
               }`}
             >
               <Text
@@ -257,7 +219,7 @@ export const AddTaskSheet = forwardRef(
                     }`}
                   >
                     <Text
-                      className={`text-xs ${priority === item.value ? activePillText : isDarkMode ? (isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive") : "text-gray-600"}`}
+                      className={`text-xs ${priority === item.value ? activePillText : isDarkMode ? mc.darkInteractiveText : "text-gray-600"}`}
                     >
                       {item.label}
                     </Text>
@@ -274,17 +236,11 @@ export const AddTaskSheet = forwardRef(
                 <Pressable
                   onPress={() => dateSheetRef.current?.present()}
                   className={`p-4 items-center flex-row gap-2 justify-center rounded-2xl mb-3 ${
-                    isDarkMode
-                      ? isStudy
-                        ? "bg-study-dark-accentSoft"
-                        : "bg-dev-dark-accentSoft"
-                      : isStudy
-                        ? "bg-study-accentSoft"
-                        : "bg-dev-accentSoft"
+                    isDarkMode ? mc.darkAccentSoft : mc.accentSoft
                   }`}
                 >
                   <Text
-                    className={`${isDarkMode ? (isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive") : isStudy ? "text-study-header" : "text-dev-header"} font-bold text-center`}
+                    className={`${isDarkMode ? mc.darkInteractiveText : mc.textHeader} font-bold text-center`}
                   >
                     {t("add.Set date")}
                   </Text>
@@ -293,17 +249,11 @@ export const AddTaskSheet = forwardRef(
                 <Pressable
                   onPress={() => timeSheetRef.current?.present()}
                   className={`p-4 items-center flex-row gap-2 justify-center rounded-2xl ${
-                    isDarkMode
-                      ? isStudy
-                        ? "bg-study-dark-accentSoft"
-                        : "bg-dev-dark-accentSoft"
-                      : isStudy
-                        ? "bg-study-accentSoft"
-                        : "bg-dev-accentSoft"
+                    isDarkMode ? mc.darkAccentSoft : mc.accentSoft
                   }`}
                 >
                   <Text
-                    className={`${isDarkMode ? (isStudy ? "text-study-dark-interactive" : "text-dev-dark-interactive") : isStudy ? "text-study-header" : "text-dev-header"} font-bold text-center`}
+                    className={`${isDarkMode ? mc.darkInteractiveText : mc.textHeader} font-bold text-center`}
                   >
                     {t("add.Set time")}
                   </Text>

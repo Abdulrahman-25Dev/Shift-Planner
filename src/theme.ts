@@ -126,3 +126,112 @@ export function useModeTheme() {
   const palette = palettes[modeKey][isDarkMode ? "dark" : "light"];
   return { modeKey, isDarkMode, palette };
 }
+
+export interface ModeClasses {
+  headerBg: string;
+  textHeader: string;
+  darkCard: string;
+  darkInteractive: string;
+  darkInteractiveText: string;
+  darkInteractiveText80: string;
+  darkInteractiveText70: string;
+  textHeader80: string;
+  textHeader70: string;
+  darkInteractive60: string;
+  darkInteractive15: string;
+  darkInteractive10: string;
+  darkAccentSoft: string;
+  darkAccentBorder: string;
+  accentSoft: string;
+  accentBg40: string;
+  accentBorder: string;
+  accentBorderFull: string;
+  accentBg30: string;
+  darkInteractiveBorder: string;
+  darkInteractiveBorder30: string;
+  darkInteractiveBorder40: string;
+  headerBorder: string;
+}
+
+export const MODE_CLASSES: Record<ModeKey, ModeClasses> = {
+  dev: {
+    headerBg: "bg-dev-header",
+    textHeader: "text-dev-header",
+    darkCard: "bg-dev-dark-card",
+    darkInteractive: "bg-dev-dark-interactive",
+    darkInteractiveText: "text-dev-dark-interactive",
+    darkInteractiveText80: "text-dev-dark-interactive/80",
+    darkInteractiveText70: "text-dev-dark-interactive/70",
+    textHeader80: "text-dev-header/80",
+    textHeader70: "text-dev-header/70",
+    darkInteractive60: "bg-dev-dark-interactive/60",
+    darkInteractive15: "bg-dev-dark-interactive/15",
+    darkInteractive10: "bg-dev-dark-interactive/10",
+    darkAccentSoft: "bg-dev-dark-accentSoft",
+    darkAccentBorder: "border-dev-dark-accentSoft",
+    accentSoft: "bg-dev-accentSoft",
+    accentBg40: "bg-dev-accent/40",
+    accentBorder: "border-dev-accent/60",
+    accentBorderFull: "border-dev-accent",
+    accentBg30: "bg-dev-accent/30",
+    darkInteractiveBorder: "border-dev-dark-interactive/60",
+    darkInteractiveBorder30: "border-dev-dark-interactive/30",
+    darkInteractiveBorder40: "border-dev-dark-interactive/40",
+    headerBorder: "border-dev-header/30",
+  },
+  study: {
+    headerBg: "bg-study-header",
+    textHeader: "text-study-header",
+    darkCard: "bg-study-dark-card",
+    darkInteractive: "bg-study-dark-interactive",
+    darkInteractiveText: "text-study-dark-interactive",
+    darkInteractiveText80: "text-study-dark-interactive/80",
+    darkInteractiveText70: "text-study-dark-interactive/70",
+    textHeader80: "text-study-header/80",
+    textHeader70: "text-study-header/70",
+    darkInteractive60: "bg-study-dark-interactive/60",
+    darkInteractive15: "bg-study-dark-interactive/15",
+    darkInteractive10: "bg-study-dark-interactive/10",
+    darkAccentSoft: "bg-study-dark-accentSoft",
+    darkAccentBorder: "border-study-dark-accentSoft",
+    accentSoft: "bg-study-accentSoft",
+    accentBg40: "bg-study-accent/40",
+    accentBorder: "border-study-accent/60",
+    accentBorderFull: "border-study-accent",
+    accentBg30: "bg-study-accent/30",
+    darkInteractiveBorder: "border-study-dark-interactive/60",
+    darkInteractiveBorder30: "border-study-dark-interactive/30",
+    darkInteractiveBorder40: "border-study-dark-interactive/40",
+    headerBorder: "border-study-header/30",
+  },
+  faith: {
+    headerBg: "bg-faith-header",
+    textHeader: "text-faith-header",
+    darkCard: "bg-faith-dark-card",
+    darkInteractive: "bg-faith-dark-interactive",
+    darkInteractiveText: "text-faith-dark-interactive",
+    darkInteractiveText80: "text-faith-dark-interactive/80",
+    darkInteractiveText70: "text-faith-dark-interactive/70",
+    textHeader80: "text-faith-header/80",
+    textHeader70: "text-faith-header/70",
+    darkInteractive60: "bg-faith-dark-interactive/60",
+    darkInteractive15: "bg-faith-dark-interactive/15",
+    darkInteractive10: "bg-faith-dark-interactive/10",
+    darkAccentSoft: "bg-faith-dark-accentSoft",
+    darkAccentBorder: "border-faith-dark-accentSoft",
+    accentSoft: "bg-faith-accentSoft",
+    accentBg40: "bg-faith-accent/40",
+    accentBorder: "border-faith-accent/60",
+    accentBorderFull: "border-faith-accent",
+    accentBg30: "bg-faith-accent/30",
+    darkInteractiveBorder: "border-faith-dark-interactive/60",
+    darkInteractiveBorder30: "border-faith-dark-interactive/30",
+    darkInteractiveBorder40: "border-faith-dark-interactive/40",
+    headerBorder: "border-faith-header/30",
+  },
+};
+
+export function useModeClasses(): ModeClasses {
+  const { modeKey } = useModeTheme();
+  return MODE_CLASSES[modeKey];
+}

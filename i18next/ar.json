@@ -33,6 +33,8 @@
     "daily": "الهدف اليومي",
     "completeDev": "كل مهامك مكتملة!",
     "devTitle": "استقرار النظام",
+    "completeFaith": "وردك اليومي مكتمل!",
+    "faithTitle": "التزام العبادات",
     "completed": "مكتملة"
   },
   "task": {
@@ -41,8 +43,21 @@
   "header": {
     "modeShortStudy": "STUDY MODE",
     "modeShortDev": "DEV MODE",
+    "modeShortFaith": "FAITH MODE",
     "modeTitleStudy": "بيئة الدراسة",
-    "modeTitleDev": "بيئة البرمجة"
+    "modeTitleDev": "بيئة البرمجة",
+    "modeTitleFaith": "بيئة العبادات"
+  },
+  "modeModal": {
+    "title": "اختر الوضع",
+    "subtitle": "بيئة منفصلة لكل جانب من جوانب حياتك",
+    "study": "وضع الدراسة",
+    "coding": "وضع التطوير",
+    "faith": "وضع العبادات",
+    "studyDesc": "ركز على التحصيل الأكاديمي والمذاكرة اليومية",
+    "codingDesc": "بيئة البرمجة والمشاريع التقنية بتركيز كامل",
+    "faithDesc": "نظّم عباداتك وأذكارك ووردك اليومي",
+    "cancel": "إلغاء"
   },
   "priority": {
     "high": "عالية",

@@ -7,7 +7,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { Calendar } from "react-native-calendars";
 import { useAppStore } from "../store/useAppStore";
-import { useModeTheme } from "@/src/theme";
+import { useModeTheme, useModeClasses } from "@/src/theme";
 
 interface DateClockSheetProps {
   onSave: (date: Date) => void;
@@ -40,32 +40,15 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
       [],
     );
 
-    const { mode: appMode, isDarkMode } = useAppStore();
+    const { isDarkMode } = useAppStore();
     const { palette } = useModeTheme();
-
-    const isStudy = appMode === "study";
+    const mc = useModeClasses();
 
     const selectedColor = isDarkMode ? palette.interactive : palette.header;
     const sheetCardBg = isDarkMode ? palette.card : "#FFFFFF";
-    const accentText = isDarkMode
-      ? isStudy
-        ? "text-study-dark-interactive"
-        : "text-dev-dark-interactive"
-      : isStudy
-        ? "text-study-header"
-        : "text-dev-header";
-    const confirmBtn = isDarkMode
-      ? isStudy
-        ? "bg-study-dark-interactive"
-        : "bg-dev-dark-interactive"
-      : isStudy
-        ? "bg-study-header"
-        : "bg-dev-header";
-    const confirmBtnText = isDarkMode
-      ? isStudy
-        ? "text-study-header"
-        : "text-dev-header"
-      : "text-white";
+    const accentText = isDarkMode ? mc.darkInteractiveText : mc.textHeader;
+    const confirmBtn = isDarkMode ? mc.darkInteractive : mc.headerBg;
+    const confirmBtnText = isDarkMode ? mc.textHeader : "text-white";
 
     const handleConfirm = () => {
       onSave(tempDate);
@@ -83,7 +66,7 @@ const DateClockSheet = forwardRef<BottomSheetModal, DateClockSheetProps>(
         }}
       >
         <BottomSheetView
-          className={`flex-1 p-5 ${isDarkMode ? (isStudy ? "bg-study-dark-card" : "bg-dev-dark-card") : "bg-white"}`}
+          className={`flex-1 p-5 ${isDarkMode ? mc.darkCard : "bg-white"}`}
         >
           <View
             className={`flex-row-reverse p-1 rounded-2xl mb-6 ${isDarkMode ? "bg-gray-800" : "bg-gray-100"}`}

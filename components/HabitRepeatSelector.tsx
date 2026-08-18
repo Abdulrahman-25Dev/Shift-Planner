@@ -6,7 +6,7 @@ import {
   BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
 import { useAppStore } from "../store/useAppStore";
-import { useModeTheme } from "@/src/theme";
+import { useModeTheme, useModeClasses } from "@/src/theme";
 import { useTranslation } from "react-i18next";
 
 interface DateSheetProps {
@@ -38,38 +38,18 @@ const HabitRepeatSelector = forwardRef<BottomSheetModal, DateSheetProps>(
       [],
     );
 
-    const { mode: appMode, isDarkMode, language } = useAppStore();
+    const { isDarkMode, language } = useAppStore();
     const { palette } = useModeTheme();
+    const mc = useModeClasses();
     const { t } = useTranslation();
-    const isStudy = appMode === "study";
 
     // تلوين العناصر النشطة حسب المود
     const activeBtnClass = isDarkMode
-      ? isStudy
-        ? "bg-study-dark-interactive border-study-dark-interactive"
-        : "bg-dev-dark-interactive border-dev-dark-interactive"
-      : isStudy
-        ? "bg-study-header border-study-header"
-        : "bg-dev-header border-dev-header";
-    const activeBtnText = isDarkMode
-      ? isStudy
-        ? "text-study-header"
-        : "text-dev-header"
-      : "text-white";
-    const tabTrack = isDarkMode
-      ? isStudy
-        ? "bg-study-dark-accentSoft"
-        : "bg-dev-dark-accentSoft"
-      : isStudy
-        ? "bg-study-accentSoft"
-        : "bg-dev-accentSoft";
-    const accentText = isDarkMode
-      ? isStudy
-        ? "text-study-dark-interactive"
-        : "text-dev-dark-interactive"
-      : isStudy
-        ? "text-study-header"
-        : "text-dev-header";
+      ? `${mc.darkInteractive} ${mc.darkInteractiveBorder}`
+      : `${mc.headerBg} ${mc.headerBorder}`;
+    const activeBtnText = isDarkMode ? mc.textHeader : "text-white";
+    const tabTrack = isDarkMode ? mc.darkAccentSoft : mc.accentSoft;
+    const accentText = isDarkMode ? mc.darkInteractiveText : mc.textHeader;
 
     const daysOfWeek = language === "ar" 
       ? ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س']
@@ -142,7 +122,7 @@ const HabitRepeatSelector = forwardRef<BottomSheetModal, DateSheetProps>(
         }}
       >
         <BottomSheetView
-          className={`flex-1 p-6 ${isDarkMode ? (isStudy ? "bg-study-dark-card" : "bg-dev-dark-card") : "bg-white"}`}
+          className={`flex-1 p-6 ${isDarkMode ? mc.darkCard : "bg-white"}`}
         >
           {/* العنوان الرئيسي العلوي متعدل بالملي */}
           <Text

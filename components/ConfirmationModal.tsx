@@ -1,6 +1,7 @@
 import { Modal, View, Text, TouchableOpacity } from "react-native";
 import { useAppStore } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
+import { useModeClasses } from "../src/theme";
 
 interface ConfirmationModalProps {
   isVisible: boolean;
@@ -17,30 +18,14 @@ export default function ConfirmationModal({
   onConfirm,
   onCancel,
 }: ConfirmationModalProps) {
-  const { isDarkMode, mode, language } = useAppStore();
-  const isStudy = mode === "study";
+  const { isDarkMode, language } = useAppStore();
+  const mc = useModeClasses();
   const { t } = useTranslation();
   const isRtl = language === "ar";
 
-  const modalCardBg = isDarkMode
-    ? isStudy
-      ? "bg-study-dark-card"
-      : "bg-dev-dark-card"
-    : "bg-white";
-  const titleColor = isDarkMode
-    ? isStudy
-      ? "text-study-dark-interactive"
-      : "text-dev-dark-interactive"
-    : isStudy
-      ? "text-study-header"
-      : "text-dev-header";
-  const cancelBg = isDarkMode
-    ? isStudy
-      ? "bg-study-dark-accentSoft"
-      : "bg-dev-dark-accentSoft"
-    : isStudy
-      ? "bg-study-accent/40"
-      : "bg-dev-accent/40";
+  const modalCardBg = isDarkMode ? mc.darkCard : "bg-white";
+  const titleColor = isDarkMode ? mc.darkInteractiveText : mc.textHeader;
+  const cancelBg = isDarkMode ? mc.darkAccentSoft : mc.accentBg40;
 
   return (
     <Modal

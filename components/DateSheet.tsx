@@ -7,7 +7,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { Calendar } from "react-native-calendars";
 import { useAppStore } from "../store/useAppStore";
-import { useModeTheme } from "@/src/theme";
+import { useModeTheme, useModeClasses } from "@/src/theme";
 import { useTranslation } from "react-i18next";
 import HabitRepeatSelector from "./HabitRepeatSelector";
 
@@ -55,25 +55,15 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
 
     const isHabit = type === "habit";
 
-    const { mode: appMode, isDarkMode, language } = useAppStore();
+    const { isDarkMode, language } = useAppStore();
     const { palette } = useModeTheme();
+    const mc = useModeClasses();
     const { t } = useTranslation();
-    const isStudy = appMode === "study";
 
     const selectedColor = isDarkMode ? palette.interactive : palette.header;
     const sheetCardBg = isDarkMode ? palette.card : "#FFFFFF";
-    const btnClass = isDarkMode
-      ? isStudy
-        ? "bg-study-dark-interactive"
-        : "bg-dev-dark-interactive"
-      : isStudy
-        ? "bg-study-header"
-        : "bg-dev-header";
-    const btnTextClass = isDarkMode
-      ? isStudy
-        ? "text-study-header"
-        : "text-dev-header"
-      : "text-white";
+    const btnClass = isDarkMode ? mc.darkInteractive : mc.headerBg;
+    const btnTextClass = isDarkMode ? mc.textHeader : "text-white";
 
     const handleConfirm = () => {
       onSave(new Date(selectedDate));
@@ -91,7 +81,7 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
         }}
       >
         <BottomSheetView
-          className={`flex-1 p-5 ${isDarkMode ? (isStudy ? "bg-study-dark-card" : "bg-dev-dark-card") : "bg-white"}`}
+          className={`flex-1 p-5 ${isDarkMode ? mc.darkCard : "bg-white"}`}
         >
           <Text
             className={`text-lg px-3 font-black mb-4 ${isDarkMode ? "text-gray-100" : "text-gray-900"} ${language === "ar" ? "text-left" : "text-right"}`}

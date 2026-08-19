@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState, forwardRef } from "react";
 import { View, Text, TouchableOpacity, Pressable } from "react-native";
-import { CheckCircle2, Clock1, RefreshCw, Calendar } from "lucide-react-native";
+import { CheckCircle2, Clock10, RefreshCw, Calendar } from "lucide-react-native";
 import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,
@@ -18,6 +18,7 @@ export const AddTaskSheet = forwardRef(
     const [type, setType] = useState<"task" | "habit">("task"); // التحكم بنوع الإضافة
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [descHeight, setDescHeight] = useState(0);
     const [priority, setPriority] = useState<"low" | "medium" | "high" | "none">(
       "none",
     );
@@ -150,6 +151,12 @@ export const AddTaskSheet = forwardRef(
                 ? t("details.description task placeholder")
                 : t("details.description habit placeholder")
             }
+            multiline
+            textAlignVertical="top"
+            onContentSizeChange={(e) =>
+              setDescHeight(e.nativeEvent.contentSize.height)
+            }
+            style={{ minHeight: 48, height: Math.max(48, descHeight) }}
             className={`p-3 rounded-2xl ${inputBg} font-bold mb-4`}
             placeholderTextColor="#9CA3AF"
           />
@@ -231,35 +238,33 @@ export const AddTaskSheet = forwardRef(
 
           {/* 4. القسم المتغير (تاريخ للمهمة | أيقونة للعادة) */}
           {(type === "task" || type === "habit") && (
-            <View className="mb-3">
-              <View className="rounded-3xl">
-                <Pressable
-                  onPress={() => dateSheetRef.current?.present()}
-                  className={`p-4 items-center flex-row gap-2 justify-center rounded-2xl mb-3 ${
-                    isDarkMode ? mc.darkAccentSoft : mc.accentSoft
-                  }`}
+            <View className="flex-row gap-3 mb-6">
+              <Pressable
+                onPress={() => dateSheetRef.current?.present()}
+                className={`flex-1 gap-2 p-3 rounded-2xl items-center justify-center ${
+                  isDarkMode ? mc.darkAccentSoft : mc.accentSoft
+                }`}
+              >
+                <Calendar size={20} color={iconColor} />
+                <Text
+                  className={`font-bold text-center ${isDarkMode ? mc.darkInteractiveText : mc.textHeader}`}
                 >
-                  <Text
-                    className={`${isDarkMode ? mc.darkInteractiveText : mc.textHeader} font-bold text-center`}
-                  >
-                    {t("add.Set date")}
-                  </Text>
-                  <Calendar size={20} color={iconColor} />
-                </Pressable>
-                <Pressable
-                  onPress={() => timeSheetRef.current?.present()}
-                  className={`p-4 items-center flex-row gap-2 justify-center rounded-2xl ${
-                    isDarkMode ? mc.darkAccentSoft : mc.accentSoft
-                  }`}
+                  {t("add.Set date")}
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => timeSheetRef.current?.present()}
+                className={`flex-1 gap-2 p-3 rounded-2xl items-center justify-center ${
+                  isDarkMode ? mc.darkAccentSoft : mc.accentSoft
+                }`}
+              >
+                <Clock10 size={20} color={iconColor} />
+                <Text
+                  className={`font-bold text-center ${isDarkMode ? mc.darkInteractiveText : mc.textHeader}`}
                 >
-                  <Text
-                    className={`${isDarkMode ? mc.darkInteractiveText : mc.textHeader} font-bold text-center`}
-                  >
-                    {t("add.Set time")}
-                  </Text>
-                  <Clock1 size={20} color={iconColor} />
-                </Pressable>
-              </View>
+                  {t("add.Set time")}
+                </Text>
+              </Pressable>
             </View>
           )}
 

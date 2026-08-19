@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
 import { router } from "expo-router";
 import {
   Easing,
@@ -19,6 +25,7 @@ import {
   HardDrive,
   Languages,
   Compass,
+  Database,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/useAppStore";
@@ -81,10 +88,7 @@ function ProgressRing({
           trackColor={trackColor}
           percentage={percentage}
         />
-        <Text
-          style={{ color }}
-          className="text-lg font-bold absolute"
-        >
+        <Text style={{ color }} className="text-lg font-bold absolute">
           {displayText}
         </Text>
       </View>
@@ -120,10 +124,9 @@ export default function AboutApp() {
     { name: "Zustand", category: "إدارة الحالة", icon: PawPrint },
     { name: "Tailwind CSS", category: "التصميم والواجهات", icon: Palette },
     { name: "MMKV", category: "التخزين المحلي", icon: HardDrive },
+    { name: "Supabase", category: "قواعد البيانات والمزامنة", icon: Database },
     { name: "i18next", category: "الترجمة واللغات", icon: Languages },
-    { name: "Expo router", category: "التنقل", icon: Compass },
   ];
-
 
   const completedTasks = tasks.filter((t) => t.completed).length;
   const totalTasks = tasks.length;
@@ -156,7 +159,9 @@ export default function AboutApp() {
           >
             <BackChevron size={22} color={accentHex} />
           </TouchableOpacity>
-          <Text className={`text-lg font-bold flex-1 text-center ${accentText}`}>
+          <Text
+            className={`text-lg font-bold flex-1 text-center ${accentText}`}
+          >
             {t("about.appTitle")}
           </Text>
           <View className="w-12" />
@@ -181,7 +186,9 @@ export default function AboutApp() {
             className={`${iconContainerBg} px-3 py-1 rounded-full mt-3`}
             style={{ borderWidth: 1, borderColor: `${accentHex}30` }}
           >
-            <Text className={`${accentText} text-xs font-medium`}>{t("about.appVersion")}</Text>
+            <Text className={`${accentText} text-xs font-medium`}>
+              {t("about.appVersion")}
+            </Text>
           </View>
         </View>
 
@@ -204,7 +211,13 @@ export default function AboutApp() {
             value={completedTasks}
             maxValue={Math.max(totalTasks, 1)}
             trackColor={ringTrack}
-            color={completedTasks === 0 ? "#64748b" : completedTasks === totalTasks ? ringTasksColor : ringTasksColor}
+            color={
+              completedTasks === 0
+                ? "#64748b"
+                : completedTasks === totalTasks
+                  ? ringTasksColor
+                  : ringTasksColor
+            }
             label={t("about.completedTasks")}
             displayNumber={completedTasks}
           />
@@ -222,7 +235,7 @@ export default function AboutApp() {
         <Text
           className={`text-lg font-bold ${accentText} mb-4 ${language === "ar" ? "text-left" : "text-right"}`}
         >
-         {t("about.tools used")}
+          {t("about.tools used")}
         </Text>
         <View className="flex-row flex-wrap justify-around gap-2 mb-3">
           {techStack.map((tech) => {
@@ -233,7 +246,9 @@ export default function AboutApp() {
                 className={`w-[47%] ${cardBg} ${cardBorder} p-3 rounded-3xl items-center justify-center`}
               >
                 <TechIcon size={24} color={accentHex} />
-                <Text className={`${titleText} font-bold text-sm mt-1 mb-0.5 text-center`}>
+                <Text
+                  className={`${titleText} font-bold text-sm mt-1 mb-0.5 text-center`}
+                >
                   {tech.name}
                 </Text>
                 <Text className={`${mutedText} text-xs text-center`}>
@@ -259,18 +274,24 @@ export default function AboutApp() {
             activeOpacity={0.8}
             className={`${cardBg} ${cardBorder} rounded-2xl p-5 flex-row items-center justify-between mb-3`}
           >
-            <View className={`flex-row items-center flex-1 ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
-              <View className={`w-10 h-10 rounded-xl ${iconContainerBg} items-center justify-center`}>
+            <View
+              className={`flex-row items-center flex-1 ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}
+            >
+              <View
+                className={`w-10 h-10 rounded-xl ${iconContainerBg} items-center justify-center`}
+              >
                 <Bug size={20} color={accentHex} />
               </View>
-              <View className={`mx-3 flex-1 ${language === "ar" ? "items-start" : "items-end"}`}>
-                <Text className={`${titleText} font-semibold text-sm ${language === "ar" ? "text-left" : "text-right"}`}>
+              <View
+                className={`mx-3 flex-1 ${language === "ar" ? "items-start" : "items-end"}`}
+              >
+                <Text
+                  className={`${titleText} font-semibold text-sm ${language === "ar" ? "text-left" : "text-right"}`}
+                >
                   {t("about.reportBug")}
                 </Text>
-                
               </View>
             </View>
-            
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() =>
@@ -281,12 +302,20 @@ export default function AboutApp() {
             activeOpacity={0.8}
             className={`${cardBg} ${cardBorder} rounded-2xl p-5 flex-row items-center justify-between`}
           >
-            <View className={`flex-row items-center flex-1 ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}>
-              <View className={`w-10 h-10 rounded-xl ${iconContainerBg} items-center justify-center`}>
+            <View
+              className={`flex-row items-center flex-1 ${language === "ar" ? "flex-row" : "flex-row-reverse"}`}
+            >
+              <View
+                className={`w-10 h-10 rounded-xl ${iconContainerBg} items-center justify-center`}
+              >
                 <Lightbulb size={20} color={accentHex} />
               </View>
-              <View className={`mx-3 flex-1 ${language === "ar" ? "items-start" : "items-end"}`}>
-                <Text className={`${titleText} font-semibold text-sm ${language === "ar" ? "text-left" : "text-right"}`}>
+              <View
+                className={`mx-3 flex-1 ${language === "ar" ? "items-start" : "items-end"}`}
+              >
+                <Text
+                  className={`${titleText} font-semibold text-sm ${language === "ar" ? "text-left" : "text-right"}`}
+                >
                   {t("about.suggestFeature")}
                 </Text>
               </View>

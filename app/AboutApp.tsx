@@ -127,7 +127,13 @@ export default function AboutApp() {
 
   const completedTasks = tasks.filter((t) => t.completed).length;
   const totalTasks = tasks.length;
-  const activeHabitsCount = habits.length;
+  const today = new Date().toDateString();
+  const completedHabitsToday = habits.filter(
+    (h) =>
+      h.lastCompletedDate &&
+      new Date(h.lastCompletedDate).toDateString() === today,
+  ).length;
+  const totalActiveHabits = habits.length;
   const stabilityPct =
     totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
@@ -203,12 +209,13 @@ export default function AboutApp() {
             displayNumber={completedTasks}
           />
           <ProgressRing
-            value={activeHabitsCount}
-            maxValue={Math.max(activeHabitsCount, 1)}
+            value={completedHabitsToday}
+            maxValue={Math.max(totalActiveHabits, 1)}
             trackColor={ringTrack}
             color={ringHabitsColor}
-            label={t("about.activeHabits")}
-            displayNumber={activeHabitsCount}
+            label={t("about.todayHabits")}
+            displayNumber={completedHabitsToday}
+            suffix={`/${totalActiveHabits}`}
           />
         </View>
 

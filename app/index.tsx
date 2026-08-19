@@ -469,7 +469,7 @@ export default function Index() {
   // داشبورد التقدم بدلاً من شريط الأيام (Progress Dashboard replacing Days Row)
   const ProgressDashboard = () => (
     <View
-      className={`my-4 rounded-3xl px-4 py-4 border ${
+      className={`my-3 rounded-3xl px-4 py-4 border ${
         isDarkMode
           ? `${mc.darkCard} ${mc.darkAccentBorder}`
           : `${mc.accentSoft} ${mc.accentBorder}`
@@ -550,7 +550,7 @@ export default function Index() {
 
         <View
           className={
-            " justify-between items-center mt-6 mb-3 px-1" +
+            " justify-between items-center mt-3 mb-3 px-1" +
             (language === "ar" ? " flex-row" : " flex-row-reverse")
           }
         >
@@ -587,7 +587,7 @@ export default function Index() {
 
         <View
           className={
-            "justify-between items-center px-1 mb-3" +
+            "justify-between items-center px-1 mt-3 mb-3" +
             (language === "ar" ? " flex-row" : " flex-row-reverse")
           }
         >

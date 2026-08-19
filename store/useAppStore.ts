@@ -62,6 +62,7 @@ export interface Habit {
   description?: string;
   streak: number;
   lastCompletedDate?: number;
+  completionHistory?: number[]; // timestamps of completed days (achievement graph)
   createdAt: number;
   color?: string;
   priority?: Priority;
@@ -159,6 +160,9 @@ const loadFromStorage = <T extends { mode?: string }>(
               "fri",
               "sat",
             ],
+            completionHistory:
+              item.completionHistory ||
+              (item.lastCompletedDate ? [item.lastCompletedDate] : []),
           }
         : {}),
     }));
@@ -750,6 +754,7 @@ export const useAppStore = create<AppState>((set, get) => {
           userId: uid,
           createdAt: Date.now(),
           streak: 0,
+          completionHistory: [],
           priority: habit.priority || "none",
           repeatType: habit.repeatType || "daily",
           repeatDays: habit.repeatDays || [
@@ -851,14 +856,25 @@ export const useAppStore = create<AppState>((set, get) => {
                 ...habit,
                 streak: Math.max(0, habit.streak - 1),
                 lastCompletedDate: undefined,
+                completionHistory: (habit.completionHistory ?? []).filter(
+                  (ts) => new Date(ts).toDateString() !== today,
+                ),
               };
             } else {
               // Complete it
               wasCompleted = true;
+              const now = Date.now();
+              const history = habit.completionHistory ?? [];
+              const alreadyRecorded = history.some(
+                (ts) => new Date(ts).toDateString() === today,
+              );
               return {
                 ...habit,
                 streak: habit.streak + 1,
-                lastCompletedDate: Date.now(),
+                lastCompletedDate: now,
+                completionHistory: alreadyRecorded
+                  ? history
+                  : [...history, now],
               };
             }
           }

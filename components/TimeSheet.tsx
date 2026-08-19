@@ -57,7 +57,8 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
     const [selectedMinute, setSelectedMinute] = useState(initialParsed.m);
     const [isPM, setIsPM] = useState(initialParsed.pm);
 
-    useEffect(() => {
+    // مزامنة الحالة وموضع العجلات من وقت العنصر المحفوظ (أو الوقت الحالي)
+    const syncFromInitial = useCallback(() => {
       const p = parseTime(initialTimeValue);
       setSelectedHour(p.h);
       setSelectedMinute(p.m);
@@ -76,6 +77,10 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
         });
       }, 50);
     }, [initialTimeValue]);
+
+    useEffect(() => {
+      syncFromInitial();
+    }, [syncFromInitial]);
 
     const prevHourRef = useRef(selectedHour);
     useEffect(() => {
@@ -241,6 +246,11 @@ const TimeSheet = forwardRef<BottomSheetModal, TimeSheetProps>(
         backdropComponent={renderBackdrop}
         keyboardBehavior="interactive"
         enableContentPanningGesture={false}
+        onChange={(index) => {
+          if (index >= 0) {
+            syncFromInitial();
+          }
+        }}
         backgroundStyle={{
           backgroundColor: isDarkMode ? palette.card : "#FFFFFF",
         }}

@@ -62,8 +62,6 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
 
     const selectedColor = isDarkMode ? palette.interactive : palette.header;
     const sheetCardBg = isDarkMode ? palette.card : "#FFFFFF";
-    const btnClass = isDarkMode ? mc.darkInteractive : mc.headerBg;
-    const btnTextClass = isDarkMode ? mc.textHeader : "text-white";
 
     const handleConfirm = () => {
       onSave(new Date(selectedDate));
@@ -116,33 +114,53 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
           />
 
           <View className="mt-auto">
-            <View
-              className={
-                "justify-between items-center mb-4 " +
-                (language === "ar" ? "flex-row" : "flex-row-reverse")
-              }
-            >
-              {isHabit && (
+            {isHabit ? (
+              <View className="flex-row gap-3">
                 <TouchableOpacity
-                  className={`w-full py-4 rounded-2xl items-center shadow-lg ${btnClass}`}
+                  className={`flex-1 py-3 rounded-2xl items-center border ${mc.accentBorder} ${
+                    isDarkMode ? mc.darkAccentSoft : mc.accentBg30
+                  }`}
                   onPress={() => {
-                    handleOpenRepeatSheet();}}
+                    handleOpenRepeatSheet();
+                  }}
                 >
-                  <Text className={`${btnTextClass} font-black text-lg`}>
+                  <Text
+                    className={`${mc.darkInteractiveText} font-black text-base`}
+                  >
                     {t("common.repeat")}
                   </Text>
                 </TouchableOpacity>
-              )}
-            </View>
-
-            <TouchableOpacity
-              onPress={handleConfirm}
-              className={`py-4 rounded-2xl items-center shadow-lg ${btnClass} `}
-            >
-              <Text className={`${btnTextClass} font-black text-lg`}>
-                {t("add.Confirm date")}
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleConfirm}
+                  className={`flex-1 py-3 rounded-2xl items-center ${
+                    isDarkMode ? mc.darkInteractive : mc.headerBg
+                  }`}
+                >
+                  <Text
+                    className={`${
+                      isDarkMode ? mc.textHeader : "text-white"
+                    } font-black text-base`}
+                  >
+                    {t("add.Confirm date")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                onPress={handleConfirm}
+                className={`py-3 rounded-2xl items-center ${
+                  isDarkMode ? mc.darkInteractive : mc.headerBg
+                }`}
+              >
+                <Text
+                  className={`${
+                    isDarkMode ? mc.textHeader : "text-white"
+                  } font-black text-base`}
+                >
+                  {t("add.Confirm date")}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </BottomSheetView>
         <HabitRepeatSelector

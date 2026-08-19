@@ -15,6 +15,7 @@ import {
 import { Task, Priority, useAppStore } from "../../store/useAppStore"; // تأكد من مسار الستور
 import { Ionicons } from "@expo/vector-icons";
 import { Calendar, Clock, Flame } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import DateSheet from "../../components/DateSheet";
 import TimeSheet from "../../components/TimeSheet";
 import ConfirmationModal from "../../components/ConfirmationModal";
@@ -50,6 +51,35 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
       [habits, itemId],
     );
 
+    // آخر 14 يومًا لرسم خريطة الإنجاز (GitHub-style heat map)
+    const last14Days = useMemo(() => {
+      const history = new Set(
+        (habit?.completionHistory ?? []).map((ts) =>
+          new Date(ts).toDateString(),
+        ),
+      );
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const days: {
+        key: string;
+        status: "completed" | "skipped" | "future";
+      }[] = [];
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        days.push({
+          key: d.toDateString(),
+          status:
+            d.getTime() > today.getTime()
+              ? "future"
+              : history.has(d.toDateString())
+                ? "completed"
+                : "skipped",
+        });
+      }
+      return days;
+    }, [habit]);
+
     const item = task || habit;
     const isHabit = !!habit;
 
@@ -70,7 +100,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
     }, [isHabit, item, removeHabit, removeTask, ref]);
 
     // 2. إعدادات الشيت (Snap Points)
-    const snapPoints = useMemo(() => ["85%"], []);
+    const snapPoints = useMemo(() => ["88%"], []);
 
     // 3. خلفية معتمة عند الفتح
     const renderBackdrop = useCallback(
@@ -136,7 +166,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                     ? updateHabit(item.id, { title: text })
                     : updateTask(item.id, { title: text })
                 }
-                className={`text-md font-black px-4 rounded-2xl ${inputBg}`}
+                className={`text-md  font-black px-4 rounded-2xl ${inputBg}`}
                 placeholder={
                   isHabit
                     ? t("details.habit title placeholder")
@@ -174,39 +204,77 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
             />
           </View>
 
-          {/* قسم الستريك (يظهر فقط للعدات) */}
+          {/* قسم الستريك + سجل الإنجاز (يظهر فقط للعدات) */}
           {isHabit && (
-            <View
-              className={
-                " p-4 rounded-2xl items-center mb-6 justify-between" +
-                softBoxBg +
-                (language === "ar" ? " flex-row-reverse" : " flex-row")
-              }
-            >
-              <Flame size={36} color="#FF8400" />
+            <View className={`p-4 rounded-2xl mb-6 ${softBoxBg}`}>
+              {/* العنوان + عداد الستريك المصغر */}
+              <View
+                className={`items-center justify-between mb-3 flex-row`}
+              >
                 <Text
-                  className={
-                    "text-2xl font-bold text-orange-600" 
-                  }
-                > {habit.streak}
-                </Text>
-              <View className={"flex-1 "}>
-                <Text
-                  className={
-                    "text-orange-600 font-bold" +
-                    (language === "ar" ? " text-left" : " text-right")
-                  }
+                  className={`font-bold ${accentText} ${
+                    language === "ar" ? "text-left" : "text-right"
+                  }`}
                 >
-                  {t("details.you are doing great")}
+                  {t("details.achievement history")}
                 </Text>
-                <Text
-                  className={
-                    "text-orange-400 text-xs" +
-                    (language === "ar" ? " text-left" : " text-right")
+              </View>
+
+              {/* خريطة الإنجاز: آخر 14 يومًا */}
+              <View className="flex-row items-center gap-[3px]">
+                {last14Days.map((day) => {
+                  if (day.status === "completed") {
+                    return (
+                      <LinearGradient
+                        key={day.key}
+                        colors={[palette.secondary, palette.accent]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        className="flex-1 aspect-square rounded-[4px]"
+                      />
+                    );
                   }
-                >
-                  {t("details.Keep it up!")}
-                </Text>
+                  if (day.status === "skipped") {
+                    return (
+                      <View
+                        key={day.key}
+                        className={`flex-1 aspect-square rounded-[4px] ${
+                          isDarkMode ? "bg-gray-600/60" : "bg-gray-400/50"
+                        }`}
+                      />
+                    );
+                  }
+                  return (
+                    <View
+                      key={day.key}
+                      className={`flex-1 aspect-square rounded-[4px] border ${
+                        isDarkMode ? "border-gray-500/50" : "border-gray-400/40"
+                      }`}
+                    />
+                  );
+                })}
+              </View>
+
+              {/* عداد الستريك + رسالة التشجيع في صف واحد */}
+              <View
+                className={`items-center justify-between mt-3 ${
+                  language === "ar" ? "flex-row-reverse" : "flex-row"
+                }`}
+              >
+                <View className="flex-row items-center gap-1">
+                  <Flame size={20} color="#FF8400" />
+                  <Text className="text-xl font-black text-orange-600">
+                    {habit.streak}
+                  </Text>
+                </View>
+                <View className={`${language === "ar" ? "items-start" : "items-end"}`}>
+                  <Text className="text-orange-600 font-bold text-sm">
+                    {t("details.you are doing great")}
+                  </Text>
+                  <Text className="text-orange-400 text-xs">
+                    {t("details.Keep it up!")}
+                  </Text>
+                </View>
               </View>
             </View>
           )}
@@ -219,12 +287,14 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
               {t("details.change priority")}
             </Text>
             <View className="flex-row justify-between">
-              {([
-                { value: "none", label: t("priority.none") },
-                { value: "low", label: t("priority.low") },
-                { value: "medium", label: t("priority.medium") },
-                { value: "high", label: t("priority.high") },
-              ] as { value: Priority; label: string }[]).map((opt) => {
+              {(
+                [
+                  { value: "none", label: t("priority.none") },
+                  { value: "low", label: t("priority.low") },
+                  { value: "medium", label: t("priority.medium") },
+                  { value: "high", label: t("priority.high") },
+                ] as { value: Priority; label: string }[]
+              ).map((opt) => {
                 const isSelected = item.priority === opt.value;
                 return (
                   <TouchableOpacity
@@ -251,37 +321,25 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
             </View>
           </View>
 
-          {/* قسم تغيير وقت التذكير (مش مفعل حالياً) */}
-          <View className="mb-6">
+          {/* قسم تغيير التاريخ والوقت (صف أفقي واحد) */}
+          <View className="flex-row gap-3 mb-6">
             <Pressable
               onPress={() => dateSheetRef.current?.present()}
-              className={` gap-2 p-4 rounded-2xl items-center justify-center relative mb-3 ${softBoxBg} ${language === "ar" ? " flex-row" : " flex-row-reverse"}`}
+              className={`flex-1 gap-2 p-3 rounded-2xl items-center justify-center ${softBoxBg}`}
             >
-              <Text
-                className={` font-bold text-center ${accentText}`}
-              >
-                {t("details.change date")}
+              <Calendar size={20} color={iconColor} />
+              <Text className={`font-bold text-center ${accentText}`}>
+                {t("details.date")}
               </Text>
-              <Calendar
-                size={20}
-                color={iconColor}
-                className="absolute left-4 top-1/2 -translate-y-1/2"
-              />
             </Pressable>
             <Pressable
               onPress={() => timeSheetRef.current?.present()}
-              className={` gap-2 p-4 rounded-2xl flex-row items-center justify-center relative ${softBoxBg} ${language === "ar" ? " flex-row" : " flex-row-reverse"}`}
+              className={`flex-1 gap-2 p-3 rounded-2xl items-center justify-center ${softBoxBg}`}
             >
-              <Text
-                className={` font-bold text-center ${accentText}`}
-              >
-                {t("details.change time")}
+              <Clock size={20} color={iconColor} />
+              <Text className={`font-bold text-center ${accentText}`}>
+                {t("details.time")}
               </Text>
-              <Clock
-                size={20}
-                color={iconColor}
-                className="absolute left-4 top-1/2 -translate-y-1/2"
-              />
             </Pressable>
           </View>
 

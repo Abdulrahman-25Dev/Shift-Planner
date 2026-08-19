@@ -26,14 +26,24 @@
     "account": "Account",
     "deleteAccount": "Delete Account",
     "deleteAccountDesc": "Are you sure you want to delete your account? All your data will be permanently deleted. This action cannot be undone.",
+    "deleteAccountConfirm": "Are you absolutely sure?",
+    "deleteAccountDesc2": "This is permanent and irreversible. Your tasks, habits, profile and all account data will be permanently lost from this device. There is no way to recover them.",
     "accountSettings": "Account Settings",
     "accountSettingsSub": "Manage your data and account info",
     "editProfileSub": "Update your name and profile photo",
     "changePassword": "Change Password",
     "changePasswordSub": "Set a new password",
     "logoutSub": "Sign out of your current account",
+    "logoutConfirmDesc": "Are you sure you want to sign out of your account?",
     "deleteAccountSub": "Permanently delete your account and all data",
+    "oldPassword": "Current Password",
     "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "fullName": "Full Name",
+    "changePhoto": "Change Photo",
+    "profileSyncing": "Saving...",
+    "profileSynced": "Profile synced",
+    "profileSyncPending": "Saved locally — will sync when you're back online",
     "save": "Save"
   },
   "home": {
@@ -83,7 +93,8 @@
     "Tasks": "My Tasks",
     "Habits": "My Habits",
     "repeat":"Repeat selection",
-    "ok": "OK"
+    "ok": "OK",
+    "cancel": "Cancel"
   },
   "ViewAll": {
     "Tasks": "All Tasks",

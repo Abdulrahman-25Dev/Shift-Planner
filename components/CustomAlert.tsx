@@ -10,6 +10,7 @@ interface CustomAlertProps {
   description?: string;
   type?: "success" | "error" | "info";
   onClose: () => void;
+  onCancel?: () => void;
 }
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -29,6 +30,7 @@ export default function CustomAlert({
   description,
   type = "info",
   onClose,
+  onCancel,
 }: CustomAlertProps) {
   const { isDarkMode } = useAppStore();
   const mc = useModeClasses();
@@ -67,15 +69,29 @@ export default function CustomAlert({
               {description}
             </Text>
           ) : null}
-          <TouchableOpacity
-            onPress={onClose}
-            className="w-full py-3.5 rounded-2xl items-center"
-            style={{ backgroundColor: config.color }}
-          >
-            <Text className="text-white font-bold text-base">
-              {t("common.ok")}
-            </Text>
-          </TouchableOpacity>
+          <View className="w-full flex-row">
+            {onCancel ? (
+              <TouchableOpacity
+                onPress={onCancel}
+                className={`flex-1 py-3.5 rounded-2xl items-center mr-2 ${
+                  isDarkMode ? "bg-slate-800" : "bg-slate-100"
+                }`}
+              >
+                <Text className={`font-bold text-base ${titleColor}`}>
+                  {t("common.cancel")}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+            <TouchableOpacity
+              onPress={onClose}
+              className="flex-1 py-3.5 rounded-2xl items-center"
+              style={{ backgroundColor: config.color }}
+            >
+              <Text className="text-white font-bold text-base">
+                {t("common.ok")}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>

@@ -89,12 +89,24 @@ export default function RootLayout() {
     // Restore the persisted session on app start
     supabase.auth
       .getSession()
-      .then(({ data }) => applySessionUser(data.session))
+      .then(({ data }) => {
+        applySessionUser(data.session);
+        // Pull the latest profile row from the server (no-op when offline)
+        useAppStore.getState().refreshProfileFromServer();
+      })
       .catch((e) => console.warn("Failed to restore auth session:", e));
 
     // Keep the store in sync on login / logout / token refresh
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => applySessionUser(session),
+      (_event, session) => {
+        applySessionUser(session);
+        if (session?.user) {
+          // Reconcile with the server profile and flush any queued edits
+          // (also covers fresh sign-ins, not just cold starts)
+          useAppStore.getState().refreshProfileFromServer();
+          useAppStore.getState().syncPendingProfile();
+        }
+      },
     );
     return () => {
       active = false;

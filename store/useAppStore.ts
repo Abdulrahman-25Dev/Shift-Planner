@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createMMKV } from "react-native-mmkv";
+import NetInfo from "@react-native-community/netinfo";
 import i18n from "../i18next/i18n";
 import {
   requestPermission,
@@ -7,10 +8,24 @@ import {
   scheduleHabitNotification,
   cancelNotification,
 } from "../src/services/notificationService";
+import {
+  syncProfileToServer,
+  fetchProfileFromServer,
+  type PendingProfileSync,
+} from "../src/services/profileService";
 import { supabase } from "../supabase";
 
 const storage = createMMKV();
 const storedLanguage = (storage.getString("language") as "ar" | "en") || "ar";
+
+// Offline-first: `user` holds the latest local copy, per-user pending queues
+// hold changes that still need to reach the server. Both survive logout so a
+// re-login restores the profile (and retries the sync) instead of losing it.
+export const USER_STORAGE_KEY = "user";
+export const PENDING_PROFILE_KEY = "pending_profile_sync";
+
+const pendingProfileKey = (userId?: string) =>
+  userId ? `${PENDING_PROFILE_KEY}:${userId}` : PENDING_PROFILE_KEY;
 
 // ============ Interfaces ============
 export type Priority = 'high' | 'medium' | 'low' | 'none';
@@ -66,6 +81,17 @@ interface AppState {
   setUser: (user: AppUser | null) => void;
   logout: () => Promise<void>;
   deleteAccount: () => Promise<void>;
+
+  // Network + offline-first profile sync
+  isOnline: boolean;
+  setOnline: (online: boolean) => void;
+  profileSyncState: "idle" | "syncing" | "synced" | "pending";
+  updateProfile: (updates: {
+    fullName?: string;
+    avatarLocalUri?: string;
+  }) => Promise<void>;
+  syncPendingProfile: () => Promise<void>;
+  refreshProfileFromServer: () => Promise<void>;
 
   isDarkMode: boolean;
   toggleDarkMode: () => void;
@@ -155,6 +181,46 @@ const filterByUserAndMode = <T extends { userId?: string; mode?: Mode }>(
 const initialMode =
   (storage.getString("app_mode") as Mode) || "study";
 
+// Offline-first: hydrate the user profile from MMKV at startup so the UI
+// renders instantly without waiting for any network call.
+const readStoredUser = (): AppUser | null => {
+  const raw = storage.getString(USER_STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as AppUser;
+  } catch {
+    storage.remove(USER_STORAGE_KEY);
+    return null;
+  }
+};
+
+const readPendingProfile = (userId?: string): PendingProfileSync | null => {
+  const scopedKey = pendingProfileKey(userId);
+  const raw = storage.getString(scopedKey) ?? storage.getString(PENDING_PROFILE_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as PendingProfileSync;
+    // One-time migration from the legacy unscoped key
+    if (userId && storage.getString(scopedKey) === null) {
+      storage.set(scopedKey, raw);
+      storage.remove(PENDING_PROFILE_KEY);
+    }
+    return parsed;
+  } catch {
+    storage.remove(scopedKey);
+    storage.remove(PENDING_PROFILE_KEY);
+    return null;
+  }
+};
+
+const initialUser = readStoredUser();
+const initialTasks = initialUser
+  ? loadFromStorage<Task>(taskStorageKey(initialUser.id), initialUser.id)
+  : [];
+const initialHabits = initialUser
+  ? loadFromStorage<Habit>(habitStorageKey(initialUser.id), initialUser.id)
+  : [];
+
 export const useAppStore = create<AppState>((set, get) => {
   const storedDark = storage.getString("dark_mode");
   const initialDark = storedDark === "true";
@@ -188,11 +254,16 @@ export const useAppStore = create<AppState>((set, get) => {
       }),
 
     // ============ User & Auth ============
-    user: null,
+    user: initialUser,
+    isOnline: true,
+    profileSyncState: "idle",
+    setOnline: (online) => set(() => ({ isOnline: online })),
     setUser: (user) =>
       set((state) => {
         if (!user) {
-          // Signed out / switched account: drop in-memory data
+          // Signed out / switched account: drop in-memory data.
+          // The persisted user + pending queue are kept so the same account
+          // can restore its profile (and finish syncing) after re-login.
           return {
             user: null,
             allTasks: [],
@@ -201,6 +272,35 @@ export const useAppStore = create<AppState>((set, get) => {
             habits: [],
           };
         }
+
+        // Keep fields the session metadata is missing (e.g. avatar_url that
+        // never synced before logout) by falling back to the stored profile.
+        let merged = user;
+        const stored = readStoredUser();
+        if (stored && stored.id === user.id) {
+          merged = {
+            ...user,
+            fullName: user.fullName ?? stored.fullName,
+            avatarUrl: user.avatarUrl ?? stored.avatarUrl,
+          };
+        }
+
+        // Offline-first: local edits win over the session metadata until the
+        // pending profile sync succeeds.
+        const pending = readPendingProfile(user.id);
+        if (pending) {
+          merged = {
+            ...merged,
+            fullName:
+              pending.fullName !== undefined
+                ? pending.fullName
+                : merged.fullName,
+            avatarUrl: pending.avatarLocalUri
+              ? pending.avatarLocalUri
+              : merged.avatarUrl,
+          };
+        }
+        storage.set(USER_STORAGE_KEY, JSON.stringify(merged));
 
         // Load only this user's data (stored under user-scoped keys)
         const tasksKey = taskStorageKey(user.id);
@@ -225,13 +325,141 @@ export const useAppStore = create<AppState>((set, get) => {
         }
 
         return {
-          user,
+          user: merged,
           allTasks: tasks,
           allHabits: habits,
           tasks: filterByUserAndMode(tasks, user.id, state.mode),
           habits: filterByUserAndMode(habits, user.id, state.mode),
         };
       }),
+
+    updateProfile: async (updates) => {
+      const state = get();
+      const uid = getUserId(state.user);
+      if (!state.user) return;
+
+      const prev = state.user;
+      const newUser: AppUser = {
+        ...prev,
+        fullName:
+          updates.fullName !== undefined
+            ? updates.fullName
+            : prev.fullName,
+        avatarUrl: updates.avatarLocalUri
+          ? updates.avatarLocalUri
+          : prev.avatarUrl,
+      };
+
+      // 1) Offline-first: update local state + MMKV immediately
+      set({ user: newUser, profileSyncState: "syncing" });
+      storage.set(USER_STORAGE_KEY, JSON.stringify(newUser));
+
+      const pending: PendingProfileSync = {};
+      if (updates.fullName !== undefined) pending.fullName = newUser.fullName;
+      if (updates.avatarLocalUri) pending.avatarLocalUri = updates.avatarLocalUri;
+      if (Object.keys(pending).length === 0) {
+        set({ profileSyncState: "idle" });
+        return;
+      }
+      storage.set(pendingProfileKey(uid), JSON.stringify(pending));
+
+      // 2) Offline: keep local changes, sync when reconnected
+      if (!get().isOnline) {
+        set({ profileSyncState: "pending" });
+        return;
+      }
+
+      // 3) Online: upload + persist server-side
+      try {
+        const avatarUrl = await syncProfileToServer(
+          uid,
+          newUser,
+          pending.avatarLocalUri,
+        );
+        storage.remove(pendingProfileKey(uid));
+        const current = get().user;
+        const syncedUser: AppUser = {
+          ...(current ?? newUser),
+          ...(avatarUrl ? { avatarUrl } : {}),
+        };
+        set({ user: syncedUser, profileSyncState: "synced" });
+        storage.set(USER_STORAGE_KEY, JSON.stringify(syncedUser));
+      } catch (e) {
+        console.warn("Profile sync failed, will retry when online:", e);
+        set({ profileSyncState: "pending" });
+      }
+    },
+
+    syncPendingProfile: async () => {
+      const state = get();
+      const uid = getUserId(state.user);
+      if (!state.user || !state.isOnline) return;
+      const pending = readPendingProfile(uid);
+      if (!pending) return;
+
+      set({ profileSyncState: "syncing" });
+      const current = get().user;
+      if (!current) return;
+      const userForSync: AppUser = {
+        ...current,
+        fullName:
+          pending.fullName !== undefined
+            ? pending.fullName
+            : current.fullName,
+        avatarUrl: pending.avatarLocalUri
+          ? pending.avatarLocalUri
+          : current.avatarUrl,
+      };
+      try {
+        const avatarUrl = await syncProfileToServer(
+          uid,
+          userForSync,
+          pending.avatarLocalUri,
+        );
+        storage.remove(pendingProfileKey(uid));
+        const currentUser = get().user ?? userForSync;
+        const mergedUser: AppUser = {
+          ...currentUser,
+          ...(avatarUrl ? { avatarUrl } : {}),
+        };
+        set({ user: mergedUser, profileSyncState: "synced" });
+        storage.set(USER_STORAGE_KEY, JSON.stringify(mergedUser));
+      } catch (e) {
+        console.warn("Pending profile sync failed:", e);
+        set({ profileSyncState: "pending" });
+      }
+    },
+
+    refreshProfileFromServer: async () => {
+      const state = get();
+      const uid = getUserId(state.user);
+      if (!state.user || !state.isOnline) return;
+      // Local edits that haven't synced yet win over server state
+      if (storage.getString(pendingProfileKey(uid))) return;
+
+      const serverProfile = await fetchProfileFromServer(uid);
+      if (!serverProfile) return;
+      const current = get().user;
+      if (
+        !current ||
+        (serverProfile.fullName === current.fullName &&
+          serverProfile.avatarUrl === current.avatarUrl)
+      ) {
+        return;
+      }
+      const refreshed: AppUser = {
+        ...current,
+        ...(serverProfile.fullName !== undefined
+          ? { fullName: serverProfile.fullName }
+          : {}),
+        ...(serverProfile.avatarUrl !== undefined
+          ? { avatarUrl: serverProfile.avatarUrl }
+          : {}),
+      };
+      set({ user: refreshed });
+      storage.set(USER_STORAGE_KEY, JSON.stringify(refreshed));
+    },
+
     logout: async () => {
       const state = get();
       // Cancel notifications scheduled for the signed-out user
@@ -240,6 +468,8 @@ export const useAppStore = create<AppState>((set, get) => {
         ...state.allTasks.map((t) => cancelNotification(t.id).catch(() => {})),
         ...state.allHabits.map((h) => cancelNotification(h.id).catch(() => {})),
       ]);
+      // In-memory state is dropped, but the persisted profile + pending sync
+      // queue are kept so re-login restores the avatar (offline-first).
       set({ user: null, allTasks: [], allHabits: [], tasks: [], habits: [] });
       try {
         await supabase.auth.signOut();
@@ -259,6 +489,8 @@ export const useAppStore = create<AppState>((set, get) => {
       ]);
       storage.remove(taskStorageKey(uid));
       storage.remove(habitStorageKey(uid));
+      storage.remove(USER_STORAGE_KEY);
+      storage.remove(pendingProfileKey(uid));
       set({ user: null, allTasks: [], allHabits: [], tasks: [], habits: [] });
       try {
         await supabase.auth.signOut();
@@ -354,12 +586,12 @@ export const useAppStore = create<AppState>((set, get) => {
     },
 
     // ============ All Data (unfiltered, scoped to current user) ============
-    allTasks: [],
-    allHabits: [],
+    allTasks: initialTasks,
+    allHabits: initialHabits,
 
     // ============ Filtered Data (by current user and mode) ============
-    tasks: [],
-    habits: [],
+    tasks: filterByUserAndMode(initialTasks, getUserId(initialUser), initialMode),
+    habits: filterByUserAndMode(initialHabits, getUserId(initialUser), initialMode),
 
     // ============ Tasks Management ============
     addTask: (task) =>
@@ -711,4 +943,21 @@ export const useAppStore = create<AppState>((set, get) => {
       });
     },
   };
+});
+
+// ───── Connectivity → offline-first profile sync ─────
+// Tracks reachability globally and flushes queued profile edits as soon as
+// the device comes back online (also covers the initial app start).
+NetInfo.fetch().then((state) => {
+  useAppStore.setState({ isOnline: state.isConnected === true });
+});
+NetInfo.addEventListener((state) => {
+  const online = state.isConnected === true;
+  const store = useAppStore.getState();
+  if (online !== store.isOnline) {
+    store.setOnline(online);
+  }
+  if (online) {
+    store.syncPendingProfile();
+  }
 });

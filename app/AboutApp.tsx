@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { router } from "expo-router";
-import Svg, { Circle } from "react-native-svg";
+import {
+  Easing,
+  runOnJS,
+  useAnimatedReaction,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { AnimatedCircle } from "../components/AnimatedCircle";
 import {
   ChevronRight,
   Bug,
@@ -30,49 +37,55 @@ function ProgressRing({
   color,
   trackColor,
   label,
-  displayValue,
+  displayNumber,
+  suffix = "",
 }: {
   value: number;
   maxValue: number;
   color: string;
   trackColor: string;
   label: string;
-  displayValue: string;
+  displayNumber: number;
+  suffix?: string;
 }) {
   const percentage = maxValue > 0 ? Math.min(value / maxValue, 1) : 0;
-  const offset = RING_CIRCUMFERENCE * (1 - percentage);
+
+  const count = useSharedValue(0);
+  const [displayText, setDisplayText] = useState("0");
+
+  useEffect(() => {
+    setDisplayText(`${Math.round(displayNumber)}${suffix}`);
+    count.value = withTiming(displayNumber, {
+      duration: 1200,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [count, displayNumber, suffix]);
+
+  useAnimatedReaction(
+    () => count.value,
+    (current) => {
+      runOnJS(setDisplayText)(`${Math.round(current)}${suffix}`);
+    },
+  );
 
   return (
     <View className="flex-1 items-center mx-1">
       <View className="items-center justify-center relative">
-        <Svg width={RING_SIZE} height={RING_SIZE}>
-          <Circle
-            cx={RING_CENTER}
-            cy={RING_CENTER}
-            r={RING_RADIUS}
-            stroke={trackColor}
-            strokeWidth={RING_STROKE}
-            fill="none"
-          />
-          <Circle
-            cx={RING_CENTER}
-            cy={RING_CENTER}
-            r={RING_RADIUS}
-            stroke={color}
-            strokeWidth={RING_STROKE}
-            fill="none"
-            strokeDasharray={RING_CIRCUMFERENCE}
-            strokeDashoffset={offset}
-            strokeLinecap="round"
-            rotation="-90"
-            origin={`${RING_CENTER}, ${RING_CENTER}`}
-          />
-        </Svg>
+        <AnimatedCircle
+          size={RING_SIZE}
+          center={RING_CENTER}
+          radius={RING_RADIUS}
+          strokeWidth={RING_STROKE}
+          circumference={RING_CIRCUMFERENCE}
+          stroke={color}
+          trackColor={trackColor}
+          percentage={percentage}
+        />
         <Text
           style={{ color }}
           className="text-lg font-bold absolute"
         >
-          {displayValue}
+          {displayText}
         </Text>
       </View>
       <Text className="text-slate-400 text-xs mt-2 text-center">{label}</Text>
@@ -178,7 +191,8 @@ export default function AboutApp() {
             color={ringStabilityColor}
             trackColor={ringTrack}
             label={stabilityLabel}
-            displayValue={`${stabilityPct}%`}
+            displayNumber={stabilityPct}
+            suffix="%"
           />
           <ProgressRing
             value={completedTasks}
@@ -186,7 +200,7 @@ export default function AboutApp() {
             trackColor={ringTrack}
             color={completedTasks === 0 ? "#64748b" : completedTasks === totalTasks ? ringTasksColor : ringTasksColor}
             label={t("about.completedTasks")}
-            displayValue={`${completedTasks}`}
+            displayNumber={completedTasks}
           />
           <ProgressRing
             value={activeHabitsCount}
@@ -194,7 +208,7 @@ export default function AboutApp() {
             trackColor={ringTrack}
             color={ringHabitsColor}
             label={t("about.activeHabits")}
-            displayValue={`${activeHabitsCount}`}
+            displayNumber={activeHabitsCount}
           />
         </View>
 
@@ -232,7 +246,7 @@ export default function AboutApp() {
           <TouchableOpacity
             onPress={() =>
               Linking.openURL(
-                "mailto:abdulrahman.dev25@gmail.com?subject=DevLearn Bug Report",
+                "mailto:abdulrahman.dev25@gmail.com?subject=BrainCode Bug Report",
               )
             }
             activeOpacity={0.8}
@@ -254,7 +268,7 @@ export default function AboutApp() {
           <TouchableOpacity
             onPress={() =>
               Linking.openURL(
-                "mailto:abdulrahman.dev25@gmail.com?subject=DevLearn Feature Suggestion",
+                "mailto:abdulrahman.dev25@gmail.com?subject=BrainCode Feature Suggestion",
               )
             }
             activeOpacity={0.8}

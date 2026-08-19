@@ -7,7 +7,7 @@ import {
   Pressable,
   Image,
 } from "react-native";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   ArrowRight,
   Globe,
@@ -16,12 +16,13 @@ import {
   Trash2,
   Moon,
   Sun,
-  LogOut,
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { useAppStore, type AppUser } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
 import ConfirmationModal from "../components/ConfirmationModal";
+import AccountModal from "../components/AccountSettingsModal";
+import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useModeTheme, useModeClasses } from "@/src/theme";
 
 const getInitials = (user: AppUser | null): string => {
@@ -44,13 +45,13 @@ export default function Settings() {
     notificationsEnabled,
     setNotificationsEnabled,
     user,
-    logout,
   } = useAppStore();
   const { palette } = useModeTheme();
   const mc = useModeClasses();
   const { t } = useTranslation();
   const notifications = notificationsEnabled;
   const [modalVisible, setModalVisible] = useState(false);
+  const accountSheetRef = useRef<BottomSheetModal>(null);
   const [modalConfig, setModalConfig] = useState<{
     title: string;
     description: string;
@@ -134,45 +135,49 @@ export default function Settings() {
         {/* User Profile */}
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => {}}
-          className={`${cardBg} rounded-3xl p-4 mb-6 mt-2 items-center justify-between flex-row`}
+          onPress={() => accountSheetRef.current?.present()}
+          className="mb-6 mt-2"
         >
-          <View className="flex-col items-end">
-            <Text
-              className={`text-lg font-bold mb-1 ${isDarkMode ? "text-white" : "text-gray-900"}`}
-              numberOfLines={1}
-            >
-              {user?.fullName || user?.username || t("settings.username")}
-            </Text>
-            <Text
-              className={`text-sm ${isDarkMode ? "text-slate-400" : "text-gray-500"}`}
-              numberOfLines={1}
-            >
-              {user?.email || ""}
-            </Text>
-          </View>
           <View
-            className={`w-14 h-14 rounded-full border items-center justify-center ${iconCircleBg} ${isDarkMode ? mc.accentBorderFull : mc.accentBorder}`}
+            className={`${cardBg} rounded-3xl p-4 items-center justify-between flex-row`}
           >
-            {user?.avatarUrl ? (
-              <Image
-                source={{ uri: user.avatarUrl }}
-                className="w-14 h-14 rounded-full"
-              />
-            ) : (
+            <View className="flex-col items-end">
               <Text
-                className={`font-bold text-xl ${isDarkMode ? mc.darkInteractiveText : mc.textHeader}`}
+                className={`text-lg font-bold mb-1 ${isDarkMode ? "text-white" : "text-gray-900"}`}
+                numberOfLines={1}
               >
-                {getInitials(user)}
+                {user?.fullName || user?.username || t("settings.username")}
               </Text>
-            )}
+              <Text
+                className={`text-sm ${isDarkMode ? "text-slate-400" : "text-gray-500"}`}
+                numberOfLines={1}
+              >
+                {user?.email || ""}
+              </Text>
+            </View>
+            <View
+              className={`w-14 h-14 rounded-full border items-center justify-center ${iconCircleBg} ${isDarkMode ? mc.accentBorderFull : mc.accentBorder}`}
+            >
+              {user?.avatarUrl ? (
+                <Image
+                  source={{ uri: user.avatarUrl }}
+                  className="w-14 h-14 rounded-full"
+                />
+              ) : (
+                <Text
+                  className={`font-bold text-xl ${isDarkMode ? mc.darkInteractiveText : mc.textHeader}`}
+                >
+                  {getInitials(user)}
+                </Text>
+              )}
+            </View>
           </View>
+          <Text
+            className={` text-sm text-center font-bold px-3 mt-2 ${isDarkMode ? "text-slate-400" : "text-gray-500"} ${language === "ar" ? "text-left" : "text-right"}`}
+          >
+            {t("settings.editProfile")}
+          </Text>
         </TouchableOpacity>
-        <Text
-          className={` text-sm text-center font-bold px-3 mb-4 ${isDarkMode ? "text-slate-400" : "text-gray-500"} ${language === "ar" ? "text-left" : "text-right"}`}
-        >
-          {t("settings.editProfile")}
-        </Text>
 
         {/* Settings Grid - 2 Columns */}
         <Text
@@ -333,32 +338,6 @@ export default function Settings() {
             </Pressable>
           </View>
         </View>
-
-        {/* Logout */}
-        <View className="mx-0 mb-8">
-          <TouchableOpacity
-            className={`flex-row-reverse items-center justify-between p-4 rounded-3xl border ${cardBg} ${isDarkMode ? "border-gray-600/50" : "border-gray-200/50"}`}
-            style={shadowStyle}
-            onPress={() => {
-              logout();
-              router.replace("/Auth/Login");
-            }}
-          >
-            <View
-              className={
-                " items-center pl-4 justify-between flex-1" +
-                (language === "ar" ? " flex-row-reverse" : " flex-row")
-              }
-            >
-              <View className="w-10 h-10 rounded-2xl items-center justify-center bg-red-50 dark:bg-red-900">
-                <LogOut size={20} color={trashColor} />
-              </View>
-              <Text className="mr-3 text-red-600 text-right font-bold">
-                {t("settings.logout")}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
       <ConfirmationModal
         isVisible={modalVisible}
@@ -369,6 +348,7 @@ export default function Settings() {
         }}
         onCancel={() => setModalVisible(false)}
       />
+      <AccountModal ref={accountSheetRef} />
     </View>
   );
 }

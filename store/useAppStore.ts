@@ -65,6 +65,7 @@ interface AppState {
   user: AppUser | null;
   setUser: (user: AppUser | null) => void;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 
   isDarkMode: boolean;
   toggleDarkMode: () => void;
@@ -239,6 +240,25 @@ export const useAppStore = create<AppState>((set, get) => {
         ...state.allTasks.map((t) => cancelNotification(t.id).catch(() => {})),
         ...state.allHabits.map((h) => cancelNotification(h.id).catch(() => {})),
       ]);
+      set({ user: null, allTasks: [], allHabits: [], tasks: [], habits: [] });
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn("Sign out failed:", e);
+      }
+    },
+
+    deleteAccount: async () => {
+      const state = get();
+      const uid = getUserId(state.user);
+      // TODO: delete the auth user server-side (requires a Supabase Edge
+      // Function using the service role key, called with the user's JWT).
+      await Promise.all([
+        ...state.allTasks.map((t) => cancelNotification(t.id).catch(() => {})),
+        ...state.allHabits.map((h) => cancelNotification(h.id).catch(() => {})),
+      ]);
+      storage.remove(taskStorageKey(uid));
+      storage.remove(habitStorageKey(uid));
       set({ user: null, allTasks: [], allHabits: [], tasks: [], habits: [] });
       try {
         await supabase.auth.signOut();

@@ -1,8 +1,10 @@
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
-import { Platform, Alert } from "react-native";
+import * as Constants from "expo-constants";
+import { Platform, Alert, Linking } from "react-native";
 import i18n from "i18next"; // استيراد مكتبة اللغات لقراءة اللغة الحالية ديناميكياً
 import { Mode } from "../../store/useAppStore";
+import { storage } from "./storage";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -13,6 +15,7 @@ Notifications.setNotificationHandler({
 });
 
 const ANDROID_CHANNEL_ID = "daily-reminders";
+const EXACT_ALARM_PROMPT_KEY = "exact_alarm_prompt_done";
 
 // ==================== [ بنك الرسائل الذكية والعشوائية ] ====================
 const NOTIFICATION_MESSAGES = {
@@ -105,6 +108,21 @@ function getRandomBody(mode: Mode, type: "task" | "habit", title: string): strin
 }
 // =========================================================================
 
+export async function setupNotificationChannels(): Promise<void> {
+  if (Platform.OS !== "android") return;
+  await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
+    name: "Daily Reminders",
+    description: "High-priority reminders that show on the lock screen",
+    importance: Notifications.AndroidImportance.MAX,
+    sound: "default",
+    enableLights: true,
+    lightColor: "#10b981",
+    vibrationPattern: [0, 250, 250, 250],
+    lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+    bypassDnd: true, // تخطي وضع عدم الإزعاج لضمان الصرامة
+  });
+}
+
 export async function requestPermission(): Promise<boolean> {
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
@@ -115,20 +133,29 @@ export async function requestPermission(): Promise<boolean> {
 
   if (finalStatus !== "granted") return false;
 
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
-      name: "Daily Reminders",
-      importance: Notifications.AndroidImportance.MAX,
-      sound: "default",
-      enableLights: true,
-      lightColor: "#10b981",
-      vibrationPattern: [0, 250, 250, 250],
-      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-      bypassDnd: true, // تخطي وضع عدم الإزعاج لضمان الصرامة
-    } as Notifications.NotificationChannelInput);
-  }
+  await setupNotificationChannels();
 
   return true;
+}
+
+export async function requestExactAlarmIfNeeded(): Promise<void> {
+  if (Platform.OS !== "android" || Platform.Version < 31) return;
+  if (storage.getBoolean(EXACT_ALARM_PROMPT_KEY)) return;
+
+  try {
+    const packageName =
+      (Constants as any).expoConfig?.android?.package ?? "com.dooom.shiftplanner";
+    const url = `intent:#Intent;action=android.settings.REQUEST_SCHEDULE_EXACT_ALARM;package=${packageName};end`;
+    const available = await Linking.canOpenURL(url);
+    if (available) {
+      await Linking.openURL(url);
+    }
+    // Track the attempt so the prompt doesn't nag on every launch;
+    // it will only show again if the permission is later revoked.
+    storage.set(EXACT_ALARM_PROMPT_KEY, true);
+  } catch (e) {
+    console.warn("Exact alarm permission request failed:", e);
+  }
 }
 
 export async function cancelNotification(id: string): Promise<void> {
@@ -424,6 +451,8 @@ export async function scheduleImmediateTestWithPayload(
 
 export default {
   requestPermission,
+  setupNotificationChannels,
+  requestExactAlarmIfNeeded,
   scheduleDailyNotification,
   scheduleHabitNotification,
   cancelNotification,

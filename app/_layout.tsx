@@ -12,6 +12,10 @@ import * as Notifications from "expo-notifications";
 import * as SplashScreen from "expo-splash-screen";
 import CustomSplashScreen from "../components/SplashScreen";
 import { storage, STORAGE_KEYS } from "@/src/services/storage";
+import {
+  setupNotificationChannels,
+  requestExactAlarmIfNeeded,
+} from "@/src/services/notificationService";
 
 // ❌ احذف السطر القديم من هنا تماماً لمنع فشل الـ Export
 
@@ -29,6 +33,14 @@ export default function RootLayout() {
         // تشغيل الـ Habits والـ Theme
         checkAndResetDailyHabits();
         cancelPastDueNotifications();
+
+        // تهيئة قناة الإشعارات عالية الأولوية + فحص إذن الـ Exact Alarm
+        setupNotificationChannels().catch((e) =>
+          console.warn("Channel setup failed:", e),
+        );
+        requestExactAlarmIfNeeded().catch((e) =>
+          console.warn("Exact alarm check failed:", e),
+        );
         
         // الخدعة: نخفي سبلاش النظام فوراً ليظهر السبلاش المخصص حقك
         await SplashScreen.hideAsync();

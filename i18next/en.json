@@ -22,7 +22,19 @@
     "deleteTaskDesc": "Are you sure you want to delete this task?",
     "deleteHabitTitle": "Delete Habit",
     "deleteHabitDesc": "Are you sure you want to delete this habit?",
-    "logout": "Logout"
+    "logout": "Logout",
+    "account": "Account",
+    "deleteAccount": "Delete Account",
+    "deleteAccountDesc": "Are you sure you want to delete your account? All your data will be permanently deleted. This action cannot be undone.",
+    "accountSettings": "Account Settings",
+    "accountSettingsSub": "Manage your data and account info",
+    "editProfileSub": "Update your name and profile photo",
+    "changePassword": "Change Password",
+    "changePasswordSub": "Set a new password",
+    "logoutSub": "Sign out of your current account",
+    "deleteAccountSub": "Permanently delete your account and all data",
+    "newPassword": "New Password",
+    "save": "Save"
   },
   "home": {
     "todayTasks": "Today's Tasks",

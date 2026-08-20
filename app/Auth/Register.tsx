@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@/src/components/icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, type Href } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -8,12 +8,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
   Image
 } from "react-native";
+import Text from "@/src/components/ScaledText";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppStore } from "@/store/useAppStore";
 import { useModeTheme, useModeClasses } from "@/src/theme";

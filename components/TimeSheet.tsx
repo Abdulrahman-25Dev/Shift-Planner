@@ -5,7 +5,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
+import Text from "@/src/components/ScaledText";
 import { FlashList, FlashListRef } from "@shopify/flash-list";
 import {
   BottomSheetModal,

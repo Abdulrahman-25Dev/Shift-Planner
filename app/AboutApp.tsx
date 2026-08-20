@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   Linking,
 } from "react-native";
+import Text from "@/src/components/ScaledText";
 import { router } from "expo-router";
 import {
   Easing,
@@ -25,7 +25,7 @@ import {
   HardDrive,
   Languages,
   Database,
-} from "lucide-react-native";
+} from "@/src/components/icons";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/useAppStore";
 import { useModeTheme, useModeClasses } from "@/src/theme";

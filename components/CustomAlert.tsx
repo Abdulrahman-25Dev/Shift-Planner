@@ -1,5 +1,6 @@
-import { Modal, View, Text, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Modal, View, TouchableOpacity } from "react-native";
+import Text from "@/src/components/ScaledText";
+import { Ionicons, type IoniconName } from "@/src/components/icons";
 import { useAppStore } from "../store/useAppStore";
 import { useModeClasses } from "../src/theme";
 import { useTranslation } from "react-i18next";
@@ -13,7 +14,7 @@ interface CustomAlertProps {
   onCancel?: () => void;
 }
 
-type IconName = keyof typeof Ionicons.glyphMap;
+type IconName = IoniconName;
 
 const ALERT_CONFIG: Record<
   NonNullable<CustomAlertProps["type"]>,

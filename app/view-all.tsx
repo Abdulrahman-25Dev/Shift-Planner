@@ -1,9 +1,9 @@
 import {
   View,
-  Text,
   Pressable,
   TouchableOpacity,
 } from "react-native";
+import Text from "@/src/components/ScaledText";
 import React, { useRef, useState } from "react";
 import { FlashList } from "@shopify/flash-list";
 import { Task, Habit, useAppStore } from "../store/useAppStore";
@@ -13,7 +13,7 @@ import {
   Trash2,
   ChevronLeft,
   Flame,
-} from "lucide-react-native";
+} from "@/src/components/icons";
 import { AddTaskSheet } from "../components/AddTaskSheet";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { router } from "expo-router";
@@ -141,6 +141,7 @@ const ShowAll = () => {
           <View className="flex-1 ml-3">
             <Text
               className={`${isDarkMode ? "font-semibold text-gray-100" : "font-bold text-gray-800"} text-base ${item.completed ? "line-through text-gray-400" : ""}`}
+              numberOfLines={2}
             >
               {item.title}
             </Text>
@@ -314,6 +315,7 @@ const ShowAll = () => {
         <View className="mx-3 ml-3 flex-1">
           <Text
             className={`${isDarkMode ? "font-semibold text-gray-100" : "font-bold text-gray-800"} text-base ${completed ? "line-through text-gray-400" : ""}`}
+            numberOfLines={2}
           >
             {item.title}
           </Text>
@@ -489,7 +491,7 @@ const ShowAll = () => {
                 <Text className={`${isDarkMode ? "text-gray-200" : "text-gray-600"}`}>{t("ViewAll.No tasks")}</Text>
                 <TouchableOpacity
                   onPress={openAddTaskSheet}
-                  className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
+                  className={`absolute bottom-6 right-6 min-w-16 min-h-16 px-4 py-3 rounded-full items-center justify-center ${
                     isDarkMode ? mc.darkInteractive : mc.headerBg
                   }`}
                   style={{ elevation: 5 }}
@@ -538,7 +540,7 @@ const ShowAll = () => {
                 <Text className={`${isDarkMode ? "text-gray-200" : "text-gray-600"}`}>{t("ViewAll.No habits")}</Text>
                 <TouchableOpacity
                   onPress={openAddTaskSheet}
-                  className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
+                  className={`absolute bottom-6 right-6 min-w-16 min-h-16 px-4 py-3 rounded-full items-center justify-center ${
                     isDarkMode ? mc.darkInteractive : mc.headerBg
                   }`}
                   style={{ elevation: 5 }}

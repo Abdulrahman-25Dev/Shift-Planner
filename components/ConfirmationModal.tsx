@@ -1,4 +1,5 @@
-import { Modal, View, Text, TouchableOpacity } from "react-native";
+import { Modal, View, TouchableOpacity } from "react-native";
+import Text from "@/src/components/ScaledText";
 import { useAppStore } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
 import { useModeClasses } from "../src/theme";

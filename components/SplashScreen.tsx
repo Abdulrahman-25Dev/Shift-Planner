@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { View, Image, Text, Animated } from "react-native";
+import { View, Image, Animated } from "react-native";
+import Text from "@/src/components/ScaledText";
 import * as SplashScreen from "expo-splash-screen";
 
 interface SplashScreenProps {

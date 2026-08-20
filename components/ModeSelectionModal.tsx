@@ -1,5 +1,6 @@
-import { Modal, View, Text, Pressable } from "react-native";
-import { GraduationCap, Code2, Check, Mosque } from "lucide-react-native";
+import { Modal, View, Pressable } from "react-native";
+import Text from "@/src/components/ScaledText";
+import { GraduationCap, Code2, Check, Mosque } from "@/src/components/icons";
 import { useAppStore, Mode } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
 

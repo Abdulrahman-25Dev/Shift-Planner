@@ -1,8 +1,9 @@
 import React, { useRef, useState } from "react";
-import { View, Text, TouchableOpacity, Pressable } from "react-native";
+import { View, TouchableOpacity, Pressable } from "react-native";
+import Text from "@/src/components/ScaledText";
 import { useAppStore, Task, Priority } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
-import { Settings, Trash2, Flame } from "lucide-react-native";
+import { Settings, Trash2, Flame } from "@/src/components/icons";
 import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
 import { AddTaskSheet } from "../components/AddTaskSheet";
@@ -207,6 +208,7 @@ export default function Index() {
           <View className="flex-1 ml-3">
             <Text
               className={`font-bold text-base ${item.completed ? "line-through text-gray-500" : isDarkMode ? "text-gray-100" : "text-gray-800"}`}
+              numberOfLines={2}
             >
               {item.title}
             </Text>
@@ -400,6 +402,7 @@ export default function Index() {
         <View className="mx-3 ml-3 flex-1">
           <Text
             className={`${isDarkMode ? "font-semibold text-gray-100" : "font-bold text-gray-800"} text-base ${item.completed ? "line-through text-gray-400" : ""}`}
+            numberOfLines={2}
           >
             {item.title}
           </Text>
@@ -576,7 +579,7 @@ export default function Index() {
           </Pressable>
         </View>
 
-        <View className="h-56">
+        <View className="h-64">
           <FlashList
             data={sortedTasks.slice(0, 2)}
             renderItem={renderTasks}
@@ -613,7 +616,7 @@ export default function Index() {
           </Pressable>
         </View>
 
-        <View className="h-64">
+        <View className="h-72">
           <FlashList
             data={sortedHabits.slice(0, 2)}
             renderItem={renderHabits}
@@ -624,7 +627,7 @@ export default function Index() {
 
         <TouchableOpacity
           onPress={openAddTaskSheet}
-          className={`absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center ${
+          className={`absolute bottom-6 right-6 min-w-16 min-h-16 px-4 py-3 rounded-full items-center justify-center ${
             isDarkMode ? mc.darkInteractive : mc.headerBg
           }`}
           style={{ elevation: 5 }}

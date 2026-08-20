@@ -1,12 +1,12 @@
 import {
   View,
-  Text,
   TouchableOpacity,
   Switch,
   ScrollView,
   Pressable,
   Image,
 } from "react-native";
+import Text from "@/src/components/ScaledText";
 import React, { useState, useCallback, useRef } from "react";
 import {
   ArrowRight,
@@ -17,7 +17,7 @@ import {
   Moon,
   Sun,
   ALargeSmall,
-} from "lucide-react-native";
+} from "@/src/components/icons";
 import { router } from "expo-router";
 import { useAppStore, type AppUser } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
@@ -97,21 +97,18 @@ export default function Settings() {
     setLanguage(language === "ar" ? "en" : "ar");
   };
 
-  // Font scale factor controls: 0.5 → 1.5, stepping by 0.25, default 1.0
+  // Font scale factor controls: 0.5 → 1.5, stepping by 0.1, default 1.0
   const FONT_SCALE_MIN = 0.5;
   const FONT_SCALE_MAX = 1.5;
-  const FONT_SCALE_STEP = 0.25;
+  const FONT_SCALE_STEP = 0.1;
   const decreaseFontSize = () => {
     setFontScale(Math.max(FONT_SCALE_MIN, fontScale - FONT_SCALE_STEP));
   };
   const increaseFontSize = () => {
     setFontScale(Math.min(FONT_SCALE_MAX, fontScale + FONT_SCALE_STEP));
   };
-  // Formats the scale for display (e.g. 1 → "1.0", 1.25 → "1.25")
-  const formatScale = (n: number) => {
-    const s = n.toFixed(2).replace(/\.?0+$/, "");
-    return s.includes(".") ? s : `${s}.0`;
-  };
+  // Formats the scale for display (e.g. 1 → "1.0", 1.25 → "1.3")
+  const formatScale = (n: number) => n.toFixed(1);
 
   const iconColor = isDarkMode ? palette.accentText : palette.header;
   const trashColor = isDarkMode ? "#fca5a5" : "#dc2626";
@@ -286,10 +283,10 @@ export default function Settings() {
             >
               {t("settings.fontSize")}
             </Text>
-<View className="flex-row items-center justify-center">
+            <View className="flex-row items-center justify-center">
               <TouchableOpacity
                 onPress={increaseFontSize}
-                className={`w-9 h-9 rounded-full items-center justify-center mr-3 ${
+                className={`min-w-10 min-h-10 px-2.5 py-1 rounded-full items-center justify-center mr-3 ${
                   isDarkMode ? "bg-slate-800" : "bg-slate-100"
                 }`}
               >
@@ -300,7 +297,7 @@ export default function Settings() {
               </Text>
               <TouchableOpacity
                 onPress={decreaseFontSize}
-                className={`w-9 h-9 rounded-full items-center justify-center ml-3 ${
+                className={`min-w-10 min-h-10 px-2.5 py-1 rounded-full items-center justify-center ml-3 ${
                   isDarkMode ? "bg-slate-800" : "bg-slate-100"
                 }`}
               >

@@ -524,10 +524,15 @@ export const useAppStore = create<AppState>((set, get) => {
       }),
 
     // Font scale persisted locally so the choice survives restarts
-    fontScale: Number(storage.getString("font_scale") ?? "1"),
+    // (clamped to the allowed 0.5 – 1.5 range, default 1.0)
+    fontScale: Math.min(
+      1.5,
+      Math.max(0.5, Number(storage.getString("font_scale") ?? "1")),
+    ),
     setFontScale: (scale) => {
-      storage.set("font_scale", String(scale));
-      set({ fontScale: scale });
+      const clamped = Math.min(1.5, Math.max(0.5, scale));
+      storage.set("font_scale", String(clamped));
+      set({ fontScale: clamped });
     },
 
     notificationsEnabled: initialNotifications,

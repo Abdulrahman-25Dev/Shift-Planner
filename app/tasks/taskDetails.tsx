@@ -1,11 +1,11 @@
 import React, { forwardRef, useMemo, useCallback, useState } from "react";
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   Pressable,
 } from "react-native";
+import Text from "@/src/components/ScaledText";
 import {
   BottomSheetModal,
   BottomSheetView,
@@ -13,8 +13,7 @@ import {
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { Task, Priority, useAppStore } from "../../store/useAppStore"; // تأكد من مسار الستور
-import { Ionicons } from "@expo/vector-icons";
-import { Calendar, Clock, Flame } from "lucide-react-native";
+import { Ionicons, Calendar, Clock, Flame } from "@/src/components/icons";
 import { LinearGradient } from "expo-linear-gradient";
 import DateSheet from "../../components/DateSheet";
 import TimeSheet from "../../components/TimeSheet";

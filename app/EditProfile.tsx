@@ -1,14 +1,14 @@
 import {
   View,
-  Text,
   TouchableOpacity,
   Image,
   TextInput,
   Pressable,
   ActivityIndicator,
 } from "react-native";
+import Text from "@/src/components/ScaledText";
 import React, { useMemo, useState } from "react";
-import { ArrowRight, Camera, CheckCircle2, WifiOff } from "lucide-react-native";
+import { ArrowRight, Camera, CheckCircle2, WifiOff } from "@/src/components/icons";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useAppStore, type AppUser } from "../store/useAppStore";

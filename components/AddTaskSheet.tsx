@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState, forwardRef } from "react";
-import { View, Text, TouchableOpacity, Pressable } from "react-native";
-import { CheckCircle2, Clock10, RefreshCw, Calendar } from "lucide-react-native";
+import { View, TouchableOpacity, Pressable } from "react-native";
+import Text from "@/src/components/ScaledText";
+import { CheckCircle2, Clock10, RefreshCw, Calendar } from "@/src/components/icons";
 import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,

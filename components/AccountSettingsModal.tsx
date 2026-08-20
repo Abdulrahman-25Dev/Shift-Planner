@@ -1,6 +1,7 @@
 import React, { forwardRef, useCallback, useMemo, useState } from "react";
-import { View, Text, Pressable } from "react-native";
-import { User, KeyRound, LogOut, UserX, ChevronLeft } from "lucide-react-native";
+import { View, Pressable } from "react-native";
+import Text from "@/src/components/ScaledText";
+import { User, KeyRound, LogOut, UserX, ChevronLeft } from "@/src/components/icons";
 import {
   BottomSheetView,
   BottomSheetBackdrop,

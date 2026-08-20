@@ -1,13 +1,13 @@
 import {
   View,
-  Text,
   TouchableOpacity,
   TextInput,
   Pressable,
   ActivityIndicator,
 } from "react-native";
+import Text from "@/src/components/ScaledText";
 import React, { useState } from "react";
-import { ArrowRight, Eye, EyeOff, KeyRound } from "lucide-react-native";
+import { ArrowRight, Eye, EyeOff, KeyRound } from "@/src/components/icons";
 import { router } from "expo-router";
 import { useAppStore } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";

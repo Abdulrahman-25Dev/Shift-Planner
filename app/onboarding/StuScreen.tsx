@@ -1,4 +1,5 @@
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, TouchableOpacity, Image } from "react-native";
+import Text from "@/src/components/ScaledText";
 import React from "react";
 import { router } from "expo-router";
 import { useAppStore } from "../../store/useAppStore";

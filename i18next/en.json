@@ -44,7 +44,17 @@
     "profileSyncing": "Saving...",
     "profileSynced": "Profile synced",
     "profileSyncPending": "Saved locally — will sync when you're back online",
-    "save": "Save"
+    "save": "Save",
+    "passwordEmpty": "Please fill in all fields",
+    "passwordMinLength": "New password must be at least 6 characters",
+    "passwordMismatch": "New password and confirmation do not match",
+    "passwordChanged": "Password changed",
+    "passwordChangedDesc": "Your password has been updated successfully.",
+    "passwordChangeFailed": "Password change failed",
+    "currentPasswordIncorrect": "The current password you entered is incorrect",
+    "noEmailError": "No email found for the signed-in account",
+    "more": "More",
+    "fontSize": "Font Size"
   },
   "home": {
     "todayTasks": "Today's Tasks",
@@ -161,7 +171,9 @@
     "state-management":"State Management",
     "local-storage":"Local Storage",
     "design-engine":"Design Engine",
+    "Database":"Database and Backup",
     "notifications":"Notifications",
+    "i18n":"Internationalization and Localization",
     "runtime-specs":"Runtime Specifications",
     "hermes":"JavaScript Engine",
     "fully-offline":"connection status",

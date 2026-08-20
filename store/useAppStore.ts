@@ -100,6 +100,10 @@ interface AppState {
   language: "ar" | "en";
   setLanguage: (lang: "ar" | "en") => void;
 
+  // Global font scale factor (0.5 – 1.5, default 1.0)
+  fontScale: number;
+  setFontScale: (scale: number) => void;
+
   notificationsEnabled: boolean;
   setNotificationsEnabled: (enabled: boolean) => Promise<void>;
   // Pending item to open when app is launched from a notification
@@ -518,6 +522,13 @@ export const useAppStore = create<AppState>((set, get) => {
         i18n.changeLanguage(lang);
         return { language: lang };
       }),
+
+    // Font scale persisted locally so the choice survives restarts
+    fontScale: Number(storage.getString("font_scale") ?? "1"),
+    setFontScale: (scale) => {
+      storage.set("font_scale", String(scale));
+      set({ fontScale: scale });
+    },
 
     notificationsEnabled: initialNotifications,
     pendingOpenItem: null,

@@ -24,7 +24,6 @@ import {
   Palette,
   HardDrive,
   Languages,
-  Compass,
   Database,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
@@ -120,12 +119,12 @@ export default function AboutApp() {
   const mutedText = isDarkMode ? "text-slate-500" : "text-gray-400";
 
   const techStack = [
-    { name: "React Native & Expo", category: "واجهة التطبيق", icon: Atom },
-    { name: "Zustand", category: "إدارة الحالة", icon: PawPrint },
-    { name: "Tailwind CSS", category: "التصميم والواجهات", icon: Palette },
-    { name: "MMKV", category: "التخزين المحلي", icon: HardDrive },
-    { name: "Supabase", category: "قواعد البيانات والمزامنة", icon: Database },
-    { name: "i18next", category: "الترجمة واللغات", icon: Languages },
+    { name: "React Native & Expo", category: t("about.framework"), icon: Atom },
+    { name: "Zustand", category: t("about.state-management"), icon: PawPrint },
+    { name: "Tailwind CSS", category: t("about.design-engine"), icon: Palette },
+    { name: "MMKV", category: t("about.local-storage"), icon: HardDrive },
+    { name: "Supabase", category: t("about.Database"), icon: Database },
+    { name: "i18next", category: t("about.i18n"), icon: Languages },
   ];
 
   const completedTasks = tasks.filter((t) => t.completed).length;

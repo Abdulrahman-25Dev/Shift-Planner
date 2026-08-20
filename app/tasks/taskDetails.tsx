@@ -25,6 +25,19 @@ import { useModeTheme, useModeClasses } from "@/src/theme";
 interface DetailsSheetProps {
   itemId: string | null;
 }
+
+const getLast14Days = (): Date[] => {
+  const days: Date[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let i = 13; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    days.push(date);
+  }
+  return days; // Index 13 is ALWAYS Today
+};
 export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
   ({ itemId }, ref) => {
     const {
@@ -53,31 +66,14 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
 
     // آخر 14 يومًا لرسم خريطة الإنجاز (GitHub-style heat map)
     const last14Days = useMemo(() => {
-      const history = new Set(
-        (habit?.completionHistory ?? []).map((ts) =>
-          new Date(ts).toDateString(),
-        ),
-      );
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const days: {
-        key: string;
-        status: "completed" | "skipped" | "future";
-      }[] = [];
-      for (let i = 13; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
-        days.push({
+      const streakCount = habit?.streak ?? 0;
+      const lit = Math.min(streakCount, 14);
+      return getLast14Days()
+        .map((d, i) => ({
           key: d.toDateString(),
-          status:
-            d.getTime() > today.getTime()
-              ? "future"
-              : history.has(d.toDateString())
-                ? "completed"
-                : "skipped",
-        });
-      }
-      return days;
+          status: i < lit ? "completed" : "skipped",
+        }))
+        .reverse(); // Today first → far right in RTL, far left in LTR
     }, [habit]);
 
     const item = task || habit;
@@ -86,6 +82,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
     const dateSheetRef = React.useRef<BottomSheetModal>(null);
     const timeSheetRef = React.useRef<BottomSheetModal>(null);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [descHeight, setDescHeight] = useState(48);
 
     const handleDelete = useCallback(() => {
       if (!item) return;
@@ -195,11 +192,15 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                   ? updateHabit(item.id, { description: text })
                   : updateTask(item.id, { description: text })
               }
+              onContentSizeChange={(e) =>
+                setDescHeight(e.nativeEvent.contentSize.height)
+              }
               placeholder={t(
                 "details.description " +
                   (isHabit ? "habit placeholder" : "task placeholder"),
               )}
-              className={` p-4 text-md rounded-2xl font-semibold min-h-[120px] ${inputBg}`}
+              className={` p-4 text-md rounded-2xl font-semibold ${inputBg}`}
+              style={{ minHeight: 48, height: Math.max(48, descHeight) }}
               textAlignVertical="top"
             />
           </View>

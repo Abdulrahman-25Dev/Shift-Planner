@@ -4,7 +4,6 @@ import { User, KeyRound, LogOut, UserX, ChevronLeft } from "lucide-react-native"
 import {
   BottomSheetView,
   BottomSheetBackdrop,
-  BottomSheetTextInput,
   BottomSheetModal,
 } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
@@ -12,7 +11,6 @@ import { useAppStore } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
 import { useModeTheme, useModeClasses } from "@/src/theme";
 import CustomAlert from "./CustomAlert";
-import { supabase } from "../supabase";
 
 const AccountSettingsModal = forwardRef<BottomSheetModal>(
   (_props, ref) => {
@@ -21,11 +19,6 @@ const AccountSettingsModal = forwardRef<BottomSheetModal>(
     const mc = useModeClasses();
     const { t } = useTranslation();
 
-    const [step, setStep] = useState<"options" | "password">("options");
-    const [oldPassword, setOldPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [loading, setLoading] = useState(false);
     const [logoutAlert, setLogoutAlert] = useState(false);
     const [deleteAlert, setDeleteAlert] = useState(false);
     const [deleteAlert2, setDeleteAlert2] = useState(false);
@@ -51,10 +44,6 @@ const AccountSettingsModal = forwardRef<BottomSheetModal>(
     const trashColor = isDarkMode ? "#fca5a5" : "#dc2626";
 
     const close = () => {
-      setStep("options");
-      setOldPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
       sheetRef.current?.dismiss();
     };
 
@@ -67,31 +56,6 @@ const AccountSettingsModal = forwardRef<BottomSheetModal>(
       setDeleteAlert(false);
       close();
       deleteAccount().then(() => router.replace("/Auth/Login"));
-    };
-
-    const handleChangePassword = async () => {
-      if (
-        oldPassword.trim().length < 6 ||
-        newPassword.trim().length < 6 ||
-        confirmPassword !== newPassword
-      ) {
-        return;
-      }
-      setLoading(true);
-      try {
-        const { error } = await supabase.auth.updateUser({
-          password: newPassword.trim(),
-        });
-        if (error) throw error;
-        setStep("options");
-        setOldPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } catch (e) {
-        console.warn("Password change failed:", e);
-      } finally {
-        setLoading(false);
-      }
     };
 
     const row = (
@@ -141,136 +105,50 @@ const AccountSettingsModal = forwardRef<BottomSheetModal>(
             backgroundColor: isDarkMode ? palette.card : "#FFFFFF",
           }}
           handleIndicatorStyle={{ backgroundColor: "#E5E7EB", width: 50 }}
-          onDismiss={() => {
-            setStep("options");
-            setOldPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
-          }}
         >
           <BottomSheetView className="px-5 pb-8">
-            {step === "options" ? (
-              <>
-                <Text className={`text-xl mt-5 font-black text-center ${titleText}`}>
-                  {t("settings.accountSettings")}
-                </Text>
-                <Text className={`text-sm text-center mt-1 mb-5 ${subText}`}>
-                  {t("settings.accountSettingsSub")}
-                </Text>
+            <>
+              <Text className={`text-xl mt-5 font-black text-center ${titleText}`}>
+                {t("settings.accountSettings")}
+              </Text>
+              <Text className={`text-sm text-center mt-1 mb-5 ${subText}`}>
+                {t("settings.accountSettingsSub")}
+              </Text>
 
-                {row(
-                  <User size={20} color={iconColor} />,
-                  t("settings.editProfile"),
-                  t("settings.editProfileSub"),
-                  () => {
-                    close();
-                    router.push("/EditProfile");
-                  },
-                )}
-                {row(
-                  <KeyRound size={20} color={iconColor} />,
-                  t("settings.changePassword"),
-                  t("settings.changePasswordSub"),
-                  () => setStep("password"),
-                )}
-                {row(
-                  <LogOut size={20} color={trashColor} />,
-                  t("settings.logout"),
-                  t("settings.logoutSub"),
-                  () => setLogoutAlert(true),
-                  true,
-                )}
-                {row(
-                  <UserX size={20} color={trashColor} />,
-                  t("settings.deleteAccount"),
-                  t("settings.deleteAccountSub"),
-                  () => setDeleteAlert(true),
-                  true,
-                )}
-              </>
-            ) : (
-              <>
-                <Text className={`text-xl font-black text-center ${titleText}`}>
-                  {t("settings.changePassword")}
-                </Text>
-                <Text className={`text-sm text-center mt-1 mb-5 ${subText}`}>
-                  {t("settings.changePasswordSub")}
-                </Text>
-
-                <BottomSheetTextInput
-                  value={oldPassword}
-                  onChangeText={setOldPassword}
-                  placeholder={t("settings.oldPassword")}
-                  placeholderTextColor={isDarkMode ? "#64748b" : "#9ca3af"}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  className={`rounded-2xl px-4 py-3.5 mb-4 text-right font-bold ${
-                    isDarkMode
-                      ? "bg-slate-800 text-white"
-                      : "bg-slate-100 text-slate-900"
-                  }`}
-                />
-                <BottomSheetTextInput
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  placeholder={t("settings.newPassword")}
-                  placeholderTextColor={isDarkMode ? "#64748b" : "#9ca3af"}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  className={`rounded-2xl px-4 py-3.5 mb-4 text-right font-bold ${
-                    isDarkMode
-                      ? "bg-slate-800 text-white"
-                      : "bg-slate-100 text-slate-900"
-                  }`}
-                />
-                <BottomSheetTextInput
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  placeholder={t("settings.confirmPassword")}
-                  placeholderTextColor={isDarkMode ? "#64748b" : "#9ca3af"}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  className={`rounded-2xl px-4 py-3.5 mb-4 text-right font-bold ${
-                    isDarkMode
-                      ? "bg-slate-800 text-white"
-                      : "bg-slate-100 text-slate-900"
-                  }`}
-                />
-
-                <Pressable
-                  onPress={handleChangePassword}
-                  disabled={
-                    loading ||
-                    oldPassword.trim().length < 6 ||
-                    newPassword.trim().length < 6 ||
-                    confirmPassword !== newPassword
-                  }
-                  className={`py-3.5 rounded-2xl items-center mb-3 ${
-                    loading ||
-                    oldPassword.trim().length < 6 ||
-                    newPassword.trim().length < 6 ||
-                    confirmPassword !== newPassword
-                      ? "opacity-50"
-                      : ""
-                  }`}
-                  style={{ backgroundColor: palette.interactive }}
-                >
-                  <Text className="text-white font-bold text-base">
-                    {t("settings.save")}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => setStep("options")}
-                  className={`py-3.5 rounded-2xl items-center ${
-                    isDarkMode ? "bg-slate-800" : "bg-slate-100"
-                  }`}
-                >
-                  <Text className={`font-bold text-base ${subText}`}>
-                    {t("settings.cancel")}
-                  </Text>
-                </Pressable>
-              </>
-            )}
+              {row(
+                <User size={20} color={iconColor} />,
+                t("settings.editProfile"),
+                t("settings.editProfileSub"),
+                () => {
+                  close();
+                  router.push("/EditProfile");
+                },
+              )}
+              {row(
+                <KeyRound size={20} color={iconColor} />,
+                t("settings.changePassword"),
+                t("settings.changePasswordSub"),
+                () => {
+                  // Dedicated screen handles re-auth + password update
+                  close();
+                  router.push("/ChangePassword");
+                },
+              )}
+              {row(
+                <LogOut size={20} color={trashColor} />,
+                t("settings.logout"),
+                t("settings.logoutSub"),
+                () => setLogoutAlert(true),
+                true,
+              )}
+              {row(
+                <UserX size={20} color={trashColor} />,
+                t("settings.deleteAccount"),
+                t("settings.deleteAccountSub"),
+                () => setDeleteAlert(true),
+                true,
+              )}
+            </>
           </BottomSheetView>
         </BottomSheetModal>
 

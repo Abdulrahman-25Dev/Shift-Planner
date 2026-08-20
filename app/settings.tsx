@@ -16,6 +16,7 @@ import {
   Trash2,
   Moon,
   Sun,
+  ALargeSmall,
 } from "lucide-react-native";
 import { router } from "expo-router";
 import { useAppStore, type AppUser } from "../store/useAppStore";
@@ -44,6 +45,8 @@ export default function Settings() {
     setLanguage,
     notificationsEnabled,
     setNotificationsEnabled,
+    fontScale,
+    setFontScale,
     user,
   } = useAppStore();
   const { palette } = useModeTheme();
@@ -92,6 +95,22 @@ export default function Settings() {
 
   const toggleLanguage = () => {
     setLanguage(language === "ar" ? "en" : "ar");
+  };
+
+  // Font scale factor controls: 0.5 → 1.5, stepping by 0.25, default 1.0
+  const FONT_SCALE_MIN = 0.5;
+  const FONT_SCALE_MAX = 1.5;
+  const FONT_SCALE_STEP = 0.25;
+  const decreaseFontSize = () => {
+    setFontScale(Math.max(FONT_SCALE_MIN, fontScale - FONT_SCALE_STEP));
+  };
+  const increaseFontSize = () => {
+    setFontScale(Math.min(FONT_SCALE_MAX, fontScale + FONT_SCALE_STEP));
+  };
+  // Formats the scale for display (e.g. 1 → "1.0", 1.25 → "1.25")
+  const formatScale = (n: number) => {
+    const s = n.toFixed(2).replace(/\.?0+$/, "");
+    return s.includes(".") ? s : `${s}.0`;
   };
 
   const iconColor = isDarkMode ? palette.accentText : palette.header;
@@ -187,10 +206,9 @@ export default function Settings() {
         </Text>
         <View className="flex-row flex-wrap justify-between mb-4">
           {/* Card 1: Theme */}
-          <TouchableOpacity
+          <View
             className={`w-[48%] ${cardBg} rounded-3xl p-4 items-center mb-3`}
             style={shadowStyle}
-            onPress={toggleDarkMode}
           >
             <View
               className={`w-12 h-12 rounded-2xl items-center justify-center ${iconCircleBg}`}
@@ -202,11 +220,21 @@ export default function Settings() {
               )}
             </View>
             <Text
-              className={` text-sm font-bold mt-3 text-center ${titleText}`}
+              className={` text-sm font-bold mt-3 text-center mb-2 ${titleText}`}
             >
               {isDarkMode ? t("settings.darkMode") : t("settings.lightMode")}
             </Text>
-          </TouchableOpacity>
+            <Switch
+              value={isDarkMode}
+              onValueChange={toggleDarkMode}
+              trackColor={
+                isDarkMode
+                  ? { false: "#4b5563", true: palette.interactive }
+                  : { false: "#d1d5db", true: palette.header }
+              }
+              thumbColor="#fff"
+            />
+          </View>
 
           {/* Card 2: Language */}
           <TouchableOpacity
@@ -243,23 +271,43 @@ export default function Settings() {
             </View>
           </TouchableOpacity>
 
-          {/* Card 3: About the App */}
-          <TouchableOpacity
+          {/* Card 3: Font Size */}
+          <View
             className={`w-[48%] ${cardBg} rounded-3xl p-4 items-center mb-3`}
             style={shadowStyle}
-            onPress={() => router.push("../AboutApp")}
           >
             <View
               className={`w-12 h-12 rounded-2xl items-center justify-center ${iconCircleBg}`}
             >
-              <Info size={24} color={iconColor} />
+              <ALargeSmall size={24} color={iconColor} />
             </View>
             <Text
-              className={` text-sm font-bold mt-3 text-center ${titleText}`}
+              className={` text-sm font-bold mt-3 text-center mb-2 ${titleText}`}
             >
-              {t("settings.aboutApp")}
+              {t("settings.fontSize")}
             </Text>
-          </TouchableOpacity>
+<View className="flex-row items-center justify-center">
+              <TouchableOpacity
+                onPress={increaseFontSize}
+                className={`w-9 h-9 rounded-full items-center justify-center mr-3 ${
+                  isDarkMode ? "bg-slate-800" : "bg-slate-100"
+                }`}
+              >
+                <Text className={`font-black text-lg ${titleText}`}>A+</Text>
+              </TouchableOpacity>
+              <Text className={`font-bold text-base ${titleText}`}>
+                {formatScale(fontScale)}
+              </Text>
+              <TouchableOpacity
+                onPress={decreaseFontSize}
+                className={`w-9 h-9 rounded-full items-center justify-center ml-3 ${
+                  isDarkMode ? "bg-slate-800" : "bg-slate-100"
+                }`}
+              >
+                <Text className={`font-black text-base ${titleText}`}>A-</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
 
           {/* Card 4: Notifications */}
           <View
@@ -333,6 +381,38 @@ export default function Settings() {
                 </View>
                 <Text className="mr-3 text-red-600 text-right font-bold">
                   {t("settings.deleteAllHabits")}
+                </Text>
+              </View>
+            </Pressable>
+          </View>
+        </View>
+
+        {/* More */}
+        <View className="mx-0 mt-4 mb-8">
+          <Text
+            className={` text-sm font-bold mb-3 px-3 mr-1 ${labelText} ${language === "ar" ? "text-left" : "text-right"}`}
+          >
+            {t("settings.more")}
+          </Text>
+          {/* About App (full-width row, matches Data Management rows) */}
+          <View className={`${cardBg} rounded-3xl`} style={shadowStyle}>
+            <Pressable
+              className={`flex-row-reverse items-center justify-between p-4 ${cardBg} rounded-3xl`}
+              onPress={() => router.push("../AboutApp")}
+            >
+              <View
+                className={
+                  " items-center pl-4 justify-between flex-1" +
+                  (language === "ar" ? " flex-row-reverse" : " flex-row")
+                }
+              >
+                <View
+                  className={`w-10 h-10 rounded-2xl items-center justify-center ${iconCircleBg}`}
+                >
+                  <Info size={20} color={iconColor} />
+                </View>
+                <Text className={`text-right font-bold ${titleText}`}>
+                  {t("settings.aboutApp")}
                 </Text>
               </View>
             </Pressable>

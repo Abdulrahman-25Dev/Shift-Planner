@@ -279,6 +279,7 @@ export async function scheduleHabitNotification(
   repeatType: "daily" | "weekly" | "custom",
   repeatDays: string[],
   mode: Mode = "study",
+  startDate?: Date,
 ): Promise<void> {
   await cancelNotification(id);
 
@@ -293,6 +294,7 @@ export async function scheduleHabitNotification(
       minute,
       notificationType,
       mode,
+      startDate ?? undefined,
     );
     return;
   }
@@ -306,6 +308,8 @@ export async function scheduleHabitNotification(
     fri: 6,
     sat: 7,
   };
+
+  const baseDate = startDate ?? new Date();
 
   await Promise.all(
     repeatDays.map(async (day) => {
@@ -338,8 +342,9 @@ export async function scheduleHabitNotification(
       };
 
       if (Platform.OS === "android") {
-        const now = new Date();
-        const target = new Date();
+        const now = new Date(baseDate.getTime());
+        now.setHours(0, 0, 0, 0);
+        const target = new Date(baseDate.getTime());
         target.setHours(hour, minute, 0, 0);
 
         const currentWeekday = now.getDay() + 1; // JS: 0=Sun → 1=Sun

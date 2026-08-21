@@ -799,6 +799,7 @@ export const useAppStore = create<AppState>((set, get) => {
               newHabit.repeatType || "daily",
               newHabit.repeatDays || [],
               newHabit.mode,
+              d,
             );
           } catch {}
         }

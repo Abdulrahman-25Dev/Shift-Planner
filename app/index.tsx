@@ -3,7 +3,13 @@ import { View, TouchableOpacity, Pressable } from "react-native";
 import Text from "@/src/components/ScaledText";
 import { useAppStore, Task, Priority } from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
-import { Settings, Trash2, Flame } from "@/src/components/icons";
+import {
+  Settings,
+  Trash2,
+  Flame,
+  CheckCircle2,
+  RefreshCw,
+} from "@/src/components/icons";
 import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
 import { AddTaskSheet } from "../components/AddTaskSheet";
@@ -11,7 +17,7 @@ import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { DetailsSheet } from "./tasks/taskDetails";
 import ConfirmationModal from "../components/ConfirmationModal";
 import ModeSwitcherButton from "../components/ModeSwitcherButton";
-import { useModeClasses } from "../src/theme";
+import { useModeClasses, useModeTheme } from "../src/theme";
 
 export default function Index() {
   const {
@@ -24,7 +30,9 @@ export default function Index() {
     deleteSingleItem,
     language,
   } = useAppStore();
+
   const mc = useModeClasses();
+  const [selectedTab, setSelectedTab] = useState<"tasks" | "habits">("tasks");
   const { t } = useTranslation();
 
   const priorityRank = (priority: string | undefined) => {
@@ -35,6 +43,7 @@ export default function Index() {
   };
 
   const today = new Date().toDateString();
+
   const habitsWithCompleted = habits.map((habit) => ({
     ...habit,
     completed: habit.lastCompletedDate
@@ -48,6 +57,7 @@ export default function Index() {
   const completedItems = completedTasksCount;
   const progressRatio = totalItems === 0 ? 0 : completedItems / totalItems;
   const progressPercentage = Math.round(progressRatio * 100);
+
   const progressLabel =
     mode === "study"
       ? progressPercentage === 100
@@ -67,6 +77,7 @@ export default function Index() {
       : mode === "coding"
         ? "header.modeShortDev"
         : "header.modeShortFaith";
+
   const headerTitleKey =
     mode === "study"
       ? "header.modeTitleStudy"
@@ -74,7 +85,7 @@ export default function Index() {
         ? "header.modeTitleDev"
         : "header.modeTitleFaith";
 
-  // ترتيب حسب الاكتمال ثم الأولوية (Sort by completion then priority)
+  // ترتيب حسب الاكتمال ثم الأولوية
   const sortByCompletionAndPriority = <
     T extends { completed: boolean; priority?: string },
   >(
@@ -84,18 +95,26 @@ export default function Index() {
     if (a.completed !== b.completed) {
       return Number(a.completed) - Number(b.completed);
     }
+
     return priorityRank(b.priority) - priorityRank(a.priority);
   };
 
   const sortedHabits = [...habitsWithCompleted].sort(
     sortByCompletionAndPriority,
   );
+
   const sortedTasks = [...tasks].sort(sortByCompletionAndPriority);
+
+  // يظهر 3 عناصر فقط في الصفحة الرئيسية
+  const previewTasks = sortedTasks.slice(0, 3);
+  const previewHabits = sortedHabits.slice(0, 3);
 
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const detailsSheetRef = useRef<BottomSheetModal>(null);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
   const [pendingDelete, setPendingDelete] = useState<{
     id: string;
     type: "task" | "habit";
@@ -104,13 +123,14 @@ export default function Index() {
   const pendingOpenItem = useAppStore((s) => s.pendingOpenItem);
   const setPendingOpenItem = useAppStore((s) => s.setPendingOpenItem);
 
-  // Open details when a notification indicates a pending item
   React.useEffect(() => {
     if (pendingOpenItem && pendingOpenItem.id) {
       setSelectedId(pendingOpenItem.id);
-      // present details sheet
-      setTimeout(() => detailsSheetRef.current?.present(), 200);
-      // clear pending
+
+      setTimeout(() => {
+        detailsSheetRef.current?.present();
+      }, 200);
+
       setPendingOpenItem(null);
     }
   }, [pendingOpenItem, setPendingOpenItem]);
@@ -207,33 +227,38 @@ export default function Index() {
 
           <View className="flex-1 ml-3">
             <Text
-              className={`font-bold text-base ${item.completed ? "line-through text-gray-500" : isDarkMode ? "text-gray-100" : "text-gray-800"}`}
+              className={`font-bold text-base ${
+                item.completed
+                  ? "line-through text-gray-500"
+                  : isDarkMode
+                    ? "text-gray-100"
+                    : "text-gray-800"
+              }`}
               numberOfLines={2}
             >
               {item.title}
             </Text>
+
             <View className="flex-row justify-between items-center mt-1">
               <Text
-                className={
-                  " text-xs" +
-                  (item.completed
-                    ? " text-gray-400"
+                className={`text-xs ${
+                  item.completed
+                    ? "text-gray-400"
                     : isDarkMode
-                      ? " text-gray-400"
-                      : " text-gray-500")
-                }
+                      ? "text-gray-400"
+                      : "text-gray-500"
+                }`}
               >
                 {dueDateLabel} |{" "}
                 {dueTimeLabel ? (
                   <Text
-                    className={
-                      " text-xs" +
-                      (item.completed
-                        ? " text-gray-400"
+                    className={`text-xs ${
+                      item.completed
+                        ? "text-gray-400"
                         : isDarkMode
-                          ? " text-gray-400"
-                          : " text-gray-500")
-                    }
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                    }`}
                   >
                     {dueTimeLabel}
                   </Text>
@@ -255,7 +280,13 @@ export default function Index() {
             }`}
           >
             <View
-              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? mc.darkInteractiveBorder : mc.headerBorder}`}
+              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${
+                item.completed
+                  ? "bg-green-700 border-green-700"
+                  : isDarkMode
+                    ? mc.darkInteractiveBorder
+                    : mc.headerBorder
+              }`}
             >
               {item.completed && (
                 <Text className="text-white text-xs font-bold text-center">
@@ -334,16 +365,21 @@ export default function Index() {
 
     const formatReminderTime = () => {
       if (!item.reminderTime) return null;
+
       try {
         const d = new Date(item.reminderTime);
+
         if (isNaN(d.getTime())) return null;
+
         const hours = d.getHours();
         const minutes = d.getMinutes();
         const h12 = hours % 12 || 12;
         const mm = String(minutes).padStart(2, "0");
+
         if (language === "ar") {
           return `${h12}:${mm} ${hours >= 12 ? "م" : "ص"}`;
         }
+
         return `${h12}:${mm} ${hours >= 12 ? "PM" : "AM"}`;
       } catch {
         return null;
@@ -401,29 +437,44 @@ export default function Index() {
 
         <View className="mx-3 ml-3 flex-1">
           <Text
-            className={`${isDarkMode ? "font-semibold text-gray-100" : "font-bold text-gray-800"} text-base ${item.completed ? "line-through text-gray-400" : ""}`}
+            className={`text-base ${
+              isDarkMode
+                ? "font-semibold text-gray-100"
+                : "font-bold text-gray-800"
+            } ${item.completed ? "line-through text-gray-400" : ""}`}
             numberOfLines={2}
           >
             {item.title}
           </Text>
+
           {repeatText ? (
             <View
-              className={`flex-row items-center flex-wrap gap-x-1 ${language === "ar" ? "flex-row" : ""}`}
+              className={`flex-row items-center flex-wrap gap-x-1 ${
+                language === "ar" ? "flex-row" : ""
+              }`}
             >
               <Text
-                className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-500"}`}
+                className={`text-[8px] font-black uppercase ${
+                  isDarkMode ? "text-gray-300" : "text-gray-500"
+                }`}
               >
                 {repeatText}
               </Text>
+
               {reminderTimeText && (
                 <>
                   <Text
-                    className={`text-[8px] font-black ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}
+                    className={`text-[8px] font-black ${
+                      isDarkMode ? "text-gray-500" : "text-gray-400"
+                    }`}
                   >
                     {" | "}
                   </Text>
+
                   <Text
-                    className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-500"}`}
+                    className={`text-[8px] font-black uppercase ${
+                      isDarkMode ? "text-gray-300" : "text-gray-500"
+                    }`}
                   >
                     {reminderTimeText}
                   </Text>
@@ -446,7 +497,13 @@ export default function Index() {
           }`}
         >
           <View
-            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? mc.darkInteractiveBorder : mc.headerBorder}`}
+            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${
+              item.completed
+                ? "bg-green-700 border-green-700"
+                : isDarkMode
+                  ? mc.darkInteractiveBorder
+                  : mc.headerBorder
+            }`}
           >
             {item.completed && (
               <Text className="text-white text-xs font-bold text-center">
@@ -482,23 +539,25 @@ export default function Index() {
       <View className="flex-row justify-between items-start">
         <View className="flex-1 pr-3">
           <Text
-            className={`text-sm font-bold uppercase ${language === "ar" ? "text-left" : "text-right"} ${
-              isDarkMode ? mc.darkInteractiveText : mc.textHeader
-            }`}
+            className={`text-sm font-bold uppercase ${
+              language === "ar" ? "text-left" : "text-right"
+            } ${isDarkMode ? mc.darkInteractiveText : mc.textHeader}`}
           >
             {progressLabel}
           </Text>
+
           <Text
-            className={`mt-2 text-3xl font-black ${language === "ar" ? "text-left" : "text-right"} ${
-              isDarkMode ? mc.darkInteractiveText : mc.textHeader
-            }`}
+            className={`mt-2 text-3xl font-black ${
+              language === "ar" ? "text-left" : "text-right"
+            } ${isDarkMode ? mc.darkInteractiveText : mc.textHeader}`}
           >
             {progressPercentage}%
           </Text>
+
           <Text
-            className={`mt-1 text-sm ${language === "ar" ? "text-left" : "text-right"} ${
-              isDarkMode ? mc.darkInteractiveText80 : mc.textHeader80
-            }`}
+            className={`mt-1 text-sm ${
+              language === "ar" ? "text-left" : "text-right"
+            } ${isDarkMode ? mc.darkInteractiveText80 : mc.textHeader80}`}
           >
             {completedItems} / {totalItems || 0} {t("progress.completed")}
           </Text>
@@ -507,9 +566,9 @@ export default function Index() {
 
       <View className="mt-4 h-3 w-full overflow-hidden rounded-full bg-white/20">
         <View
-          className={`h-full rounded-full ${language === "ar" ? "mr-auto" : "ml-auto"} ${
-            isDarkMode ? mc.darkInteractive : mc.headerBg
-          }`}
+          className={`h-full rounded-full ${
+            language === "ar" ? "mr-auto" : "ml-auto"
+          } ${isDarkMode ? mc.darkInteractive : mc.headerBg}`}
           style={{ width: `${progressPercentage}%` }}
         />
       </View>
@@ -525,6 +584,7 @@ export default function Index() {
           <Text className="text-white/70 text-xs font-bold mb-1">
             {t(headerShortKey)}
           </Text>
+
           <Text className="text-white text-2xl font-black">
             {t(headerTitleKey)}
           </Text>
@@ -542,6 +602,11 @@ export default function Index() {
     </View>
   );
 
+
+  const activeTabItems = selectedTab === "tasks" ? previewTasks : previewHabits;
+
+  const { palette } = useModeTheme();
+
   return (
     <View
       className={`flex-1 ${isDarkMode ? "bg-screen-dark" : "bg-screen-light"}`}
@@ -552,77 +617,135 @@ export default function Index() {
         <ProgressDashboard />
 
         <View
-          className={
-            " justify-between items-center mt-3 mb-3 px-1" +
-            (language === "ar" ? " flex-row" : " flex-row-reverse")
-          }
+          className={`flex-row p-1.5 rounded-2xl mb-4 ${
+            isDarkMode ? mc.darkAccentSoft : "bg-gray-200"
+          }`}
         >
-          <Text
-            className={`text-lg font-bold ${
-              isDarkMode ? mc.darkInteractiveText : mc.textHeader
+          <TouchableOpacity
+            onPress={() => setSelectedTab("tasks")}
+            className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${
+              language === "ar" ? "flex-row" : "flex-row-reverse"
+            } space-x-2 ${
+              selectedTab === "tasks"
+                ? isDarkMode
+                  ? mc.darkInteractive
+                  : mc.headerBg
+                : ""
             }`}
           >
-            {t("common.Tasks")}
-          </Text>
-          <Pressable
-            onPress={() => router.push("./view-all")}
-            className="px-3 py-1 rounded-lg"
+            <Text
+              className={`font-bold ${
+                selectedTab === "tasks"
+                  ? isDarkMode
+                    ? mc.textHeader
+                    : "text-white"
+                  : isDarkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+              }`}
+            >
+              {t("common.Tasks")}
+            </Text>
+
+            {selectedTab === "tasks" && (
+              <CheckCircle2
+                size={20}
+                color={isDarkMode ? palette.onInteractive : "#FFFFFF"}
+              />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setSelectedTab("habits")}
+            className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${
+              language === "ar" ? "flex-row" : "flex-row-reverse"
+            } space-x-2 ${
+              selectedTab === "habits"
+                ? isDarkMode
+                  ? mc.darkInteractive
+                  : mc.headerBg
+                : ""
+            }`}
           >
             <Text
-              className={`text-sm font-bold ${
+              className={`font-bold ${
+                selectedTab === "habits"
+                  ? isDarkMode
+                    ? mc.textHeader
+                    : "text-white"
+                  : isDarkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+              }`}
+            >
+              {t("common.Habits")}
+            </Text>
+
+            {selectedTab === "habits" && (
+              <RefreshCw
+                size={20}
+                color={isDarkMode ? palette.onInteractive : "#FFFFFF"}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View className="mb-4">
+          {/* قائمة العناصر بارتفاع مناسب */}
+          <View className="h-[225px]">
+            {activeTabItems.length === 0 ? (
+              <View className="flex-1 items-center justify-center">
+                <Text
+                  className={`text-base ${
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  {selectedTab === "tasks"
+                    ? t("ViewAll.No tasks")
+                    : t("ViewAll.No habits")}
+                </Text>
+              </View>
+            ) : selectedTab === "tasks" ? (
+              <FlashList
+                data={activeTabItems as Task[]}
+                renderItem={renderTasks}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+              />
+            ) : (
+              <FlashList
+                data={activeTabItems}
+                renderItem={renderHabits as any}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
+          </View>
+
+          {/* زر عرض الكل مطابق تماماً لنموذج التصميم */}
+          <TouchableOpacity
+          activeOpacity={0.7}
+            onPress={() => router.push("./view-all")}
+            className={`w-full py-3.5 mt-3 rounded-full items-center justify-center border ${
+              isDarkMode
+                ? `${mc.darkCard} border-gray-700/50`
+                : "bg-white border-gray-200"
+            }`}
+            style={{
+              elevation: 2,
+              shadowColor: "#000",
+              shadowOpacity: 0.05,
+              shadowRadius: 5,
+            }}
+          >
+            <Text
+              className={`font-bold text-base ${
                 isDarkMode ? mc.darkInteractiveText : mc.textHeader
               }`}
             >
               {t("common.viewAll")}
             </Text>
-            {/* View All */}
-          </Pressable>
-        </View>
-
-        <View className="h-64">
-          <FlashList
-            data={sortedTasks.slice(0, 2)}
-            renderItem={renderTasks}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-          />
-        </View>
-
-        <View
-          className={
-            "justify-between items-center px-1 mt-3 mb-3" +
-            (language === "ar" ? " flex-row" : " flex-row-reverse")
-          }
-        >
-          <Text
-            className={`text-lg font-bold ${
-              isDarkMode ? mc.darkInteractiveText : mc.textHeader
-            }`}
-          >
-            {t("common.Habits")}
-          </Text>
-          {/* My Habits */}
-          <Pressable
-            onPress={() => router.push("./view-all")}
-            className="px-3 py-1 rounded-lg"
-          >
-            <Text
-              className={`text-sm font-bold ${
-                isDarkMode ? mc.darkInteractiveText : mc.textHeader
-              }`}
-            >
-              {t("common.viewAll")}
-            </Text>
-          </Pressable>
-        </View>
-
-        <View className="h-72">
-          <FlashList
-            data={sortedHabits.slice(0, 2)}
-            renderItem={renderHabits}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-          />
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity
@@ -643,7 +766,9 @@ export default function Index() {
       </View>
 
       <AddTaskSheet ref={bottomSheetRef} mode={mode} />
+
       <DetailsSheet ref={detailsSheetRef} itemId={selectedId} />
+
       <ConfirmationModal
         isVisible={deleteModalVisible}
         title={t(
@@ -661,6 +786,7 @@ export default function Index() {
             deleteSingleItem(pendingDelete.id, pendingDelete.type);
             setPendingDelete(null);
           }
+
           setDeleteModalVisible(false);
         }}
         onCancel={() => {

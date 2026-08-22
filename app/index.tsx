@@ -602,7 +602,6 @@ export default function Index() {
     </View>
   );
 
-
   const activeTabItems = selectedTab === "tasks" ? previewTasks : previewHabits;
 
   const { palette } = useModeTheme();
@@ -724,19 +723,11 @@ export default function Index() {
 
           {/* زر عرض الكل مطابق تماماً لنموذج التصميم */}
           <TouchableOpacity
-          activeOpacity={0.7}
+            activeOpacity={0.7}
             onPress={() => router.push("./view-all")}
-            className={`w-full py-3.5 mt-3 rounded-full items-center justify-center border ${
-              isDarkMode
-                ? `${mc.darkCard} border-gray-700/50`
-                : "bg-white border-gray-200"
+            className={`w-full py-3.5 mt-3 rounded-full items-center justify-center border-2 bg-transparent ${
+              isDarkMode ? mc.darkInteractiveBorder : mc.headerBorder
             }`}
-            style={{
-              elevation: 2,
-              shadowColor: "#000",
-              shadowOpacity: 0.05,
-              shadowRadius: 5,
-            }}
           >
             <Text
               className={`font-bold text-base ${
@@ -747,23 +738,22 @@ export default function Index() {
             </Text>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity
-          onPress={openAddTaskSheet}
-          className={`absolute bottom-6 right-6 min-w-16 min-h-16 px-4 py-3 rounded-full items-center justify-center ${
-            isDarkMode ? mc.darkInteractive : mc.headerBg
-          }`}
-          style={{ elevation: 5 }}
-        >
-          <Text
-            className={`text-3xl font-bold ${
-              isDarkMode ? mc.textHeader : "text-white"
-            }`}
-          >
-            +
-          </Text>
-        </TouchableOpacity>
       </View>
+      <TouchableOpacity
+        onPress={openAddTaskSheet}
+        className={`absolute bottom-6 right-6 min-w-16 min-h-16 px-4 py-3 rounded-full items-center justify-center ${
+          isDarkMode ? mc.darkInteractive : mc.headerBg
+        }`}
+        style={{ elevation: 5 }}
+      >
+        <Text
+          className={`text-3xl font-bold ${
+            isDarkMode ? mc.textHeader : "text-white"
+          }`}
+        >
+          +
+        </Text>
+      </TouchableOpacity>
 
       <AddTaskSheet ref={bottomSheetRef} mode={mode} />
 

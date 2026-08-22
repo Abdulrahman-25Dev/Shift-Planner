@@ -100,8 +100,8 @@
   },
   "common": {
     "viewAll": "View All",
-    "Tasks": "My Tasks",
-    "Habits": "My Habits",
+    "Tasks": "Tasks",
+    "Habits": "Habits",
     "repeat":"Repeat selection",
     "ok": "OK",
     "cancel": "Cancel"

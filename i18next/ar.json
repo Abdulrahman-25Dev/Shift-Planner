@@ -59,7 +59,16 @@
   "home": {
     "todayTasks": "مهام اليوم",
     "myHabits": "عاداتي",
-    "viewAll": "عرض الكل"
+    "viewAll": "عرض الكل",
+    "greetingMorning": "صباح الخير",
+    "greetingAfternoon": "طاب يومك",
+    "greetingEvening": "مساء الخير",
+    "guestName": "صديقي",
+    "addTask": "إضافة مهمة",
+    "motivation": "خطوة صغيرة في كل مرة.",
+    "modeCoding": "البرمجة",
+    "modeStudy": "الدراسة",
+    "modeFaith": "العبادات"
   },
   "progress": {
     "completeStudy": "هدفك اليومي مكتمل!",

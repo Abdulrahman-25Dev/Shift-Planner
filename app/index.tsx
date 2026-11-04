@@ -1,93 +1,93 @@
-import React, { useRef, useState } from "react";
-import { View, TouchableOpacity, Pressable } from "react-native";
-import Text from "@/src/components/ScaledText";
-import { useAppStore, Task, Priority } from "../store/useAppStore";
-import { useTranslation } from "react-i18next";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Settings,
-  Trash2,
-  Flame,
-  CheckCircle2,
-  RefreshCw,
-} from "@/src/components/icons";
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Svg, {
+  Defs,
+  RadialGradient,
+  Rect,
+  Stop,
+} from "react-native-svg";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Text from "@/src/components/ScaledText";
+import {
+  Check,
+  CheckCircle2,
+  Flame,
+  Settings,
+  Trash2,
+} from "@/src/components/icons";
 import { AddTaskSheet } from "../components/AddTaskSheet";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { DetailsSheet } from "./tasks/taskDetails";
 import ConfirmationModal from "../components/ConfirmationModal";
-import ModeSwitcherButton from "../components/ModeSwitcherButton";
-import { useModeClasses, useModeTheme } from "../src/theme";
+import { DetailsSheet } from "./tasks/taskDetails";
+import { useAppStore, type Habit, type Mode, type Priority, type Task } from "../store/useAppStore";
+import { useModeTheme } from "../src/theme";
+
+type HabitWithCompletion = Habit & { completed: boolean };
+type ItemTab = "tasks" | "habits";
+type DeleteTarget = { id: string; type: "task" | "habit" };
+
+const MODES: Mode[] = ["coding", "study", "faith"];
+const SCREEN = "#080B12";
+const MUTED = "#98A2B3";
 
 export default function Index() {
   const {
     mode,
+    setMode,
     tasks,
     habits,
-    isDarkMode,
+    user,
     toggleTaskComplete,
     completeHabit,
     deleteSingleItem,
     language,
   } = useAppStore();
-
-  const mc = useModeClasses();
-  const [selectedTab, setSelectedTab] = useState<"tasks" | "habits">("tasks");
+  const { palette } = useModeTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
-  const priorityRank = (priority: string | undefined) => {
+  const [selectedTab, setSelectedTab] = useState<ItemTab>("tasks");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<DeleteTarget | null>(null);
+
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const detailsSheetRef = useRef<BottomSheetModal>(null);
+
+  const modeOrder = MODES;
+  const rowDirection = language === "ar" ? "row-reverse" : "row";
+  const headerDirection = language === "ar" ? "row" : "row-reverse";
+
+  const pendingOpenItem = useAppStore((state) => state.pendingOpenItem);
+  const setPendingOpenItem = useAppStore((state) => state.setPendingOpenItem);
+
+  useEffect(() => {
+    if (!pendingOpenItem?.id) return;
+
+    setSelectedId(pendingOpenItem.id);
+    const timeout = setTimeout(() => detailsSheetRef.current?.present(), 200);
+    setPendingOpenItem(null);
+
+    return () => clearTimeout(timeout);
+  }, [pendingOpenItem, setPendingOpenItem]);
+
+  const priorityRank = (priority: Priority | undefined) => {
     if (priority === "high") return 3;
     if (priority === "medium") return 2;
     if (priority === "low") return 1;
     return 0;
   };
 
-  const today = new Date().toDateString();
-
-  const habitsWithCompleted = habits.map((habit) => ({
-    ...habit,
-    completed: habit.lastCompletedDate
-      ? new Date(habit.lastCompletedDate).toDateString() === today
-      : false,
-  }));
-
-  // حسابات التقدم للداشبورد (Progress Dashboard calculations)
-  const totalItems = tasks.length;
-  const completedTasksCount = tasks.filter((task) => task.completed).length;
-  const completedItems = completedTasksCount;
-  const progressRatio = totalItems === 0 ? 0 : completedItems / totalItems;
-  const progressPercentage = Math.round(progressRatio * 100);
-
-  const progressLabel =
-    mode === "study"
-      ? progressPercentage === 100
-        ? t("progress.completeStudy")
-        : t("progress.daily")
-      : mode === "coding"
-        ? progressPercentage === 100
-          ? t("progress.completeDev")
-          : t("progress.devTitle")
-        : progressPercentage === 100
-          ? t("progress.completeFaith")
-          : t("progress.faithTitle");
-
-  const headerShortKey =
-    mode === "study"
-      ? "header.modeShortStudy"
-      : mode === "coding"
-        ? "header.modeShortDev"
-        : "header.modeShortFaith";
-
-  const headerTitleKey =
-    mode === "study"
-      ? "header.modeTitleStudy"
-      : mode === "coding"
-        ? "header.modeTitleDev"
-        : "header.modeTitleFaith";
-
-  // ترتيب حسب الاكتمال ثم الأولوية
   const sortByCompletionAndPriority = <
-    T extends { completed: boolean; priority?: string },
+    T extends { completed: boolean; priority?: Priority },
   >(
     a: T,
     b: T,
@@ -99,328 +99,206 @@ export default function Index() {
     return priorityRank(b.priority) - priorityRank(a.priority);
   };
 
+  const today = new Date().toDateString();
+  const habitsWithCompleted: HabitWithCompletion[] = habits.map((habit) => ({
+    ...habit,
+    completed: habit.lastCompletedDate
+      ? new Date(habit.lastCompletedDate).toDateString() === today
+      : false,
+  }));
+  const sortedTasks = [...tasks].sort(sortByCompletionAndPriority);
   const sortedHabits = [...habitsWithCompleted].sort(
     sortByCompletionAndPriority,
   );
-
-  const sortedTasks = [...tasks].sort(sortByCompletionAndPriority);
-
-  // يظهر 3 عناصر فقط في الصفحة الرئيسية
   const previewTasks = sortedTasks.slice(0, 3);
   const previewHabits = sortedHabits.slice(0, 3);
 
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const detailsSheetRef = useRef<BottomSheetModal>(null);
+  const completedTasksCount = tasks.filter((task) => task.completed).length;
+  const progressPercentage =
+    tasks.length === 0
+      ? 0
+      : Math.round((completedTasksCount / tasks.length) * 100);
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const hour = new Date().getHours();
+  const greetingKey =
+    hour < 12
+      ? "home.greetingMorning"
+      : hour < 18
+        ? "home.greetingAfternoon"
+        : "home.greetingEvening";
+  const firstName =
+    user?.fullName?.trim().split(/\s+/)[0] ||
+    user?.username ||
+    t("home.guestName");
 
-  const [pendingDelete, setPendingDelete] = useState<{
-    id: string;
-    type: "task" | "habit";
-  } | null>(null);
-
-  const pendingOpenItem = useAppStore((s) => s.pendingOpenItem);
-  const setPendingOpenItem = useAppStore((s) => s.setPendingOpenItem);
-
-  React.useEffect(() => {
-    if (pendingOpenItem && pendingOpenItem.id) {
-      setSelectedId(pendingOpenItem.id);
-
-      setTimeout(() => {
-        detailsSheetRef.current?.present();
-      }, 200);
-
-      setPendingOpenItem(null);
-    }
-  }, [pendingOpenItem, setPendingOpenItem]);
-
-  const openAddTaskSheet = () => {
-    bottomSheetRef.current?.snapToIndex(0);
-  };
-
+  const openAddTaskSheet = () => bottomSheetRef.current?.snapToIndex(0);
   const handleOpenDetails = (id: string) => {
     setSelectedId(id);
     detailsSheetRef.current?.present();
   };
+  const openDeleteConfirmation = (id: string, type: "task" | "habit") => {
+    setPendingDelete({ id, type });
+    setDeleteModalVisible(true);
+  };
 
-  const renderTasks = ({ item }: { item: Task }) => {
+  const renderTask = ({ item }: { item: Task }) => {
     const dateSource = item.dueDate
       ? new Date(item.dueDate)
       : item.reminderTime
         ? new Date(item.reminderTime)
         : null;
-
-    const dueDateLabel = dateSource
-      ? dateSource.toLocaleDateString(language === "ar" ? "ar-SA" : "en-US", {
-          day: "numeric",
-          month: "short",
-        })
+    const validDate =
+      dateSource && !Number.isNaN(dateSource.getTime()) ? dateSource : null;
+    const locale = language === "ar" ? "ar-SA" : "en-US";
+    const dueDateLabel = validDate
+      ? validDate.toLocaleDateString(locale, { day: "numeric", month: "short" })
       : t("task.noDate");
-
-    const dueTimeLabel = dateSource
-      ? dateSource.toLocaleTimeString(language === "ar" ? "ar-SA" : "en-US", {
+    const dueTimeLabel = validDate
+      ? validDate.toLocaleTimeString(locale, {
           hour: "2-digit",
           minute: "2-digit",
           hour12: true,
         })
       : "";
-
-    return (
-      <Pressable onPress={() => handleOpenDetails(item.id)}>
-        <View
-          className={`flex-row items-center justify-between mb-3 p-3 rounded-[30px] border ${
-            item.completed
-              ? isDarkMode
-                ? "bg-gray-700 border-gray-600"
-                : "bg-gray-100 border-gray-200"
-              : isDarkMode
-                ? `${mc.darkCard} border-gray-600/50`
-                : `bg-white ${mc.accentBorder}`
+    const completionButton = (
+      <Pressable
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: item.completed }}
+        accessibilityLabel={item.title}
+        onPress={() => toggleTaskComplete(item.id)}
+        hitSlop={8}
+        className="h-9 w-9 items-center justify-center rounded-full border-2"
+        style={{
+          borderColor: item.completed
+            ? palette.accent
+            : "rgba(255,255,255,0.3)",
+          backgroundColor: item.completed ? palette.accent : "transparent",
+        }}
+      >
+        {item.completed && <Check size={18} color={palette.header} />}
+      </Pressable>
+    );
+    const taskDetails = (
+      <Pressable
+        onPress={() => handleOpenDetails(item.id)}
+        className="min-h-12 flex-1 justify-center"
+      >
+        <Text
+          numberOfLines={1}
+          className={`w-full text-[15px] font-bold ${
+            item.completed ? "text-white/40 line-through" : "text-white"
           }`}
           style={{
-            elevation: 2,
-            shadowColor: "#000",
-            shadowOpacity: 0.05,
-            shadowRadius: 10,
+            textAlign: language === "ar" ? "right" : "left",
+            writingDirection: language === "ar" ? "rtl" : "ltr",
           }}
         >
-          <View
-            className={`w-10 h-10 rounded-full items-center justify-center ${
-              item.completed
-                ? isDarkMode
-                  ? "bg-gray-600"
-                  : "bg-gray-200"
-                : item.priority === "high"
-                  ? "bg-red-500/15"
-                  : item.priority === "medium"
-                    ? "bg-amber-500/15"
-                    : item.priority === "low"
-                      ? "bg-emerald-500/15"
-                      : mode === "coding"
-                        ? isDarkMode
-                          ? "bg-gray-600/25"
-                          : "bg-gray-200"
-                        : isDarkMode
-                          ? mc.darkAccentSoft
-                          : mc.accentBg40
-            }`}
-          >
-            <View
-              className={`w-4 h-4 rounded-full ${
-                item.completed
-                  ? "bg-gray-400"
-                  : item.priority === "high"
-                    ? "bg-red-500"
-                    : item.priority === "medium"
-                      ? "bg-amber-500"
-                      : item.priority === "low"
-                        ? "bg-emerald-500"
-                        : mode === "coding"
-                          ? "bg-gray-400"
-                          : isDarkMode
-                            ? mc.darkInteractive
-                            : mc.headerBg
-              }`}
-            />
-          </View>
-
-          <View className="flex-1 ml-3">
-            <Text
-              className={`font-bold text-base ${
-                item.completed
-                  ? "line-through text-gray-500"
-                  : isDarkMode
-                    ? "text-gray-100"
-                    : "text-gray-800"
-              }`}
-              numberOfLines={2}
-            >
-              {item.title}
-            </Text>
-
-            <View className="flex-row justify-between items-center mt-1">
-              <Text
-                className={`text-xs ${
-                  item.completed
-                    ? "text-gray-400"
-                    : isDarkMode
-                      ? "text-gray-400"
-                      : "text-gray-500"
-                }`}
-              >
-                {dueDateLabel} |{" "}
-                {dueTimeLabel ? (
-                  <Text
-                    className={`text-xs ${
-                      item.completed
-                        ? "text-gray-400"
-                        : isDarkMode
-                          ? "text-gray-400"
-                          : "text-gray-500"
-                    }`}
-                  >
-                    {dueTimeLabel}
-                  </Text>
-                ) : null}
-              </Text>
-            </View>
-          </View>
-
-          <Pressable
-            onPress={() => toggleTaskComplete(item.id)}
-            className={`flex-row items-center p-1 mb-2 rounded-[24px] ${
-              item.completed
-                ? isDarkMode
-                  ? "border-gray-600"
-                  : "border-gray-200"
-                : isDarkMode
-                  ? "border-gray-600/50"
-                  : mc.accentBorder
-            }`}
-          >
-            <View
-              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${
-                item.completed
-                  ? "bg-green-700 border-green-700"
-                  : isDarkMode
-                    ? mc.darkInteractiveBorder
-                    : mc.headerBorder
-              }`}
-            >
-              {item.completed && (
-                <Text className="text-white text-xs font-bold text-center">
-                  ✓
-                </Text>
-              )}
-            </View>
-          </Pressable>
-
-          <TouchableOpacity
-            onPress={() => {
-              setPendingDelete({ id: item.id, type: "task" });
-              setDeleteModalVisible(true);
-            }}
-            className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
-          >
-            <Trash2 color="white" size={20} />
-          </TouchableOpacity>
-        </View>
+          {item.title}
+        </Text>
+        <Text
+          className="mt-1 w-full text-xs text-white/40"
+          style={{
+            textAlign: language === "ar" ? "right" : "left",
+            writingDirection: language === "ar" ? "rtl" : "ltr",
+          }}
+        >
+          {dueDateLabel}
+          {dueTimeLabel ? ` · ${dueTimeLabel}` : ""}
+        </Text>
       </Pressable>
+    );
+    const deleteButton = (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${t("settings.delete")} ${item.title}`}
+        onPress={() => openDeleteConfirmation(item.id, "task")}
+        hitSlop={10}
+        className="h-10 w-10 items-center justify-center"
+      >
+        <Trash2 size={20} color="rgba(248,113,113,0.82)" />
+      </Pressable>
+    );
+
+    return (
+      <View
+        className="items-center gap-4 border-b border-white/[0.08] py-4"
+        style={{
+          flexDirection: "row",
+          direction: language === "ar" ? "ltr" : undefined,
+        }}
+      >
+        {language === "ar" ? (
+          <>
+            <View className="flex-row items-center gap-3">
+              {deleteButton}
+              {completionButton}
+            </View>
+            {taskDetails}
+          </>
+        ) : (
+          <>
+            {completionButton}
+            {taskDetails}
+            {deleteButton}
+          </>
+        )}
+      </View>
     );
   };
 
-  const renderHabits = ({
-    item,
-  }: {
-    item: {
-      completed: boolean;
-      id: string;
-      title: string;
-      streak: number;
-      priority?: Priority;
-      repeatType?: "daily" | "weekly" | "custom";
-      repeatDays?: string[];
-      reminderTime?: string;
-    };
-  }) => {
-    const getRepeatText = () => {
-      const daysMap: Record<string, string> =
-        language === "ar"
-          ? {
-              sun: "الأحد",
-              mon: "الإثنين",
-              tue: "الثلاثاء",
-              wed: "الأربعاء",
-              thu: "الخميس",
-              fri: "الجمعة",
-              sat: "السبت",
-            }
-          : {
-              sun: "Sunday",
-              mon: "Monday",
-              tue: "Tuesday",
-              wed: "Wednesday",
-              thu: "Thursday",
-              fri: "Friday",
-              sat: "Saturday",
-            };
+  const renderHabit = ({ item }: { item: HabitWithCompletion }) => {
+    const daysMap: Record<string, string> =
+      language === "ar"
+        ? {
+            sun: "الأحد",
+            mon: "الإثنين",
+            tue: "الثلاثاء",
+            wed: "الأربعاء",
+            thu: "الخميس",
+            fri: "الجمعة",
+            sat: "السبت",
+          }
+        : {
+            sun: "Sunday",
+            mon: "Monday",
+            tue: "Tuesday",
+            wed: "Wednesday",
+            thu: "Thursday",
+            fri: "Friday",
+            sat: "Saturday",
+          };
 
-      if (!item.repeatType) return "";
+    let repeatText = "";
+    if (item.repeatType === "daily") {
+      repeatText = language === "ar" ? "يومياً" : "Daily";
+    } else if (item.repeatType === "weekly" && item.repeatDays?.length) {
+      repeatText = item.repeatDays.map((day) => daysMap[day] || day).join(", ");
+    } else if (item.repeatType === "custom") {
+      repeatText = language === "ar" ? "مخصص" : "Custom";
+    }
 
-      if (item.repeatType === "daily") {
-        return language === "ar" ? "يومياً" : "Daily";
+    let reminderTimeText: string | null = null;
+    if (item.reminderTime) {
+      const date = new Date(item.reminderTime);
+      if (!Number.isNaN(date.getTime())) {
+        const hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        const hour12 = hours % 12 || 12;
+        reminderTimeText =
+          language === "ar"
+            ? `${hour12}:${minutes} ${hours >= 12 ? "م" : "ص"}`
+            : `${hour12}:${minutes} ${hours >= 12 ? "PM" : "AM"}`;
       }
-
-      if (item.repeatType === "weekly" && item.repeatDays?.length) {
-        return item.repeatDays.map((day) => daysMap[day] || day).join(", ");
-      }
-
-      if (item.repeatType === "custom") {
-        return language === "ar" ? "مخصص" : "Custom";
-      }
-
-      return "";
-    };
-
-    const formatReminderTime = () => {
-      if (!item.reminderTime) return null;
-
-      try {
-        const d = new Date(item.reminderTime);
-
-        if (isNaN(d.getTime())) return null;
-
-        const hours = d.getHours();
-        const minutes = d.getMinutes();
-        const h12 = hours % 12 || 12;
-        const mm = String(minutes).padStart(2, "0");
-
-        if (language === "ar") {
-          return `${h12}:${mm} ${hours >= 12 ? "م" : "ص"}`;
-        }
-
-        return `${h12}:${mm} ${hours >= 12 ? "PM" : "AM"}`;
-      } catch {
-        return null;
-      }
-    };
-
-    const repeatText = getRepeatText();
-    const reminderTimeText = formatReminderTime();
+    }
 
     return (
-      <Pressable
-        onPressIn={() => handleOpenDetails(item.id)}
-        className={`flex-row justify-between items-center px-4 py-2 mb-3 rounded-[24px] border ${
-          item.completed
-            ? isDarkMode
-              ? "bg-gray-700 border-gray-600"
-              : "bg-gray-100 border-gray-200"
-            : isDarkMode
-              ? `${mc.darkCard} border-gray-600/50`
-              : `bg-white ${mc.accentBorder}`
-        }`}
-        style={{
-          elevation: 2,
-          shadowColor: "#000",
-          shadowOpacity: 0.05,
-          shadowRadius: 10,
-        }}
+      <View
+        className="items-center gap-4 border-b border-white/[0.08] py-4"
+        style={{ flexDirection: rowDirection }}
       >
-        <View
-          className={`w-10 h-10 rounded-full items-center justify-center ${
-            item.completed
-              ? isDarkMode
-                ? "bg-gray-600"
-                : "bg-gray-200"
-              : isDarkMode
-                ? mc.darkAccentSoft
-                : mc.accentBg40
-          }`}
-        >
+        <View className="h-10 w-10 items-center justify-center rounded-full bg-white/[0.06]">
           <Flame
-            size={20}
+            size={18}
             color={
               item.priority === "high"
                 ? "#EF4444"
@@ -428,335 +306,318 @@ export default function Index() {
                   ? "#F97316"
                   : item.priority === "low"
                     ? "#10B981"
-                    : isDarkMode
-                      ? "#FFFFFF"
-                      : "#000000"
+                    : palette.accent
             }
           />
         </View>
 
-        <View className="mx-3 ml-3 flex-1">
+        <Pressable
+          onPress={() => handleOpenDetails(item.id)}
+          className="min-h-12 flex-1 justify-center"
+          style={{ alignItems: language === "ar" ? "flex-end" : "flex-start" }}
+        >
           <Text
-            className={`text-base ${
-              isDarkMode
-                ? "font-semibold text-gray-100"
-                : "font-bold text-gray-800"
-            } ${item.completed ? "line-through text-gray-400" : ""}`}
-            numberOfLines={2}
+            numberOfLines={1}
+            className={`text-[15px] font-bold ${
+              item.completed ? "text-white/40 line-through" : "text-white"
+            }`}
+            style={{ textAlign: language === "ar" ? "right" : "left" }}
           >
             {item.title}
           </Text>
-
-          {repeatText ? (
-            <View
-              className={`flex-row items-center flex-wrap gap-x-1 ${
-                language === "ar" ? "flex-row" : ""
-              }`}
+          {(repeatText || reminderTimeText) && (
+            <Text
+              className="mt-1 text-xs text-white/40"
+              style={{ textAlign: language === "ar" ? "right" : "left" }}
             >
-              <Text
-                className={`text-[8px] font-black uppercase ${
-                  isDarkMode ? "text-gray-300" : "text-gray-500"
-                }`}
-              >
-                {repeatText}
-              </Text>
-
-              {reminderTimeText && (
-                <>
-                  <Text
-                    className={`text-[8px] font-black ${
-                      isDarkMode ? "text-gray-500" : "text-gray-400"
-                    }`}
-                  >
-                    {" | "}
-                  </Text>
-
-                  <Text
-                    className={`text-[8px] font-black uppercase ${
-                      isDarkMode ? "text-gray-300" : "text-gray-500"
-                    }`}
-                  >
-                    {reminderTimeText}
-                  </Text>
-                </>
-              )}
-            </View>
-          ) : null}
-        </View>
+              {repeatText}
+              {repeatText && reminderTimeText ? " · " : ""}
+              {reminderTimeText}
+            </Text>
+          )}
+        </Pressable>
 
         <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: item.completed }}
+          accessibilityLabel={item.title}
           onPress={() => completeHabit(item.id)}
-          className={`flex-row items-center ${
-            item.completed
-              ? isDarkMode
-                ? "border-gray-600"
-                : "border-gray-200"
-              : isDarkMode
-                ? "border-gray-600/50"
-                : mc.accentBorder
-          }`}
+          hitSlop={8}
+          className="h-6 w-6 items-center justify-center rounded-full border-2"
+          style={{
+            borderColor: item.completed ? palette.accent : "rgba(255,255,255,0.3)",
+            backgroundColor: item.completed ? palette.accent : "transparent",
+          }}
         >
-          <View
-            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${
-              item.completed
-                ? "bg-green-700 border-green-700"
-                : isDarkMode
-                  ? mc.darkInteractiveBorder
-                  : mc.headerBorder
-            }`}
-          >
-            {item.completed && (
-              <Text className="text-white text-xs font-bold text-center">
-                ✓
-              </Text>
-            )}
-          </View>
+          {item.completed && <Check size={14} color={palette.header} />}
         </Pressable>
 
         <Pressable
-          onPress={() => {
-            setPendingDelete({ id: item.id, type: "habit" });
-            setDeleteModalVisible(true);
-          }}
-          className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
+          accessibilityRole="button"
+          accessibilityLabel={`${t("settings.delete")} ${item.title}`}
+          onPress={() => openDeleteConfirmation(item.id, "habit")}
+          hitSlop={10}
+          className="h-8 w-8 items-center justify-center"
         >
-          <Trash2 color="white" size={20} />
+          <Trash2 size={15} color="rgba(248,113,113,0.72)" />
         </Pressable>
-      </Pressable>
+      </View>
     );
   };
 
-  // داشبورد التقدم بدلاً من شريط الأيام (Progress Dashboard replacing Days Row)
-  const ProgressDashboard = () => (
-    <View
-      className={`my-3 rounded-3xl px-4 py-4 border ${
-        isDarkMode
-          ? `${mc.darkCard} ${mc.darkAccentBorder}`
-          : `${mc.accentSoft} ${mc.accentBorder}`
-      }`}
-      style={{ minHeight: 128 }}
-    >
-      <View className="flex-row justify-between items-start">
-        <View className="flex-1 pr-3">
-          <Text
-            className={`text-sm font-bold uppercase ${
-              language === "ar" ? "text-left" : "text-right"
-            } ${isDarkMode ? mc.darkInteractiveText : mc.textHeader}`}
-          >
-            {progressLabel}
-          </Text>
-
-          <Text
-            className={`mt-2 text-3xl font-black ${
-              language === "ar" ? "text-left" : "text-right"
-            } ${isDarkMode ? mc.darkInteractiveText : mc.textHeader}`}
-          >
-            {progressPercentage}%
-          </Text>
-
-          <Text
-            className={`mt-1 text-sm ${
-              language === "ar" ? "text-left" : "text-right"
-            } ${isDarkMode ? mc.darkInteractiveText80 : mc.textHeader80}`}
-          >
-            {completedItems} / {totalItems || 0} {t("progress.completed")}
-          </Text>
-        </View>
-      </View>
-
-      <View className="mt-4 h-3 w-full overflow-hidden rounded-full bg-white/20">
-        <View
-          className={`h-full rounded-full ${
-            language === "ar" ? "mr-auto" : "ml-auto"
-          } ${isDarkMode ? mc.darkInteractive : mc.headerBg}`}
-          style={{ width: `${progressPercentage}%` }}
-        />
-      </View>
-    </View>
-  );
-
-  const HeaderSection = () => (
-    <View className={`pt-12 pb-5 px-6 shadow-2xl ${mc.headerBg}`}>
-      <View className="flex-row justify-between items-center">
-        <ModeSwitcherButton />
-
-        <View className="flex-1 items-center">
-          <Text className="text-white/70 text-xs font-bold mb-1">
-            {t(headerShortKey)}
-          </Text>
-
-          <Text className="text-white text-2xl font-black">
-            {t(headerTitleKey)}
-          </Text>
-        </View>
-
-        <View className="flex-row items-center gap-2">
-          <Pressable
-            onPress={() => router.push("./settings")}
-            className="bg-white/20 p-3 rounded-2xl"
-          >
-            <Settings color="white" size={26} />
-          </Pressable>
-        </View>
-      </View>
-    </View>
-  );
-
-  const activeTabItems = selectedTab === "tasks" ? previewTasks : previewHabits;
-
-  const { palette } = useModeTheme();
+  const activeItemsCount =
+    selectedTab === "tasks" ? previewTasks.length : previewHabits.length;
 
   return (
-    <View
-      className={`flex-1 ${isDarkMode ? "bg-screen-dark" : "bg-screen-light"}`}
-    >
-      <HeaderSection />
+    <View className="flex-1" style={{ backgroundColor: SCREEN }}>
+      <Svg
+        pointerEvents="none"
+        width="100%"
+        height={320}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      >
+        <Defs>
+          <RadialGradient id="modeGlow" cx="50%" cy="0%" rx="80%" ry="100%">
+            <Stop offset="0%" stopColor={palette.accent} stopOpacity="0.18" />
+            <Stop offset="100%" stopColor={palette.accent} stopOpacity="0" />
+          </RadialGradient>
+        </Defs>
+        <Rect width="100%" height={320} fill="url(#modeGlow)" />
+      </Svg>
 
-      <View className="flex-1 px-4 mt-2">
-        <ProgressDashboard />
-
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: 20,
+          flexGrow: 1,
+        }}
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled
+      >
+      <View
+        className="items-center justify-between pt-14"
+        style={{ flexDirection: headerDirection }}
+      >
         <View
-          className={`flex-row p-1.5 rounded-2xl mb-4 ${
-            isDarkMode ? mc.darkAccentSoft : "bg-gray-200"
-          }`}
+          style={{
+            alignItems: language === "ar" ? "flex-start" : "flex-end",
+          }}
         >
-          <TouchableOpacity
-            onPress={() => setSelectedTab("tasks")}
-            className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${
-              language === "ar" ? "flex-row" : "flex-row-reverse"
-            } space-x-2 ${
-              selectedTab === "tasks"
-                ? isDarkMode
-                  ? mc.darkInteractive
-                  : mc.headerBg
-                : ""
-            }`}
+          <Text
+            className="text-sm"
+            style={{
+              color: MUTED,
+              textAlign: language === "ar" ? "left" : "right",
+              writingDirection: language === "ar" ? "rtl" : "ltr",
+            }}
           >
-            <Text
-              className={`font-bold ${
-                selectedTab === "tasks"
-                  ? isDarkMode
-                    ? mc.textHeader
-                    : "text-white"
-                  : isDarkMode
-                    ? "text-gray-400"
-                    : "text-gray-500"
-              }`}
-            >
-              {t("common.Tasks")}
-            </Text>
-
-            {selectedTab === "tasks" && (
-              <CheckCircle2
-                size={20}
-                color={isDarkMode ? palette.onInteractive : "#FFFFFF"}
-              />
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setSelectedTab("habits")}
-            className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${
-              language === "ar" ? "flex-row" : "flex-row-reverse"
-            } space-x-2 ${
-              selectedTab === "habits"
-                ? isDarkMode
-                  ? mc.darkInteractive
-                  : mc.headerBg
-                : ""
-            }`}
+            {t(greetingKey)}
+          </Text>
+          <Text
+            className="mt-1 text-2xl font-black text-white"
+            style={{
+              textAlign: language === "ar" ? "left" : "right",
+              writingDirection: language === "ar" ? "rtl" : "ltr",
+            }}
           >
-            <Text
-              className={`font-bold ${
-                selectedTab === "habits"
-                  ? isDarkMode
-                    ? mc.textHeader
-                    : "text-white"
-                  : isDarkMode
-                    ? "text-gray-400"
-                    : "text-gray-500"
-              }`}
-            >
-              {t("common.Habits")}
-            </Text>
-
-            {selectedTab === "habits" && (
-              <RefreshCw
-                size={20}
-                color={isDarkMode ? palette.onInteractive : "#FFFFFF"}
-              />
-            )}
-          </TouchableOpacity>
+            {firstName}
+          </Text>
         </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("settings.title")}
+          onPress={() => router.push("./settings")}
+          hitSlop={12}
+          className="h-11 w-11 items-center justify-center"
+        >
+          <Settings size={22} color={MUTED} />
+        </Pressable>
+      </View>
 
-        <View className="mb-4">
-          {/* قائمة العناصر بارتفاع مناسب */}
-          <View className="h-[225px]">
-            {activeTabItems.length === 0 ? (
-              <View className="flex-1 items-center justify-center">
-                <Text
-                  className={`text-base ${
-                    isDarkMode ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  {selectedTab === "tasks"
-                    ? t("ViewAll.No tasks")
-                    : t("ViewAll.No habits")}
-                </Text>
-              </View>
-            ) : selectedTab === "tasks" ? (
-              <FlashList
-                data={activeTabItems as Task[]}
-                renderItem={renderTasks}
-                keyExtractor={(item) => item.id}
-                showsVerticalScrollIndicator={false}
-              />
-            ) : (
-              <FlashList
-                data={activeTabItems}
-                renderItem={renderHabits as any}
-                keyExtractor={(item) => item.id}
-                showsVerticalScrollIndicator={false}
-              />
-            )}
-          </View>
-
-          {/* زر عرض الكل مطابق تماماً لنموذج التصميم */}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.push("./view-all")}
-            className={`w-full py-3.5 mt-3 rounded-full items-center justify-center border-2 bg-transparent ${
-              isDarkMode ? mc.darkInteractiveBorder : mc.headerBorder
-            }`}
-          >
-            <Text
-              className={`font-bold text-base ${
-                isDarkMode ? mc.darkInteractiveText : mc.textHeader
-              }`}
+      <View className="mt-6 rounded-full border border-white/10 bg-white/[0.045] p-1">
+        <View style={{ flexDirection: rowDirection }}>
+          {modeOrder.map((option) => (
+            <Pressable
+              key={option}
+              accessibilityRole="button"
+              accessibilityState={{ selected: mode === option }}
+              onPress={() => setMode(option)}
+              className="flex-1 items-center justify-center py-3"
             >
-              {t("common.viewAll")}
-            </Text>
-          </TouchableOpacity>
+              <Text
+                className="text-sm font-bold"
+                style={{
+                  color: mode === option ? palette.accent : MUTED,
+                  writingDirection: language === "ar" ? "rtl" : "ltr",
+                }}
+              >
+                {t(
+                  option === "coding"
+                    ? "home.modeCoding"
+                    : option === "study"
+                      ? "home.modeStudy"
+                      : "home.modeFaith",
+                )}
+              </Text>
+            </Pressable>
+          ))}
         </View>
       </View>
-      <TouchableOpacity
-        onPress={openAddTaskSheet}
-        className={`absolute bottom-6 right-6 min-w-16 min-h-16 px-4 py-3 rounded-full items-center justify-center ${
-          isDarkMode ? mc.darkInteractive : mc.headerBg
-        }`}
-        style={{ elevation: 5 }}
-      >
-        <Text
-          className={`text-3xl font-bold ${
-            isDarkMode ? mc.textHeader : "text-white"
-          }`}
+
+      <View className="mt-7">
+        <View
+          className="mb-3 items-center justify-between"
+          style={{ flexDirection: rowDirection }}
         >
-          +
+          <Text
+            className="text-sm font-semibold text-white/70"
+            style={{ writingDirection: language === "ar" ? "rtl" : "ltr" }}
+          >
+            {completedTasksCount} / {tasks.length} {t("progress.completed")}
+          </Text>
+          <Text className="text-lg font-black" style={{ color: palette.accent }}>
+            {progressPercentage}%
+          </Text>
+        </View>
+        <View className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+          <View
+            className="h-full rounded-full"
+            style={{
+              width: `${progressPercentage}%`,
+              alignSelf: language === "ar" ? "flex-end" : "flex-start",
+              backgroundColor: palette.accent,
+            }}
+          />
+        </View>
+        <Text
+          className="mt-3 text-center text-sm text-white/60"
+          style={{ writingDirection: language === "ar" ? "rtl" : "ltr" }}
+        >
+          {progressPercentage === 100
+            ? t(
+                mode === "coding"
+                  ? "progress.completeDev"
+                  : mode === "study"
+                    ? "progress.completeStudy"
+                    : "progress.completeFaith",
+              )
+            : t("home.motivation")}
         </Text>
-      </TouchableOpacity>
+      </View>
+
+      <View
+        className="mt-7 rounded-full bg-white/[0.06] p-1"
+        style={{ flexDirection: rowDirection, minHeight: 52 }}
+      >
+        {(["tasks", "habits"] as const).map((tab) => (
+          <Pressable
+            key={tab}
+            accessibilityRole="button"
+            accessibilityState={{ selected: selectedTab === tab }}
+            onPress={() => setSelectedTab(tab)}
+            className="flex-1 items-center justify-center rounded-full py-3"
+            style={{
+              flexDirection: rowDirection,
+              minWidth: 0,
+              gap: 8,
+              backgroundColor:
+                selectedTab === tab ? palette.accent : "transparent",
+            }}
+          >
+            <Text
+              className="font-bold"
+              style={{
+                color: selectedTab === tab ? palette.header : MUTED,
+                writingDirection: language === "ar" ? "rtl" : "ltr",
+              }}
+            >
+              {t(tab === "tasks" ? "common.Tasks" : "common.Habits")}
+            </Text>
+            {tab === "tasks" ? (
+              <CheckCircle2
+                size={16}
+                color={selectedTab === tab ? palette.header : MUTED}
+              />
+            ) : (
+              <Flame
+                size={16}
+                color={selectedTab === tab ? palette.header : MUTED}
+              />
+            )}
+          </Pressable>
+        ))}
+      </View>
+
+      <View className="mt-3">
+        <View className="h-[225px]">
+          {activeItemsCount === 0 ? (
+            <View className="flex-1 items-center justify-center">
+              <Text className="text-center text-sm text-white/45">
+                {t(selectedTab === "tasks" ? "ViewAll.No tasks" : "ViewAll.No habits")}
+              </Text>
+            </View>
+          ) : selectedTab === "tasks" ? (
+            <FlashList
+              data={previewTasks}
+              renderItem={renderTask}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+            />
+          ) : (
+            <FlashList
+              data={previewHabits}
+              renderItem={renderHabit}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
+
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("./view-all")}
+          className="mt-2 items-center justify-center rounded-full border border-white/15 py-3"
+        >
+          <Text className="text-sm font-bold text-white/70">
+            {t("common.viewAll")}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      </ScrollView>
+
+      <View
+        className="px-5 pt-3"
+        style={{
+          paddingBottom: Math.max(insets.bottom, 12),
+          alignItems: language === "ar" ? "flex-start" : "flex-end",
+          backgroundColor: SCREEN,
+        }}
+      >
+        <TouchableOpacity
+          accessibilityRole="button"
+          onPress={openAddTaskSheet}
+          className="min-h-[52px] items-center justify-center rounded-full px-6"
+          style={{
+            backgroundColor: palette.accent,
+            elevation: 8,
+            flexDirection: rowDirection,
+          }}
+          activeOpacity={0.85}
+        >
+          <Text
+            className="text-base font-black"
+            style={{
+              color: palette.header,
+              writingDirection: language === "ar" ? "rtl" : "ltr",
+            }}
+          >
+            + {t("home.addTask")}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <AddTaskSheet ref={bottomSheetRef} mode={mode} />
-
       <DetailsSheet ref={detailsSheetRef} itemId={selectedId} />
 
       <ConfirmationModal
@@ -776,7 +637,6 @@ export default function Index() {
             deleteSingleItem(pendingDelete.id, pendingDelete.type);
             setPendingDelete(null);
           }
-
           setDeleteModalVisible(false);
         }}
         onCancel={() => {

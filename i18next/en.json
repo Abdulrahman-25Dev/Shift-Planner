@@ -59,7 +59,16 @@
   "home": {
     "todayTasks": "Today's Tasks",
     "myHabits": "My Habits",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "guestName": "friend",
+    "addTask": "Add Task",
+    "motivation": "One small step at a time.",
+    "modeCoding": "Coding",
+    "modeStudy": "Study",
+    "modeFaith": "Faith"
   },
   "progress": {
     "completeStudy": "Your daily goal is complete!",

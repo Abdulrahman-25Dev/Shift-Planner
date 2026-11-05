@@ -4,7 +4,10 @@ import { Stack, router } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useEffect, useState } from "react";
-import { AppState } from "react-native";
+import {
+  AppState,
+  useColorScheme as useDeviceColorScheme,
+} from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import { useColorScheme } from "nativewind";
 import { useAppStore } from "@/store/useAppStore";
@@ -22,9 +25,18 @@ import {
 // ❌ احذف السطر القديم من هنا تماماً لمنع فشل الـ Export
 
 export default function RootLayout() {
-  const { setColorScheme } = useColorScheme();
-  const { isDarkMode, checkAndResetDailyHabits, cancelPastDueNotifications } =
-    useAppStore();
+  const { colorScheme, setColorScheme } = useColorScheme();
+  const deviceColorScheme = useDeviceColorScheme();
+  const themePreference = useAppStore((state) => state.themePreference);
+  const setSystemIsDarkMode = useAppStore(
+    (state) => state.setSystemIsDarkMode,
+  );
+  const checkAndResetDailyHabits = useAppStore(
+    (state) => state.checkAndResetDailyHabits,
+  );
+  const cancelPastDueNotifications = useAppStore(
+    (state) => state.cancelPastDueNotifications,
+  );
   const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
@@ -68,8 +80,22 @@ export default function RootLayout() {
   // ────────────────────────────────
 
   useEffect(() => {
-    setColorScheme(isDarkMode ? "dark" : "light");
-  }, [isDarkMode, setColorScheme]);
+    const systemIsDarkMode = deviceColorScheme === "dark";
+    setSystemIsDarkMode(systemIsDarkMode);
+    const resolvedColorScheme =
+      themePreference === "system"
+        ? deviceColorScheme ?? "light"
+        : themePreference;
+    if (colorScheme !== resolvedColorScheme) {
+      setColorScheme(resolvedColorScheme);
+    }
+  }, [
+    colorScheme,
+    deviceColorScheme,
+    setColorScheme,
+    setSystemIsDarkMode,
+    themePreference,
+  ]);
 
   useEffect(() => {
     const syncAuthRefresh = (state: typeof AppState.currentState) => {

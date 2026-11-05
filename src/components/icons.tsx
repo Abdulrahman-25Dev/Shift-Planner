@@ -35,6 +35,7 @@ import {
   Plus as PlusBase,
   RefreshCw as RefreshCwBase,
   Settings as SettingsBase,
+  Smartphone as SmartphoneBase,
   Sun as SunBase,
   Trash2 as Trash2Base,
   User as UserBase,
@@ -90,6 +91,7 @@ export const PawPrint = makeScaledIcon(PawPrintBase);
 export const Plus = makeScaledIcon(PlusBase);
 export const RefreshCw = makeScaledIcon(RefreshCwBase);
 export const Settings = makeScaledIcon(SettingsBase);
+export const Smartphone = makeScaledIcon(SmartphoneBase);
 export const Sun = makeScaledIcon(SunBase);
 export const Trash2 = makeScaledIcon(Trash2Base);
 export const User = makeScaledIcon(UserBase);

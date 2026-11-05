@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { Appearance } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import { storage } from "../src/services/storage";
 import i18n from "../i18next/i18n";
@@ -29,6 +30,7 @@ const pendingProfileKey = (userId?: string) =>
 // ============ Interfaces ============
 export type Priority = "high" | "medium" | "low" | "none";
 export type Mode = "study" | "coding" | "faith";
+export type ThemePreference = "light" | "dark" | "system";
 
 // Fallback id used when no user is signed in (data stays local-only)
 export const GUEST_USER_ID = "guest";
@@ -93,8 +95,11 @@ interface AppState {
   syncPendingProfile: () => Promise<void>;
   refreshProfileFromServer: () => Promise<void>;
 
+  themePreference: ThemePreference;
   isDarkMode: boolean;
-  toggleDarkMode: () => void;
+  systemIsDarkMode: boolean;
+  setThemePreference: (preference: ThemePreference) => void;
+  setSystemIsDarkMode: (isDarkMode: boolean) => void;
 
   language: "ar" | "en";
   setLanguage: (lang: "ar" | "en") => void;
@@ -231,8 +236,25 @@ const initialHabits = initialUser
   : [];
 
 export const useAppStore = create<AppState>((set, get) => {
+  const storedThemePreference = storage.getString("theme_preference");
   const storedDark = storage.getString("dark_mode");
-  const initialDark = storedDark === "true";
+  const hasStoredThemePreference =
+    storedThemePreference === "light" ||
+    storedThemePreference === "dark" ||
+    storedThemePreference === "system";
+  const initialThemePreference: ThemePreference = hasStoredThemePreference
+    ? storedThemePreference
+    : storedDark === "true"
+      ? "dark"
+      : "light";
+  if (!hasStoredThemePreference) {
+    storage.set("theme_preference", initialThemePreference);
+    if (storedDark !== undefined) storage.remove("dark_mode");
+  }
+  const initialSystemIsDarkMode = Appearance.getColorScheme() === "dark";
+  const initialDark =
+    initialThemePreference === "dark" ||
+    (initialThemePreference === "system" && initialSystemIsDarkMode);
   const storedNotifications = storage.getString("notifications_enabled");
   const initialNotifications = storedNotifications === "true";
 
@@ -505,12 +527,34 @@ export const useAppStore = create<AppState>((set, get) => {
       }
     },
 
+    themePreference: initialThemePreference,
     isDarkMode: initialDark,
-    toggleDarkMode: () =>
+    setThemePreference: (preference) =>
       set((state) => {
-        const next = !state.isDarkMode;
-        storage.set("dark_mode", next ? "true" : "false");
-        return { isDarkMode: next };
+        storage.set("theme_preference", preference);
+        storage.remove("dark_mode");
+        return {
+          themePreference: preference,
+          isDarkMode:
+            preference === "dark" ||
+            (preference === "system" && state.systemIsDarkMode),
+        };
+      }),
+    systemIsDarkMode: initialSystemIsDarkMode,
+    setSystemIsDarkMode: (isDarkMode) =>
+      set((state) => {
+        const resolvedDarkMode =
+          state.themePreference === "system" ? isDarkMode : state.isDarkMode;
+        if (
+          state.systemIsDarkMode === isDarkMode &&
+          state.isDarkMode === resolvedDarkMode
+        ) {
+          return state;
+        }
+        return {
+          systemIsDarkMode: isDarkMode,
+          isDarkMode: resolvedDarkMode,
+        };
       }),
 
     language: storedLanguage,

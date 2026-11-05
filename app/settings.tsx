@@ -7,23 +7,31 @@ import {
   Image,
 } from "react-native";
 import Text from "@/src/components/ScaledText";
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import {
-  ArrowRight,
-  Globe,
+  ChevronLeft,
   Bell,
   Info,
   Trash2,
-  Moon,
   Sun,
-  ALargeSmall,
+  Moon,
+  Smartphone,
 } from "@/src/components/icons";
 import { router } from "expo-router";
-import { useAppStore, type AppUser } from "../store/useAppStore";
+import {
+  useAppStore,
+  type AppUser,
+  type ThemePreference,
+} from "../store/useAppStore";
 import { useTranslation } from "react-i18next";
 import ConfirmationModal from "../components/ConfirmationModal";
 import AccountModal from "../components/AccountSettingsModal";
-import type { BottomSheetModal } from "@gorhom/bottom-sheet";
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { useModeTheme, useModeClasses } from "@/src/theme";
 
 const getInitials = (user: AppUser | null): string => {
@@ -39,14 +47,13 @@ const getInitials = (user: AppUser | null): string => {
 export default function Settings() {
   const {
     mode,
-    toggleDarkMode,
     isDarkMode,
+    themePreference,
+    setThemePreference,
     language,
     setLanguage,
     notificationsEnabled,
     setNotificationsEnabled,
-    fontScale,
-    setFontScale,
     user,
   } = useAppStore();
   const { palette } = useModeTheme();
@@ -55,6 +62,8 @@ export default function Settings() {
   const notifications = notificationsEnabled;
   const [modalVisible, setModalVisible] = useState(false);
   const accountSheetRef = useRef<BottomSheetModal>(null);
+  const appearanceSheetRef = useRef<BottomSheetModal>(null);
+  const sheetSnapPoints = useMemo(() => ["45%"], []);
   const [modalConfig, setModalConfig] = useState<{
     title: string;
     description: string;
@@ -93,53 +102,97 @@ export default function Settings() {
     setModalVisible(true);
   }, [clearAllHabits, mode, t]);
 
-  const toggleLanguage = () => {
-    setLanguage(language === "ar" ? "en" : "ar");
-  };
-
-  // Font scale factor controls: 0.5 → 1.5, stepping by 0.1, default 1.0
-  const FONT_SCALE_MIN = 0.5;
-  const FONT_SCALE_MAX = 1.5;
-  const FONT_SCALE_STEP = 0.1;
-  const decreaseFontSize = () => {
-    setFontScale(Math.max(FONT_SCALE_MIN, fontScale - FONT_SCALE_STEP));
-  };
-  const increaseFontSize = () => {
-    setFontScale(Math.min(FONT_SCALE_MAX, fontScale + FONT_SCALE_STEP));
-  };
-  // Formats the scale for display (e.g. 1 → "1.0", 1.25 → "1.3")
-  const formatScale = (n: number) => n.toFixed(1);
-
   const iconColor = isDarkMode ? palette.accentText : palette.header;
   const trashColor = isDarkMode ? "#fca5a5" : "#dc2626";
+  const rowDirection = language === "en" ? "flex-row-reverse" : "flex-row";
+  const preferenceRowDirection = "flex-row";
 
-  const cardBg = isDarkMode ? mc.darkCard : "bg-white";
-  const iconCircleBg = isDarkMode ? mc.darkAccentSoft : mc.accentSoft;
-  const titleText = isDarkMode ? "text-gray-100" : "text-gray-800";
-  const labelText = isDarkMode ? mc.darkInteractiveText : mc.textHeader;
-
-  const shadowStyle = {
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+  const screenColor = isDarkMode ? "#0F172A" : "#F7F8FC";
+  const textColor = isDarkMode ? "#FFFFFF" : "#1A1A1A";
+  const mutedColor = isDarkMode ? "#98A2B3" : "#64748B";
+  const surfaceColor = isDarkMode
+    ? "rgba(255,255,255,0.03)"
+    : "rgba(0,0,0,0.03)";
+  const surfaceBorderColor = isDarkMode
+    ? "rgba(255,255,255,0.07)"
+    : "rgba(0,0,0,0.07)";
+  const titleText = isDarkMode ? "text-white" : "text-[#1A1A1A]";
+  const secondaryText = isDarkMode ? "text-white/50" : "text-black/50";
+  const activeOptionBg = isDarkMode ? palette.interactive : palette.header;
+  const activeOptionText = isDarkMode ? palette.header : "#FFFFFF";
+  const themeLabels: Record<ThemePreference, string> = {
+    light: t("settings.lightMode"),
+    dark: t("settings.darkMode"),
+    system: t("settings.systemMode"),
   };
+  const appearanceSummary = `${themeLabels[themePreference]} • ${t(
+    language === "ar" ? "settings.languageArabic" : "settings.languageEnglish",
+  )}`;
+
+  const selectLanguage = (nextLanguage: "ar" | "en") => {
+    if (language !== nextLanguage) setLanguage(nextLanguage);
+    appearanceSheetRef.current?.dismiss();
+  };
+
+  const renderSheetBackdrop = useCallback(
+    (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+      />
+    ),
+    [],
+  );
 
   return (
     <View
-      className={`flex-1 ${isDarkMode ? "bg-screen-dark" : "bg-screen-light"}`}
+      className="flex-1"
+      style={{ backgroundColor: screenColor }}
     >
+      <Svg
+        pointerEvents="none"
+        width="100%"
+        height={320}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      >
+        <Defs>
+          <RadialGradient
+            id="settingsModeGlow"
+            cx="50%"
+            cy="0%"
+            rx="80%"
+            ry="100%"
+          >
+            <Stop
+              offset="0%"
+              stopColor={palette.accent}
+              stopOpacity={isDarkMode ? "0.14" : "0.05"}
+            />
+            <Stop offset="100%" stopColor={palette.accent} stopOpacity="0" />
+          </RadialGradient>
+        </Defs>
+        <Rect width="100%" height={320} fill="url(#settingsModeGlow)" />
+      </Svg>
+
       {/* Header */}
       <View className="pt-14 pb-2 px-4">
         <View className="flex-row items-center justify-between">
           <TouchableOpacity
             onPress={() => router.back()}
-            className={`p-3 rounded-2xl ${iconCircleBg}`}
+            className="p-3"
           >
-            <ArrowRight size={22} color={iconColor} />
+            <ChevronLeft
+              size={22}
+              color={iconColor}
+              style={{
+                transform: [{ rotate: language === "ar" ? "180deg" : "0deg" }],
+              }}
+            />
           </TouchableOpacity>
           <Text
-            className={` text-lg font-bold flex-1 text-center ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}
+            className="flex-1 text-center text-lg font-bold"
+            style={{ color: textColor }}
           >
             {t("settings.title")}
           </Text>
@@ -155,24 +208,33 @@ export default function Settings() {
           className="mb-6 mt-2"
         >
           <View
-            className={`${cardBg} rounded-3xl p-4 items-center justify-between flex-row`}
+            className={`rounded-3xl border p-4 gap-2 items-center flex-row ${
+              language === "ar" ? "flex-row" : ""
+            }`}
+            style={{
+              backgroundColor: surfaceColor,
+              borderColor: surfaceBorderColor,
+            }}
           >
-            <View className="flex-col items-end">
+            <View className="flex-1">
               <Text
-                className={`text-lg font-bold mb-1 ${isDarkMode ? "text-white" : "text-gray-900"}`}
+                className="mb-1 text-lg font-bold"
+                style={{ color: textColor, textAlign: language === "ar" ? "right" : "left" }}
                 numberOfLines={1}
               >
                 {user?.fullName || user?.username || t("settings.username")}
               </Text>
               <Text
-                className={`text-sm ${isDarkMode ? "text-slate-400" : "text-gray-500"}`}
+                className="text-sm"
+                style={{ color: mutedColor, textAlign: language === "ar" ? "right" : "left" }}
                 numberOfLines={1}
               >
                 {user?.email || ""}
               </Text>
             </View>
             <View
-              className={`w-14 h-14 rounded-full border items-center justify-center ${iconCircleBg} ${isDarkMode ? mc.accentBorderFull : mc.accentBorder}`}
+              className={`w-14 h-14 rounded-full border items-center justify-center ${isDarkMode ? mc.accentBorderFull : mc.accentBorder}`}
+              style={{ backgroundColor: surfaceColor }}
             >
               {user?.avatarUrl ? (
                 <Image
@@ -188,145 +250,79 @@ export default function Settings() {
               )}
             </View>
           </View>
-          <Text
-            className={` text-sm text-center font-bold px-3 mt-2 ${isDarkMode ? "text-slate-400" : "text-gray-500"} ${language === "ar" ? "text-left" : "text-right"}`}
-          >
-            {t("settings.editProfile")}
-          </Text>
         </TouchableOpacity>
 
-        {/* Settings Grid - 2 Columns */}
         <Text
-          className={` text-sm font-bold px-3 mb-4 ${isDarkMode ? "text-slate-400" : "text-gray-500"} ${language === "ar" ? "text-left" : "text-right"}`}
+          className="mb-4 px-3 text-sm font-bold"
+          style={{ color: mutedColor, textAlign: language === "ar" ? "left" : "right" }}
         >
           {t("settings.preferences")}
         </Text>
-        <View className="flex-row flex-wrap justify-between mb-4">
-          {/* Card 1: Theme */}
-          <View
-            className={`w-[48%] ${cardBg} rounded-3xl p-4 items-center mb-3`}
-            style={shadowStyle}
+        <View
+          className="mb-4 overflow-hidden rounded-3xl border"
+          style={{ backgroundColor: surfaceColor, borderColor: surfaceBorderColor }}
+        >
+          <Pressable
+            onPress={() => appearanceSheetRef.current?.present()}
+            className={`min-h-[72px] items-center px-4 py-3 ${preferenceRowDirection}`}
+            style={{ borderBottomWidth: 1, borderBottomColor: surfaceBorderColor }}
           >
             <View
-              className={`w-12 h-12 rounded-2xl items-center justify-center ${iconCircleBg}`}
+              className="h-10 w-10 items-center justify-center rounded-xl"
+              style={{ backgroundColor: surfaceColor }}
             >
-              {isDarkMode ? (
-                <Moon size={24} color={iconColor} />
-              ) : (
-                <Sun size={24} color={iconColor} />
-              )}
+              <Sun size={20} color={iconColor} />
             </View>
-            <Text
-              className={` text-sm font-bold mt-3 text-center mb-2 ${titleText}`}
-            >
-              {isDarkMode ? t("settings.darkMode") : t("settings.lightMode")}
-            </Text>
-            <Switch
-              value={isDarkMode}
-              onValueChange={toggleDarkMode}
-              trackColor={
-                isDarkMode
-                  ? { false: "#4b5563", true: palette.interactive }
-                  : { false: "#d1d5db", true: palette.header }
-              }
-              thumbColor="#fff"
+            <View className="mx-3 flex-1">
+              <Text
+                className={`font-bold ${titleText}`}
+                style={{
+                  textAlign: language === "ar" ? "left" : "right",
+                  writingDirection: language === "ar" ? "rtl" : "ltr",
+                }}
+              >
+                {t("settings.appearanceLanguage")}
+              </Text>
+              <Text
+                className={`mt-1 text-xs ${secondaryText}`}
+                style={{
+                  textAlign: language === "ar" ? "left" : "right",
+                  writingDirection: language === "ar" ? "rtl" : "ltr",
+                }}
+              >
+                {appearanceSummary}
+              </Text>
+            </View>
+            <ChevronLeft
+              size={18}
+              color={isDarkMode ? "#94A3B8" : "#64748B"}
+              style={{
+                transform: [{ rotate: language === "ar" ? "0deg" : "180deg" }],
+              }}
             />
-          </View>
+          </Pressable>
 
-          {/* Card 2: Language */}
-          <TouchableOpacity
-            className={`w-[48%] ${cardBg} rounded-3xl p-4 items-center mb-3`}
-            style={shadowStyle}
-            onPress={toggleLanguage}
-          >
-            <View
-              className={`w-12 h-12 rounded-2xl items-center justify-center ${iconCircleBg}`}
-            >
-              <Globe size={24} color={iconColor} />
-            </View>
-            <View className="mt-3 items-center justify-center">
-              <Text className={` text-sm font-bold text-center ${titleText}`}>
-                {t("settings.language")}
-              </Text>
-              <View className="mt-2 flex-row items-center justify-center">
-                <Text
-                  className={`text-base font-bold p-2 rounded-3xl ${language === "ar" ? (isDarkMode ? mc.darkInteractiveText : mc.textHeader) : isDarkMode ? "text-slate-300" : "text-slate-500"}`}
-                >
-                  ع
-                </Text>
-                <Text
-                  className={`text-sm font-bold mx-2 ${isDarkMode ? "text-slate-200" : "text-slate-500"}`}
-                >
-                  |
-                </Text>
-                <Text
-                  className={`text-base font-bold p-2 rounded-3xl ${language === "en" ? (isDarkMode ? mc.darkInteractiveText : mc.textHeader) : isDarkMode ? "text-slate-300" : "text-slate-500"}`}
-                >
-                  En
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          {/* Card 3: Font Size */}
           <View
-            className={`w-[48%] ${cardBg} rounded-3xl p-4 items-center mb-3`}
-            style={shadowStyle}
+            className={`min-h-[72px] items-center px-4 py-3 ${preferenceRowDirection}`}
           >
             <View
-              className={`w-12 h-12 rounded-2xl items-center justify-center ${iconCircleBg}`}
+              className="h-10 w-10 items-center justify-center rounded-xl"
+              style={{ backgroundColor: surfaceColor }}
             >
-              <ALargeSmall size={24} color={iconColor} />
+              <Bell size={20} color={iconColor} />
             </View>
             <Text
-              className={` text-sm font-bold mt-3 text-center mb-2 ${titleText}`}
-            >
-              {t("settings.fontSize")}
-            </Text>
-            <View className="flex-row items-center justify-center">
-              <TouchableOpacity
-                onPress={increaseFontSize}
-                className={`min-w-10 min-h-10 px-2.5 py-1 rounded-full items-center justify-center mr-3 ${
-                  isDarkMode ? "bg-slate-800" : "bg-slate-100"
-                }`}
-              >
-                <Text className={`font-black text-lg ${titleText}`}>A+</Text>
-              </TouchableOpacity>
-              <Text className={`font-bold text-base ${titleText}`}>
-                {formatScale(fontScale)}
-              </Text>
-              <TouchableOpacity
-                onPress={decreaseFontSize}
-                className={`min-w-10 min-h-10 px-2.5 py-1 rounded-full items-center justify-center ml-3 ${
-                  isDarkMode ? "bg-slate-800" : "bg-slate-100"
-                }`}
-              >
-                <Text className={`font-black text-base ${titleText}`}>A-</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Card 4: Notifications */}
-          <View
-            className={`w-[48%] ${cardBg} rounded-3xl p-4 items-center mb-3`}
-            style={shadowStyle}
-          >
-            <View
-              className={`w-12 h-12 rounded-2xl items-center justify-center ${iconCircleBg}`}
-            >
-              <Bell size={24} color={iconColor} />
-            </View>
-            <Text
-              className={` text-sm font-bold mt-3 text-center mb-2 ${titleText}`}
+              className={`mx-3 flex-1 font-bold ${titleText}`}
+              style={{
+                textAlign: language === "ar" ? "left" : "right",
+                writingDirection: language === "ar" ? "rtl" : "ltr",
+              }}
             >
               {t("settings.notifications")}
             </Text>
             <Switch
               value={!!notifications}
-              onValueChange={async (v) => {
-                // toggle via store which will request permission and schedule/cancel
-                await setNotificationsEnabled(v);
-              }}
+              onValueChange={setNotificationsEnabled}
               trackColor={
                 isDarkMode
                   ? { false: "#4b5563", true: palette.interactive }
@@ -335,51 +331,39 @@ export default function Settings() {
               thumbColor="#fff"
             />
           </View>
+
         </View>
 
         {/* Data Management */}
         <View className="mx-0 mt-4 mb-8">
           <Text
-            className={` text-sm font-bold mb-3 px-3 mr-1 ${labelText} ${language === "ar" ? "text-left" : "text-right"}`}
+            className="mb-3 mr-1 px-3 text-sm font-bold"
+            style={{ color: mutedColor, textAlign: language === "ar" ? "left" : "right" }}
           >
             {t("settings.dataManagement")}
           </Text>
-          <View className={`${cardBg} rounded-3xl`} style={shadowStyle}>
+          <View
+            className="overflow-hidden rounded-3xl border"
+            style={{ backgroundColor: surfaceColor, borderColor: surfaceBorderColor }}
+          >
             <Pressable
-              className={`flex-row-reverse items-center justify-between p-4 ${cardBg} rounded-t-3xl`}
+              className={`min-h-[64px] items-center justify-between border-b px-4 py-3 ${rowDirection}`}
+              style={{ borderBottomColor: surfaceBorderColor }}
               onPress={openClearTasksModal}
             >
-              <View
-                className={
-                  " items-center pl-4 justify-between flex-1" +
-                  (language === "ar" ? " flex-row-reverse" : " flex-row")
-                }
-              >
-                <View className="w-10 h-10 rounded-2xl items-center justify-center bg-red-50 dark:bg-red-900">
-                  <Trash2 size={20} color={trashColor} />
-                </View>
-                <Text className="mr-3 text-red-600 text-right font-bold">
-                  {t("settings.deleteAllTasks")}
-                </Text>
-              </View>
+              <Text className="font-bold text-red-600 dark:text-red-400">
+                {t("settings.deleteAllTasks")}
+              </Text>
+              <Trash2 size={20} color={trashColor} />
             </Pressable>
             <Pressable
-              className={`flex-row-reverse items-center justify-between p-4 ${cardBg} rounded-b-3xl`}
+              className={`min-h-[64px] items-center justify-between px-4 py-3 ${rowDirection}`}
               onPress={openClearHabitsModal}
             >
-              <View
-                className={
-                  " items-center pl-4 justify-between flex-1" +
-                  (language === "ar" ? " flex-row-reverse" : " flex-row")
-                }
-              >
-                <View className="w-10 h-10 rounded-2xl items-center justify-center bg-red-50 dark:bg-red-900">
-                  <Trash2 size={20} color={trashColor} />
-                </View>
-                <Text className="mr-3 text-red-600 text-right font-bold">
-                  {t("settings.deleteAllHabits")}
-                </Text>
-              </View>
+              <Text className="font-bold text-red-600 dark:text-red-400">
+                {t("settings.deleteAllHabits")}
+              </Text>
+              <Trash2 size={20} color={trashColor} />
             </Pressable>
           </View>
         </View>
@@ -387,35 +371,173 @@ export default function Settings() {
         {/* More */}
         <View className="mx-0 mt-4 mb-8">
           <Text
-            className={` text-sm font-bold mb-3 px-3 mr-1 ${labelText} ${language === "ar" ? "text-left" : "text-right"}`}
+            className="mb-3 mr-1 px-3 text-sm font-bold"
+            style={{ color: mutedColor, textAlign: language === "ar" ? "left" : "right" }}
           >
             {t("settings.more")}
           </Text>
           {/* About App (full-width row, matches Data Management rows) */}
-          <View className={`${cardBg} rounded-3xl`} style={shadowStyle}>
+          <View
+            className="overflow-hidden rounded-3xl border"
+            style={{ backgroundColor: surfaceColor, borderColor: surfaceBorderColor }}
+          >
             <Pressable
-              className={`flex-row-reverse items-center justify-between p-4 ${cardBg} rounded-3xl`}
+              className={`min-h-[64px] items-center justify-between px-4 py-3 ${rowDirection}`}
               onPress={() => router.push("../AboutApp")}
             >
-              <View
-                className={
-                  " items-center pl-4 justify-between flex-1" +
-                  (language === "ar" ? " flex-row-reverse" : " flex-row")
-                }
-              >
-                <View
-                  className={`w-10 h-10 rounded-2xl items-center justify-center ${iconCircleBg}`}
-                >
-                  <Info size={20} color={iconColor} />
-                </View>
-                <Text className={`text-right font-bold ${titleText}`}>
-                  {t("settings.aboutApp")}
-                </Text>
-              </View>
+              <Text className={`font-bold ${titleText}`}>
+                {t("settings.aboutApp")}
+              </Text>
+              <Info size={20} color={iconColor} />
             </Pressable>
           </View>
         </View>
       </ScrollView>
+      <BottomSheetModal
+        ref={appearanceSheetRef}
+        index={0}
+        snapPoints={sheetSnapPoints}
+        enableDynamicSizing={false}
+        enablePanDownToClose
+        backdropComponent={renderSheetBackdrop}
+        backgroundStyle={{
+          borderRadius: 32,
+          backgroundColor: isDarkMode ? "#111827" : "#FFFFFF",
+        }}
+        handleIndicatorStyle={{
+          backgroundColor: isDarkMode ? "#64748B" : "#CBD5E1",
+          width: 48,
+        }}
+      >
+        <BottomSheetView className="px-5 pb-8">
+          <Text className={`mt-4 text-center text-xl font-black ${titleText}`}>
+            {t("settings.appearanceLanguage")}
+          </Text>
+
+          <Text className={`mb-3 mt-6 font-bold ${titleText}`}>
+            {t("settings.theme")}
+          </Text>
+          <View
+            className="flex-row gap-2"
+            style={{ direction: language === "ar" ? "rtl" : "ltr" }}
+          >
+            {(["light", "dark", "system"] as const).map((preference) => {
+              const selected = themePreference === preference;
+              return (
+                <Pressable
+                  key={preference}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => setThemePreference(preference)}
+                  className="min-h-16 flex-1 items-center justify-center gap-1 rounded-2xl border px-2 py-2"
+                  style={{
+                    backgroundColor: selected
+                      ? activeOptionBg
+                      : surfaceColor,
+                    borderColor: selected
+                      ? activeOptionBg
+                      : surfaceBorderColor,
+                  }}
+                >
+                  {preference === "light" ? (
+                    <Sun
+                      size={18}
+                      color={
+                        selected
+                          ? activeOptionText
+                          : isDarkMode
+                            ? "#CBD5E1"
+                            : "#475569"
+                      }
+                    />
+                  ) : preference === "dark" ? (
+                    <Moon
+                      size={18}
+                      color={
+                        selected
+                          ? activeOptionText
+                          : isDarkMode
+                            ? "#CBD5E1"
+                            : "#475569"
+                      }
+                    />
+                  ) : (
+                    <Smartphone
+                      size={18}
+                      color={
+                        selected
+                          ? activeOptionText
+                          : isDarkMode
+                            ? "#CBD5E1"
+                            : "#475569"
+                      }
+                    />
+                  )}
+                  <Text
+                    className="text-center text-sm font-bold"
+                    style={{
+                      color: selected
+                        ? activeOptionText
+                        : isDarkMode
+                          ? "#CBD5E1"
+                          : "#475569",
+                    }}
+                  >
+                    {themeLabels[preference]}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Text className={`mb-3 mt-6 font-bold ${titleText}`}>
+            {t("settings.language")}
+          </Text>
+          <View
+            className="flex-row gap-2"
+            style={{ direction: language === "ar" ? "rtl" : "ltr" }}
+          >
+            {(
+              [
+                ["ar", t("settings.languageArabic")],
+                ["en", t("settings.languageEnglish")],
+              ] as const
+            ).map(([nextLanguage, label]) => {
+              const selected = language === nextLanguage;
+              return (
+                <Pressable
+                  key={nextLanguage}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => selectLanguage(nextLanguage)}
+                  className="min-h-11 flex-1 items-center justify-center rounded-2xl border px-2"
+                  style={{
+                    backgroundColor: selected
+                      ? activeOptionBg
+                      : surfaceColor,
+                    borderColor: selected
+                      ? activeOptionBg
+                      : surfaceBorderColor,
+                  }}
+                >
+                  <Text
+                    className="text-center text-sm font-bold"
+                    style={{
+                      color: selected
+                        ? activeOptionText
+                        : isDarkMode
+                          ? "#CBD5E1"
+                          : "#475569",
+                    }}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
       <ConfirmationModal
         isVisible={modalVisible}
         title={modalConfig.title}

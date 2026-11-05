@@ -41,7 +41,7 @@ const AccountSettingsModal = forwardRef<BottomSheetModal>(
     const titleText = isDarkMode ? mc.darkInteractiveText : mc.textHeader;
     const subText = isDarkMode ? "text-slate-400" : "text-gray-500";
     const rowBg = isDarkMode ? "bg-slate-800/60" : "bg-slate-50";
-    const iconColor = isDarkMode ? palette.accentText : palette.header;
+    const iconColor = isDarkMode ? palette.accentText : "#0F172A";
     const trashColor = isDarkMode ? "#fca5a5" : "#dc2626";
 
     const close = () => {
@@ -74,6 +74,13 @@ const AccountSettingsModal = forwardRef<BottomSheetModal>(
           className={`w-11 h-11 rounded-2xl items-center justify-center ${
             red ? "bg-red-50 dark:bg-red-900/60" : "bg-slate-200/60 dark:bg-slate-700/60"
           }`}
+          style={{
+            backgroundColor: red
+              ? undefined
+              : isDarkMode
+                ? undefined
+                : "#E2E8F0",
+          }}
         >
           {icon}
         </View>
@@ -87,7 +94,7 @@ const AccountSettingsModal = forwardRef<BottomSheetModal>(
         </View>
         <ChevronLeft
           size={18}
-          color={red ? trashColor : isDarkMode ? "#64748b" : "#9ca3af"}
+          color={red ? trashColor : isDarkMode ? "#64748b" : "#475569"}
           style={{ transform: [{ rotate: language === "ar" ? "0deg" : "180deg" }] }}
         />
       </Pressable>

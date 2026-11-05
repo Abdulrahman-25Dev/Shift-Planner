@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Linking,
 } from "react-native";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import Text from "@/src/components/ScaledText";
 import { router } from "expo-router";
 import {
@@ -104,7 +105,7 @@ export default function AboutApp() {
 
   const accentHex = palette.accentText;
 
-  const pageBg = isDarkMode ? "bg-screen-dark" : "bg-screen-light";
+  const screenColor = isDarkMode ? "#0F172A" : "#F7F8FC";
 
   const cardBg = isDarkMode ? mc.darkCard : "bg-white";
 
@@ -149,12 +150,31 @@ export default function AboutApp() {
   const BackChevron = language === "ar" ? ChevronRight : ChevronRight;
 
   return (
-    <View className={`flex-1 ${pageBg}`}>
+    <View className="flex-1" style={{ backgroundColor: screenColor }}>
+      <Svg
+        pointerEvents="none"
+        width="100%"
+        height={320}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      >
+        <Defs>
+          <RadialGradient id="aboutModeGlow" cx="50%" cy="0%" rx="80%" ry="100%">
+            <Stop
+              offset="0%"
+              stopColor={palette.accent}
+              stopOpacity={isDarkMode ? "0.14" : "0.05"}
+            />
+            <Stop offset="100%" stopColor={palette.accent} stopOpacity="0" />
+          </RadialGradient>
+        </Defs>
+        <Rect width="100%" height={320} fill="url(#aboutModeGlow)" />
+      </Svg>
+
       <View className="pt-14 pb-2 px-4">
         <View className="flex-row items-center justify-between">
           <TouchableOpacity
             onPress={() => router.back()}
-            className={`p-3 rounded-2xl ${cardBg} `}
+            className={`p-3 rounded-2xl `}
           >
             <BackChevron size={22} color={accentHex} />
           </TouchableOpacity>
@@ -170,8 +190,7 @@ export default function AboutApp() {
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-4">
         <View className="items-center my-6">
           <View
-            className={`w-20 h-20 ${cardBg} rounded-2xl items-center justify-center mb-3`}
-            style={{ borderWidth: 1, borderColor: `${accentHex}40` }}
+            className={`w-20 h-20 rounded-2xl items-center justify-center mb-3`}
           >
             {(() => {
               const ModeIcon = MODE_META[mode].icon;

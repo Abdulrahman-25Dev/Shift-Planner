@@ -5,6 +5,7 @@ import {
   Pressable,
   ActivityIndicator,
 } from "react-native";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import Text from "@/src/components/ScaledText";
 import React, { useState } from "react";
 import { ArrowRight, Eye, EyeOff, KeyRound } from "@/src/components/icons";
@@ -42,10 +43,14 @@ export default function ChangePassword() {
   const iconCircleBg = isDarkMode ? mc.darkAccentSoft : mc.accentSoft;
   const titleText = isDarkMode ? "text-gray-100" : "text-gray-800";
   const subText = isDarkMode ? "text-slate-400" : "text-gray-500";
-  const inputBg = isDarkMode ? "bg-slate-900" : "bg-slate-200";
+  const inputBg = isDarkMode ? "bg-slate-800" : "bg-white";
+  const inputBorderStyle = {
+    borderColor: isDarkMode ? "#475569" : "#CBD5E1",
+  };
   const inputText = isDarkMode ? "text-white" : "text-slate-900";
   const inputAlign = language === "ar" ? "text-right" : "text-left";
   const rowDirection = language === "ar" ? "flex-row" : "flex-row-reverse";
+  const screenColor = isDarkMode ? "#0F172A" : "#F7F8FC";
 
   const showAlert = (
     title: string,
@@ -151,7 +156,7 @@ export default function ChangePassword() {
   };
 
   // Shared styles for a password input row (icon button + TextInput)
-  const inputRowClass = `${rowDirection} items-center rounded-2xl px-4 mb-4 ${inputBg}`;
+  const inputRowClass = `${rowDirection} items-center rounded-2xl border px-4 mb-4 ${inputBg}`;
   const eyeBtnClass = "p-2";
 
   const EyeToggle = ({
@@ -171,9 +176,36 @@ export default function ChangePassword() {
   );
 
   return (
-    <View
-      className={`flex-1 ${isDarkMode ? "bg-screen-dark" : "bg-screen-light"}`}
-    >
+    <View className="flex-1" style={{ backgroundColor: screenColor }}>
+      <Svg
+        pointerEvents="none"
+        width="100%"
+        height={320}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      >
+        <Defs>
+          <RadialGradient
+            id="changePasswordModeGlow"
+            cx="50%"
+            cy="0%"
+            rx="80%"
+            ry="100%"
+          >
+            <Stop
+              offset="0%"
+              stopColor={palette.accent}
+              stopOpacity={isDarkMode ? "0.14" : "0.05"}
+            />
+            <Stop
+              offset="100%"
+              stopColor={palette.accent}
+              stopOpacity="0"
+            />
+          </RadialGradient>
+        </Defs>
+        <Rect width="100%" height={320} fill="url(#changePasswordModeGlow)" />
+      </Svg>
+
       {/* Header */}
       <View className="pt-14 pb-2 px-4">
         <View className="flex-row items-center justify-between">
@@ -206,7 +238,7 @@ export default function ChangePassword() {
         </View>
 
         {/* Current password */}
-        <View className={inputRowClass}>
+        <View className={inputRowClass} style={inputBorderStyle}>
           <TextInput
             value={currentPassword}
             onChangeText={setCurrentPassword}
@@ -222,7 +254,7 @@ export default function ChangePassword() {
         </View>
 
         {/* New password */}
-        <View className={inputRowClass}>
+        <View className={inputRowClass} style={inputBorderStyle}>
           <TextInput
             value={newPassword}
             onChangeText={setNewPassword}
@@ -238,7 +270,7 @@ export default function ChangePassword() {
         </View>
 
         {/* Confirm new password */}
-        <View className={inputRowClass}>
+        <View className={inputRowClass} style={inputBorderStyle}>
           <TextInput
             value={confirmPassword}
             onChangeText={setConfirmPassword}

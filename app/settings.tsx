@@ -33,6 +33,8 @@ import {
 } from "@gorhom/bottom-sheet";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { useModeTheme, useModeClasses } from "@/src/theme";
+import i18n from "@/i18next/i18n";
+import { ChevronRight } from "lucide-react-native";
 
 const getInitials = (user: AppUser | null): string => {
   if (!user) return "?";
@@ -182,12 +184,9 @@ export default function Settings() {
             onPress={() => router.back()}
             className="p-3"
           >
-            <ChevronLeft
-              size={22}
+            <ChevronRight
+              size={24}
               color={iconColor}
-              style={{
-                transform: [{ rotate: language === "ar" ? "180deg" : "0deg" }],
-              }}
             />
           </TouchableOpacity>
           <Text
@@ -265,35 +264,34 @@ export default function Settings() {
           <Pressable
             onPress={() => appearanceSheetRef.current?.present()}
             className={`min-h-[72px] items-center px-4 py-3 ${preferenceRowDirection}`}
-            style={{ borderBottomWidth: 1, borderBottomColor: surfaceBorderColor }}
+            style={{
+              direction: language === "ar" ? "rtl" : "ltr",
+              borderBottomWidth: 1,
+              borderBottomColor: surfaceBorderColor,
+            }}
           >
             <View
-              className="h-10 w-10 items-center justify-center rounded-xl"
+              className="h-10 w-10 shrink-0 items-center justify-center rounded-xl"
               style={{ backgroundColor: surfaceColor }}
             >
               <Sun size={20} color={iconColor} />
             </View>
-            <View className="mx-3 flex-1">
+            <View className="mx-3 min-w-0 flex-1">
               <Text
-                className={`font-bold ${titleText}`}
-                style={{
-                  textAlign: language === "ar" ? "left" : "right",
-                  writingDirection: language === "ar" ? "rtl" : "ltr",
-                }}
+                numberOfLines={1}
+                className={`text-start font-bold ${titleText}`}
               >
                 {t("settings.appearanceLanguage")}
               </Text>
               <Text
-                className={`mt-1 text-xs ${secondaryText}`}
-                style={{
-                  textAlign: language === "ar" ? "left" : "right",
-                  writingDirection: language === "ar" ? "rtl" : "ltr",
-                }}
+                numberOfLines={1}
+                className={`mt-1 text-start text-xs ${secondaryText}`}
               >
                 {appearanceSummary}
               </Text>
             </View>
             <ChevronLeft
+              className="shrink-0"
               size={18}
               color={isDarkMode ? "#94A3B8" : "#64748B"}
               style={{
@@ -303,24 +301,28 @@ export default function Settings() {
           </Pressable>
 
           <View
-            className={`min-h-[72px] items-center px-4 py-3 ${preferenceRowDirection}`}
+            className={`min-h-[72px] items-center justify-between px-4 py-3 ${preferenceRowDirection}`}
+            style={{ direction: language === "ar" ? "rtl" : "ltr" }}
           >
             <View
-              className="h-10 w-10 items-center justify-center rounded-xl"
-              style={{ backgroundColor: surfaceColor }}
+              className="min-w-0 flex-1 flex-row items-center gap-3"
+              style={{ direction: language === "ar" ? "rtl" : "ltr" }}
             >
-              <Bell size={20} color={iconColor} />
+              <View
+                className="h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                style={{ backgroundColor: surfaceColor }}
+              >
+                <Bell size={20} color={iconColor} />
+              </View>
+              <Text
+                numberOfLines={1}
+                className={`min-w-0 flex-1 text-start font-bold ${titleText}`}
+              >
+                {t("settings.notifications")}
+              </Text>
             </View>
-            <Text
-              className={`mx-3 flex-1 font-bold ${titleText}`}
-              style={{
-                textAlign: language === "ar" ? "left" : "right",
-                writingDirection: language === "ar" ? "rtl" : "ltr",
-              }}
-            >
-              {t("settings.notifications")}
-            </Text>
             <Switch
+              className="shrink-0"
               value={!!notifications}
               onValueChange={setNotificationsEnabled}
               trackColor={
@@ -414,13 +416,10 @@ export default function Settings() {
             {t("settings.appearanceLanguage")}
           </Text>
 
-          <Text className={`mb-3 mt-6 font-bold ${titleText}`}>
+          <Text className={`mb-3 mt-6 font-bold ${i18n.language === "ar" ? "text-left" : "text-right"} ${titleText}`}>
             {t("settings.theme")}
           </Text>
-          <View
-            className="flex-row gap-2"
-            style={{ direction: language === "ar" ? "rtl" : "ltr" }}
-          >
+          <View className="flex-row gap-2" style={{ direction: "rtl" }}>
             {(["light", "dark", "system"] as const).map((preference) => {
               const selected = themePreference === preference;
               return (
@@ -490,17 +489,14 @@ export default function Settings() {
             })}
           </View>
 
-          <Text className={`mb-3 mt-6 font-bold ${titleText}`}>
+          <Text className={`mb-4 mt-6 font-bold ${i18n.language === "ar" ? "text-left" : "text-right"} ${titleText}`}>
             {t("settings.language")}
           </Text>
-          <View
-            className="flex-row gap-2"
-            style={{ direction: language === "ar" ? "rtl" : "ltr" }}
-          >
+          <View className="flex-row gap-2" style={{ direction: "ltr" }}>
             {(
               [
-                ["ar", t("settings.languageArabic")],
-                ["en", t("settings.languageEnglish")],
+                ["ar", "العربية"],
+                ["en", "English"],
               ] as const
             ).map(([nextLanguage, label]) => {
               const selected = language === nextLanguage;

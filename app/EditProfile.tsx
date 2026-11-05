@@ -6,6 +6,7 @@ import {
   Pressable,
   ActivityIndicator,
 } from "react-native";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import Text from "@/src/components/ScaledText";
 import React, { useMemo, useState } from "react";
 import { ArrowRight, Camera, CheckCircle2, WifiOff } from "@/src/components/icons";
@@ -46,6 +47,7 @@ export default function EditProfile() {
   const iconCircleBg = isDarkMode ? mc.darkAccentSoft : mc.accentSoft;
   const titleText = isDarkMode ? "text-gray-100" : "text-gray-800";
   const subText = isDarkMode ? "text-slate-400" : "text-gray-500";
+  const screenColor = isDarkMode ? "#0F172A" : "#F7F8FC";
 
   const syncBanner = useMemo(() => {
     if (profileSyncState === "syncing") {
@@ -106,9 +108,36 @@ export default function EditProfile() {
   };
 
   return (
-    <View
-      className={`flex-1 ${isDarkMode ? "bg-screen-dark" : "bg-screen-light"}`}
-    >
+    <View className="flex-1" style={{ backgroundColor: screenColor }}>
+      <Svg
+        pointerEvents="none"
+        width="100%"
+        height={320}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      >
+        <Defs>
+          <RadialGradient
+            id="editProfileModeGlow"
+            cx="50%"
+            cy="0%"
+            rx="80%"
+            ry="100%"
+          >
+            <Stop
+              offset="0%"
+              stopColor={palette.accent}
+              stopOpacity={isDarkMode ? "0.14" : "0.05"}
+            />
+            <Stop
+              offset="100%"
+              stopColor={palette.accent}
+              stopOpacity="0"
+            />
+          </RadialGradient>
+        </Defs>
+        <Rect width="100%" height={320} fill="url(#editProfileModeGlow)" />
+      </Svg>
+
       {/* Header */}
       <View className="pt-14 pb-2 px-4">
         <View className="flex-row items-center justify-between">
@@ -190,11 +219,12 @@ export default function EditProfile() {
           placeholderTextColor={isDarkMode ? "#64748b" : "#9ca3af"}
           autoCapitalize="words"
           maxLength={40}
-          className={`rounded-2xl px-4 py-3.5 mb-6 text-right font-bold ${
-            isDarkMode
-              ? "bg-slate-900 text-white"
-              : "bg-slate-200 text-slate-900"
+          className={`rounded-2xl border px-4 py-3.5 mb-6 text-right font-bold ${
+            isDarkMode ? "bg-slate-800 text-white" : "bg-white text-slate-900"
           }`}
+          style={{
+            borderColor: isDarkMode ? "#475569" : "#CBD5E1",
+          }}
         />
 
         {/* Save */}

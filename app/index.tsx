@@ -178,6 +178,21 @@ export default function Index() {
           hour12: true,
         })
       : "";
+    const priorityColor =
+      item.priority === "high"
+        ? "#EF4444"
+        : item.priority === "medium"
+          ? "#F97316"
+          : item.priority === "low"
+            ? "#10B981"
+            : palette.accent;
+    const priorityIndicator = (
+      <View
+        accessibilityLabel={item.priority}
+        className="h-2.5 w-2.5 rounded-full"
+        style={{ backgroundColor: priorityColor }}
+      />
+    );
     const completionButton = (
       <Pressable
         accessibilityRole="checkbox"
@@ -195,7 +210,12 @@ export default function Index() {
           backgroundColor: item.completed ? palette.accent : "transparent",
         }}
       >
-        {item.completed && <Check size={18} color={palette.header} />}
+        {item.completed && (
+          <Check
+            size={18}
+            color={isDarkMode ? palette.header : palette.accentText}
+          />
+        )}
       </Pressable>
     );
     const taskDetails = (
@@ -258,10 +278,12 @@ export default function Index() {
               {completionButton}
             </View>
             {taskDetails}
+            {priorityIndicator}
           </>
         ) : (
           <>
             {completionButton}
+            {priorityIndicator}
             {taskDetails}
             {deleteButton}
           </>
@@ -315,91 +337,120 @@ export default function Index() {
       }
     }
 
+    const flameIcon = (
+      <View
+        className="h-10 w-10 items-center justify-center rounded-full"
+        style={{ backgroundColor: subtleSurfaceColor }}
+      >
+        <Flame
+          size={18}
+          color={
+            item.priority === "high"
+              ? "#EF4444"
+              : item.priority === "medium"
+                ? "#F97316"
+                : item.priority === "low"
+                  ? "#10B981"
+                  : palette.accent
+          }
+        />
+      </View>
+    );
+    const habitDetails = (
+      <Pressable
+        onPress={() => handleOpenDetails(item.id)}
+        className="min-h-12 flex-1 justify-center"
+        style={{ alignItems: language === "ar" ? "flex-end" : "flex-start" }}
+      >
+        <Text
+          numberOfLines={1}
+          className={`text-[15px] font-bold ${item.completed ? "line-through" : ""}`}
+          style={{
+            color: item.completed ? completedTextColor : textColor,
+            textAlign: language === "ar" ? "right" : "left",
+          }}
+        >
+          {item.title}
+        </Text>
+        {(repeatText || reminderTimeText) && (
+          <Text
+            className="mt-1 text-xs"
+            style={{
+              color: secondaryTextColor,
+              textAlign: language === "ar" ? "right" : "left",
+            }}
+          >
+            {repeatText}
+            {repeatText && reminderTimeText ? " · " : ""}
+            {reminderTimeText}
+          </Text>
+        )}
+      </Pressable>
+    );
+    const completionButton = (
+      <Pressable
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: item.completed }}
+        accessibilityLabel={item.title}
+        onPress={() => completeHabit(item.id)}
+        hitSlop={8}
+        className="h-9 w-9 items-center justify-center rounded-full border-2"
+        style={{
+          borderColor: item.completed
+            ? palette.accent
+            : isDarkMode
+              ? "rgba(255,255,255,0.3)"
+              : "rgba(0,0,0,0.25)",
+          backgroundColor: item.completed ? palette.accent : "transparent",
+        }}
+      >
+        {item.completed && (
+          <Check
+            size={18}
+            color={isDarkMode ? palette.header : palette.accentText}
+          />
+        )}
+      </Pressable>
+    );
+    const deleteButton = (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${t("settings.delete")} ${item.title}`}
+        onPress={() => openDeleteConfirmation(item.id, "habit")}
+        hitSlop={10}
+        className="h-10 w-10 items-center justify-center"
+      >
+        <Trash2 size={20} color="rgba(248,113,113,0.82)" />
+      </Pressable>
+    );
+
     return (
       <View
         className="mb-2 items-center gap-4 rounded-2xl border px-3 py-3"
         style={{
-          flexDirection: rowDirection,
+          flexDirection: "row",
+          direction: "ltr",
           backgroundColor: surfaceColor,
           borderColor: surfaceBorderColor,
         }}
       >
-        <View
-          className="h-10 w-10 items-center justify-center rounded-full"
-          style={{ backgroundColor: subtleSurfaceColor }}
-        >
-          <Flame
-            size={18}
-            color={
-              item.priority === "high"
-                ? "#EF4444"
-                : item.priority === "medium"
-                  ? "#F97316"
-                  : item.priority === "low"
-                    ? "#10B981"
-                    : palette.accent
-            }
-          />
-        </View>
-
-        <Pressable
-          onPress={() => handleOpenDetails(item.id)}
-          className="min-h-12 flex-1 justify-center"
-          style={{ alignItems: language === "ar" ? "flex-end" : "flex-start" }}
-        >
-          <Text
-            numberOfLines={1}
-            className={`text-[15px] font-bold ${item.completed ? "line-through" : ""}`}
-            style={{
-              color: item.completed ? completedTextColor : textColor,
-              textAlign: language === "ar" ? "right" : "left",
-            }}
-          >
-            {item.title}
-          </Text>
-          {(repeatText || reminderTimeText) && (
-            <Text
-              className="mt-1 text-xs"
-              style={{
-                color: secondaryTextColor,
-                textAlign: language === "ar" ? "right" : "left",
-              }}
-            >
-              {repeatText}
-              {repeatText && reminderTimeText ? " · " : ""}
-              {reminderTimeText}
-            </Text>
-          )}
-        </Pressable>
-
-        <Pressable
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: item.completed }}
-          accessibilityLabel={item.title}
-          onPress={() => completeHabit(item.id)}
-          hitSlop={8}
-          className="h-6 w-6 items-center justify-center rounded-full border-2"
-          style={{
-            borderColor: item.completed
-              ? palette.accent
-              : isDarkMode
-                ? "rgba(255,255,255,0.3)"
-                : "rgba(0,0,0,0.25)",
-            backgroundColor: item.completed ? palette.accent : "transparent",
-          }}
-        >
-          {item.completed && <Check size={14} color={palette.header} />}
-        </Pressable>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`${t("settings.delete")} ${item.title}`}
-          onPress={() => openDeleteConfirmation(item.id, "habit")}
-          hitSlop={10}
-          className="h-8 w-8 items-center justify-center"
-        >
-          <Trash2 size={15} color="rgba(248,113,113,0.72)" />
-        </Pressable>
+        {language === "ar" ? (
+          <>
+            <View className="flex-row items-center gap-3">
+              {deleteButton}
+              {completionButton}
+            </View>
+            {habitDetails}
+            {flameIcon}
+          </>
+        ) : (
+          <>
+            {flameIcon}
+            {habitDetails}
+            {completionButton}
+            {deleteButton}
+          </>
+        )}
       </View>
     );
   };
@@ -498,7 +549,7 @@ export default function Index() {
               <Text
                 className="text-sm font-bold"
                 style={{
-                  color: mode === option ? palette.accent : mutedColor,
+                  color: mode === option ? palette.accentText : mutedColor,
                   writingDirection: language === "ar" ? "rtl" : "ltr",
                 }}
               >
@@ -529,7 +580,10 @@ export default function Index() {
           >
             {completedTasksCount} / {tasks.length} {t("progress.completed")}
           </Text>
-          <Text className="text-lg font-black" style={{ color: palette.accent }}>
+          <Text
+            className="text-lg font-black"
+            style={{ color: palette.accentText }}
+          >
             {progressPercentage}%
           </Text>
         </View>

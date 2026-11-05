@@ -21,6 +21,7 @@ import {
   Check,
   CheckCircle2,
   Flame,
+  Plus,
   Settings,
   Trash2,
 } from "@/src/components/icons";
@@ -35,8 +36,6 @@ type ItemTab = "tasks" | "habits";
 type DeleteTarget = { id: string; type: "task" | "habit" };
 
 const MODES: Mode[] = ["coding", "study", "faith"];
-const SCREEN = "#080B12";
-const MUTED = "#98A2B3";
 
 export default function Index() {
   const {
@@ -49,8 +48,27 @@ export default function Index() {
     completeHabit,
     deleteSingleItem,
     language,
+    isDarkMode,
   } = useAppStore();
   const { palette } = useModeTheme();
+  const screenColor = isDarkMode ? "#0F172A" : "#F7F8FC";
+  const textColor = isDarkMode ? "#FFFFFF" : "#1A1A1A";
+  const mutedColor = isDarkMode ? "#98A2B3" : "#64748B";
+  const secondaryTextColor = isDarkMode
+    ? "rgba(255,255,255,0.4)"
+    : "rgba(0,0,0,0.55)";
+  const completedTextColor = isDarkMode
+    ? "rgba(255,255,255,0.5)"
+    : "rgba(0,0,0,0.4)";
+  const surfaceColor = isDarkMode
+    ? "rgba(255,255,255,0.03)"
+    : "rgba(0,0,0,0.03)";
+  const surfaceBorderColor = isDarkMode
+    ? "rgba(255,255,255,0.07)"
+    : "rgba(0,0,0,0.07)";
+  const subtleSurfaceColor = isDarkMode
+    ? "rgba(255,255,255,0.06)"
+    : "rgba(0,0,0,0.04)";
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
@@ -171,7 +189,9 @@ export default function Index() {
         style={{
           borderColor: item.completed
             ? palette.accent
-            : "rgba(255,255,255,0.3)",
+            : isDarkMode
+              ? "rgba(255,255,255,0.3)"
+              : "rgba(0,0,0,0.25)",
           backgroundColor: item.completed ? palette.accent : "transparent",
         }}
       >
@@ -186,9 +206,10 @@ export default function Index() {
         <Text
           numberOfLines={1}
           className={`w-full text-[15px] font-bold ${
-            item.completed ? "text-white/40 line-through" : "text-white"
+            item.completed ? "line-through" : ""
           }`}
           style={{
+            color: item.completed ? completedTextColor : textColor,
             textAlign: language === "ar" ? "right" : "left",
             writingDirection: language === "ar" ? "rtl" : "ltr",
           }}
@@ -196,8 +217,9 @@ export default function Index() {
           {item.title}
         </Text>
         <Text
-          className="mt-1 w-full text-xs text-white/40"
+          className="mt-1 w-full text-xs"
           style={{
+            color: secondaryTextColor,
             textAlign: language === "ar" ? "right" : "left",
             writingDirection: language === "ar" ? "rtl" : "ltr",
           }}
@@ -221,10 +243,12 @@ export default function Index() {
 
     return (
       <View
-        className="items-center gap-4 border-b border-white/[0.08] py-4"
+        className="mb-2 items-center gap-4 rounded-2xl border px-3 py-3"
         style={{
           flexDirection: "row",
           direction: language === "ar" ? "ltr" : undefined,
+          backgroundColor: surfaceColor,
+          borderColor: surfaceBorderColor,
         }}
       >
         {language === "ar" ? (
@@ -293,10 +317,17 @@ export default function Index() {
 
     return (
       <View
-        className="items-center gap-4 border-b border-white/[0.08] py-4"
-        style={{ flexDirection: rowDirection }}
+        className="mb-2 items-center gap-4 rounded-2xl border px-3 py-3"
+        style={{
+          flexDirection: rowDirection,
+          backgroundColor: surfaceColor,
+          borderColor: surfaceBorderColor,
+        }}
       >
-        <View className="h-10 w-10 items-center justify-center rounded-full bg-white/[0.06]">
+        <View
+          className="h-10 w-10 items-center justify-center rounded-full"
+          style={{ backgroundColor: subtleSurfaceColor }}
+        >
           <Flame
             size={18}
             color={
@@ -318,17 +349,21 @@ export default function Index() {
         >
           <Text
             numberOfLines={1}
-            className={`text-[15px] font-bold ${
-              item.completed ? "text-white/40 line-through" : "text-white"
-            }`}
-            style={{ textAlign: language === "ar" ? "right" : "left" }}
+            className={`text-[15px] font-bold ${item.completed ? "line-through" : ""}`}
+            style={{
+              color: item.completed ? completedTextColor : textColor,
+              textAlign: language === "ar" ? "right" : "left",
+            }}
           >
             {item.title}
           </Text>
           {(repeatText || reminderTimeText) && (
             <Text
-              className="mt-1 text-xs text-white/40"
-              style={{ textAlign: language === "ar" ? "right" : "left" }}
+              className="mt-1 text-xs"
+              style={{
+                color: secondaryTextColor,
+                textAlign: language === "ar" ? "right" : "left",
+              }}
             >
               {repeatText}
               {repeatText && reminderTimeText ? " · " : ""}
@@ -345,7 +380,11 @@ export default function Index() {
           hitSlop={8}
           className="h-6 w-6 items-center justify-center rounded-full border-2"
           style={{
-            borderColor: item.completed ? palette.accent : "rgba(255,255,255,0.3)",
+            borderColor: item.completed
+              ? palette.accent
+              : isDarkMode
+                ? "rgba(255,255,255,0.3)"
+                : "rgba(0,0,0,0.25)",
             backgroundColor: item.completed ? palette.accent : "transparent",
           }}
         >
@@ -369,7 +408,7 @@ export default function Index() {
     selectedTab === "tasks" ? previewTasks.length : previewHabits.length;
 
   return (
-    <View className="flex-1" style={{ backgroundColor: SCREEN }}>
+    <View className="flex-1" style={{ backgroundColor: screenColor }}>
       <Svg
         pointerEvents="none"
         width="100%"
@@ -378,7 +417,11 @@ export default function Index() {
       >
         <Defs>
           <RadialGradient id="modeGlow" cx="50%" cy="0%" rx="80%" ry="100%">
-            <Stop offset="0%" stopColor={palette.accent} stopOpacity="0.18" />
+            <Stop
+              offset="0%"
+              stopColor={palette.accent}
+              stopOpacity={isDarkMode ? "0.14" : "0.05"}
+            />
             <Stop offset="100%" stopColor={palette.accent} stopOpacity="0" />
           </RadialGradient>
         </Defs>
@@ -389,7 +432,7 @@ export default function Index() {
         className="flex-1"
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingBottom: 20,
+          paddingBottom: Math.max(insets.bottom, 12) + 92,
           flexGrow: 1,
         }}
         showsVerticalScrollIndicator={false}
@@ -407,7 +450,7 @@ export default function Index() {
           <Text
             className="text-sm"
             style={{
-              color: MUTED,
+              color: mutedColor,
               textAlign: language === "ar" ? "left" : "right",
               writingDirection: language === "ar" ? "rtl" : "ltr",
             }}
@@ -415,8 +458,9 @@ export default function Index() {
             {t(greetingKey)}
           </Text>
           <Text
-            className="mt-1 text-2xl font-black text-white"
+            className="mt-1 text-2xl font-black"
             style={{
+              color: textColor,
               textAlign: language === "ar" ? "left" : "right",
               writingDirection: language === "ar" ? "rtl" : "ltr",
             }}
@@ -431,11 +475,17 @@ export default function Index() {
           hitSlop={12}
           className="h-11 w-11 items-center justify-center"
         >
-          <Settings size={22} color={MUTED} />
+          <Settings size={22} color={mutedColor} />
         </Pressable>
       </View>
 
-      <View className="mt-6 rounded-full border border-white/10 bg-white/[0.045] p-1">
+      <View
+        className="mt-6 rounded-full border p-1"
+        style={{
+          backgroundColor: subtleSurfaceColor,
+          borderColor: surfaceBorderColor,
+        }}
+      >
         <View style={{ flexDirection: rowDirection }}>
           {modeOrder.map((option) => (
             <Pressable
@@ -448,7 +498,7 @@ export default function Index() {
               <Text
                 className="text-sm font-bold"
                 style={{
-                  color: mode === option ? palette.accent : MUTED,
+                  color: mode === option ? palette.accent : mutedColor,
                   writingDirection: language === "ar" ? "rtl" : "ltr",
                 }}
               >
@@ -471,8 +521,11 @@ export default function Index() {
           style={{ flexDirection: rowDirection }}
         >
           <Text
-            className="text-sm font-semibold text-white/70"
-            style={{ writingDirection: language === "ar" ? "rtl" : "ltr" }}
+            className="text-sm font-semibold"
+            style={{
+              color: isDarkMode ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.65)",
+              writingDirection: language === "ar" ? "rtl" : "ltr",
+            }}
           >
             {completedTasksCount} / {tasks.length} {t("progress.completed")}
           </Text>
@@ -480,7 +533,10 @@ export default function Index() {
             {progressPercentage}%
           </Text>
         </View>
-        <View className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+        <View
+          className="h-2.5 w-full overflow-hidden rounded-full"
+          style={{ backgroundColor: subtleSurfaceColor }}
+        >
           <View
             className="h-full rounded-full"
             style={{
@@ -491,8 +547,11 @@ export default function Index() {
           />
         </View>
         <Text
-          className="mt-3 text-center text-sm text-white/60"
-          style={{ writingDirection: language === "ar" ? "rtl" : "ltr" }}
+          className="mt-3 text-center text-sm"
+          style={{
+            color: isDarkMode ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)",
+            writingDirection: language === "ar" ? "rtl" : "ltr",
+          }}
         >
           {progressPercentage === 100
             ? t(
@@ -507,8 +566,14 @@ export default function Index() {
       </View>
 
       <View
-        className="mt-7 rounded-full bg-white/[0.06] p-1"
-        style={{ flexDirection: rowDirection, minHeight: 52 }}
+        className="mt-7 rounded-full p-1"
+        style={{
+          flexDirection: rowDirection,
+          minHeight: 52,
+          backgroundColor: subtleSurfaceColor,
+          borderWidth: 1,
+          borderColor: surfaceBorderColor,
+        }}
       >
         {(["tasks", "habits"] as const).map((tab) => (
           <Pressable
@@ -528,7 +593,7 @@ export default function Index() {
             <Text
               className="font-bold"
               style={{
-                color: selectedTab === tab ? palette.header : MUTED,
+                color: selectedTab === tab ? palette.header : mutedColor,
                 writingDirection: language === "ar" ? "rtl" : "ltr",
               }}
             >
@@ -537,12 +602,12 @@ export default function Index() {
             {tab === "tasks" ? (
               <CheckCircle2
                 size={16}
-                color={selectedTab === tab ? palette.header : MUTED}
+                color={selectedTab === tab ? palette.header : mutedColor}
               />
             ) : (
               <Flame
                 size={16}
-                color={selectedTab === tab ? palette.header : MUTED}
+                color={selectedTab === tab ? palette.header : mutedColor}
               />
             )}
           </Pressable>
@@ -553,7 +618,10 @@ export default function Index() {
         <View className="h-[225px]">
           {activeItemsCount === 0 ? (
             <View className="flex-1 items-center justify-center">
-              <Text className="text-center text-sm text-white/45">
+              <Text
+                className="text-center text-sm"
+                style={{ color: mutedColor }}
+              >
                 {t(selectedTab === "tasks" ? "ViewAll.No tasks" : "ViewAll.No habits")}
               </Text>
             </View>
@@ -577,45 +645,38 @@ export default function Index() {
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => router.push("./view-all")}
-          className="mt-2 items-center justify-center rounded-full border border-white/15 py-3"
+          className="mt-2 items-center justify-center rounded-full border py-3"
+          style={{ borderColor: surfaceBorderColor }}
         >
-          <Text className="text-sm font-bold text-white/70">
+          <Text
+            className="text-sm font-bold"
+            style={{ color: isDarkMode ? "rgba(255,255,255,0.7)" : "#1A1A1A" }}
+          >
             {t("common.viewAll")}
           </Text>
         </TouchableOpacity>
       </View>
       </ScrollView>
 
-      <View
-        className="px-5 pt-3"
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={t("home.addTask")}
+        onPress={openAddTaskSheet}
+        activeOpacity={0.85}
+        className="absolute h-[60px] w-[60px] items-center justify-center rounded-full"
         style={{
-          paddingBottom: Math.max(insets.bottom, 12),
-          alignItems: language === "ar" ? "flex-start" : "flex-end",
-          backgroundColor: SCREEN,
+          backgroundColor: palette.accent,
+          bottom: Math.max(insets.bottom, 12) + 16,
+          right: 20,
+          elevation: 8,
+          shadowColor: palette.accent,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.28,
+          shadowRadius: 8,
         }}
       >
-        <TouchableOpacity
-          accessibilityRole="button"
-          onPress={openAddTaskSheet}
-          className="min-h-[52px] items-center justify-center rounded-full px-6"
-          style={{
-            backgroundColor: palette.accent,
-            elevation: 8,
-            flexDirection: rowDirection,
-          }}
-          activeOpacity={0.85}
-        >
-          <Text
-            className="text-base font-black"
-            style={{
-              color: palette.header,
-              writingDirection: language === "ar" ? "rtl" : "ltr",
-            }}
-          >
-            + {t("home.addTask")}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        <Plus size={28} color={palette.header} strokeWidth={2.5} />
+      </TouchableOpacity>
 
       <AddTaskSheet ref={bottomSheetRef} mode={mode} />
       <DetailsSheet ref={detailsSheetRef} itemId={selectedId} />

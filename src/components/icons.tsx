@@ -32,6 +32,7 @@ import {
   Mosque as MosqueBase,
   Palette as PaletteBase,
   PawPrint as PawPrintBase,
+  Plus as PlusBase,
   RefreshCw as RefreshCwBase,
   Settings as SettingsBase,
   Sun as SunBase,
@@ -86,6 +87,7 @@ export const Moon = makeScaledIcon(MoonBase);
 export const Mosque = makeScaledIcon(MosqueBase);
 export const Palette = makeScaledIcon(PaletteBase);
 export const PawPrint = makeScaledIcon(PawPrintBase);
+export const Plus = makeScaledIcon(PlusBase);
 export const RefreshCw = makeScaledIcon(RefreshCwBase);
 export const Settings = makeScaledIcon(SettingsBase);
 export const Sun = makeScaledIcon(SunBase);

@@ -116,15 +116,18 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
     const taskReminderTime = item.reminderTime;
 
     const accentText = isDarkMode ? mc.darkInteractiveText : mc.textHeader;
-    const inputBg = isDarkMode
-      ? ` ${mc.darkAccentSoft} ${mc.darkInteractiveText}`
-      : ` ${mc.accentSoft} ${mc.textHeader}`;
-    const softBoxBg = isDarkMode ? mc.darkAccentSoft : mc.accentSoft;
-    const activePill = isDarkMode ? mc.darkInteractive : mc.headerBg;
-    const activePillText = isDarkMode ? mc.textHeader : "text-white";
+    const inputBg = isDarkMode ? "bg-white/5" : "bg-slate-100";
+    const softBoxBg = inputBg;
+    const activePill = isDarkMode ? mc.darkInteractive : "";
+    const activePillStyle = {
+      backgroundColor: isDarkMode
+        ? `${palette.interactive}CC`
+        : palette.accent,
+    };
+    const activePillText = isDarkMode ? mc.textHeader : "text-slate-900";
     const unselectedPill = isDarkMode
       ? `${mc.darkInteractiveBorder30} ${mc.darkAccentSoft}`
-      : `${mc.accentBorder} ${mc.accentBg30}`;
+      : "border-slate-300 bg-transparent";
     const iconColor = palette.accentText;
 
     return (
@@ -162,12 +165,14 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                     ? updateHabit(item.id, { title: text })
                     : updateTask(item.id, { title: text })
                 }
-                className={`text-md  font-black px-4 rounded-2xl ${inputBg}`}
+                className={`text-md font-black px-4 rounded-2xl border-0 ${inputBg}`}
+                style={{ color: isDarkMode ? "#F1F5F9" : "#1E293B" }}
                 placeholder={
                   isHabit
                     ? t("details.habit title placeholder")
                     : t("details.task title placeholder")
                 }
+                placeholderTextColor={isDarkMode ? "#94A3B8" : "#64748B"}
               />
             </View>
           </View>
@@ -198,8 +203,12 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                 "details.description " +
                   (isHabit ? "habit placeholder" : "task placeholder"),
               )}
-              className={` p-4 text-md rounded-2xl font-semibold ${inputBg}`}
-              style={{ minHeight: 48, height: Math.max(48, descHeight) }}
+              className={`p-4 text-md rounded-2xl border-0 font-semibold ${inputBg}`}
+              placeholderTextColor={isDarkMode ? "#94A3B8" : "#64748B"}
+              style={[
+                { minHeight: 48, height: Math.max(48, descHeight) },
+                { color: isDarkMode ? "#F1F5F9" : "#1E293B" },
+              ]}
               textAlignVertical="top"
             />
           </View>
@@ -309,9 +318,10 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
                         ? `border-transparent ${activePill}`
                         : unselectedPill
                     }`}
+                    style={isSelected ? activePillStyle : undefined}
                   >
                     <Text
-                      className={`text-xs font-bold ${isSelected ? activePillText : isDarkMode ? mc.darkInteractiveText : "text-gray-600"}`}
+                      className={`text-xs font-bold ${isSelected ? activePillText : isDarkMode ? mc.darkInteractiveText : "text-slate-700"}`}
                     >
                       {opt.label}
                     </Text>
@@ -327,8 +337,8 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
               onPress={() => dateSheetRef.current?.present()}
               className={`flex-1 gap-2 p-3 rounded-2xl items-center justify-center ${softBoxBg}`}
             >
-              <Calendar size={20} color={iconColor} />
-              <Text className={`font-bold text-center ${accentText}`}>
+              <Calendar size={20} color={isDarkMode ? iconColor : "#334155"} />
+              <Text className={`font-bold text-center ${isDarkMode ? accentText : "text-slate-700"}`}>
                 {t("details.date")}
               </Text>
             </Pressable>
@@ -336,8 +346,8 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
               onPress={() => timeSheetRef.current?.present()}
               className={`flex-1 gap-2 p-3 rounded-2xl items-center justify-center ${softBoxBg}`}
             >
-              <Clock size={20} color={iconColor} />
-              <Text className={`font-bold text-center ${accentText}`}>
+              <Clock size={20} color={isDarkMode ? iconColor : "#334155"} />
+              <Text className={`font-bold text-center ${isDarkMode ? accentText : "text-slate-700"}`}>
                 {t("details.time")}
               </Text>
             </Pressable>

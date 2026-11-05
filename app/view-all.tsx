@@ -3,26 +3,31 @@ import {
   Pressable,
   TouchableOpacity,
 } from "react-native";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import Text from "@/src/components/ScaledText";
 import React, { useRef, useState } from "react";
 import { FlashList } from "@shopify/flash-list";
 import { Task, Habit, useAppStore } from "../store/useAppStore";
 import {
   CheckCircle2,
+  Check,
+  Plus,
   RefreshCw,
   Trash2,
-  ChevronLeft,
+  ChevronRight,
   Flame,
 } from "@/src/components/icons";
 import { AddTaskSheet } from "../components/AddTaskSheet";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DetailsSheet } from "./tasks/taskDetails";
 import BottomSheetModal from "@gorhom/bottom-sheet/lib/typescript/components/bottomSheetModal/BottomSheetModal";
 import { useModeTheme, useModeClasses } from "@/src/theme";
 const ShowAll = () => {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const {
     tasks,
     deleteSingleItem,
@@ -31,10 +36,28 @@ const ShowAll = () => {
     completeHabit,
     isDarkMode,
     language,
-    mode,
   } = useAppStore();
   const { palette } = useModeTheme();
   const mc = useModeClasses();
+  const screenColor = isDarkMode ? "#0F172A" : "#F7F8FC";
+  const textColor = isDarkMode ? "#FFFFFF" : "#1A1A1A";
+  const mutedTextColor = isDarkMode ? "#98A2B3" : "#64748B";
+  const secondaryTextColor = isDarkMode
+    ? "rgba(255,255,255,0.4)"
+    : "rgba(0,0,0,0.55)";
+  const completedTextColor = isDarkMode
+    ? "rgba(255,255,255,0.5)"
+    : "rgba(0,0,0,0.4)";
+  const surfaceColor = isDarkMode
+    ? "rgba(255,255,255,0.03)"
+    : "rgba(0,0,0,0.03)";
+  const surfaceBorderColor = isDarkMode
+    ? "rgba(255,255,255,0.07)"
+    : "rgba(0,0,0,0.07)";
+  const subtleSurfaceColor = isDarkMode
+    ? "rgba(255,255,255,0.06)"
+    : "rgba(0,0,0,0.04)";
+  const segmentedBackground = isDarkMode ? "bg-white/5" : "bg-slate-100";
   const [type, setType] = useState<"task" | "habit">("task");
   const detailsSheetRef = useRef<BottomSheetModal>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -77,124 +100,117 @@ const ShowAll = () => {
           hour12: true,
         })
       : "";
+    const priorityColor =
+      item.priority === "high"
+        ? "#EF4444"
+        : item.priority === "medium"
+          ? "#F97316"
+          : item.priority === "low"
+            ? "#10B981"
+            : palette.accent;
 
-    return (
-      <Pressable onPress={() => handleOpenDetails(item.id)}>
-        <View
-          className={`flex-row items-center justify-between mb-3 p-3 rounded-[30px] border ${
-            item.completed
-              ? isDarkMode
-                ? "bg-gray-700 border-gray-600"
-                : "bg-gray-100 border-gray-200"
-              : isDarkMode
-                ? `${mc.darkCard} border-gray-600/50`
-                : `bg-white ${mc.accentBorder}`
-          }`}
+    const priorityIndicator = (
+      <View
+        className="h-2.5 w-2.5 rounded-full"
+        style={{ backgroundColor: priorityColor }}
+      />
+    );
+    const completionButton = (
+      <Pressable
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: item.completed }}
+        accessibilityLabel={item.title}
+        onPress={() => toggleTaskComplete(item.id)}
+        hitSlop={8}
+        className="h-9 w-9 items-center justify-center rounded-full border-2"
+        style={{
+          borderColor: item.completed
+            ? palette.accent
+            : isDarkMode
+              ? "rgba(255,255,255,0.3)"
+              : "rgba(0,0,0,0.25)",
+          backgroundColor: item.completed ? palette.accent : "transparent",
+        }}
+      >
+        {item.completed && (
+          <Check
+            size={18}
+            color={isDarkMode ? palette.header : palette.accentText}
+          />
+        )}
+      </Pressable>
+    );
+    const deleteButton = (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${t("settings.delete")} ${item.title}`}
+        onPress={() => {
+          setPendingDelete({ id: item.id, type: "task" });
+          setDeleteModalVisible(true);
+        }}
+        hitSlop={10}
+        className="h-10 w-10 items-center justify-center"
+      >
+        <Trash2 size={20} color="rgba(248,113,113,0.82)" />
+      </Pressable>
+    );
+    const taskDetails = (
+      <Pressable
+        onPress={() => handleOpenDetails(item.id)}
+        className="min-h-12 flex-1 justify-center"
+        style={{ alignItems: language === "ar" ? "flex-end" : "flex-start" }}
+      >
+        <Text
+          numberOfLines={1}
+          className={`text-[15px] font-bold ${item.completed ? "line-through" : ""}`}
           style={{
-            elevation: 2,
-            shadowColor: "#000",
-            shadowOpacity: 0.05,
-            shadowRadius: 10,
+            color: item.completed ? completedTextColor : textColor,
+            textAlign: language === "ar" ? "right" : "left",
           }}
         >
-          {/* أيقونة الحالة */}
-          <View
-            className={`w-10 h-10 rounded-full items-center justify-center ${
-              item.completed
-                ? isDarkMode
-                  ? "bg-gray-600"
-                  : "bg-gray-200"
-                : item.priority === "high"
-                  ? "bg-red-500/15"
-                  : item.priority === "medium"
-                    ? "bg-amber-500/15"
-: item.priority === "low"
-                  ? "bg-emerald-500/15"
-                  : mode === "coding"
-                    ? isDarkMode
-                      ? "bg-gray-600/25"
-                      : "bg-gray-200"
-                    : isDarkMode
-                      ? mc.darkAccentSoft
-                      : mc.accentBg40
-            }`}
-          >
-            <View
-              className={`w-4 h-4 rounded-full ${
-                item.completed
-                  ? "bg-gray-400"
-                  : item.priority === "high"
-                    ? "bg-red-500"
-                    : item.priority === "medium"
-                      ? "bg-amber-500"
-                      : item.priority === "low"
-                        ? "bg-emerald-500"
-                        : mode === "coding"
-                          ? "bg-gray-400"
-                          : isDarkMode
-                            ? mc.darkInteractive
-                            : mc.headerBg
-              }`}
-            />
-          </View>
-
-          <View className="flex-1 ml-3">
-            <Text
-              className={`${isDarkMode ? "font-semibold text-gray-100" : "font-bold text-gray-800"} text-base ${item.completed ? "line-through text-gray-400" : ""}`}
-              numberOfLines={2}
-            >
-              {item.title}
-            </Text>
-            <Text
-              className={`${isDarkMode ? "text-gray-300" : "text-gray-600"} text-xs`}
-            >
-              {dueDateLabel} | {" "}
-              {dueTimeLabel ? (
-                <Text
-                  className={`${isDarkMode ? "text-gray-300" : "text-gray-600"} text-xs`}
-                >
-                  {dueTimeLabel}
-                </Text>
-              ) : null}
-            </Text>
-          </View>
-
-          {/* زر إتمام سريع */}
-          <Pressable
-            onPress={() => toggleTaskComplete(item.id)}
-            className={`flex-row items-center p-1 mb-2 rounded-[24px] ${
-              item.completed
-                ? isDarkMode
-                  ? "border-gray-600"
-                  : "border-gray-200"
-                : isDarkMode
-                  ? "border-gray-600/50"
-                  : mc.accentBorder
-            }`}
-          >
-            <View
-              className={`w-8 h-8 rounded-md border-2 mx-5 flex-row items-center justify-center ${item.completed ? "bg-green-700 border-green-700" : isDarkMode ? mc.darkInteractiveBorder : mc.headerBorder}`}
-            >
-              {item.completed && (
-                <Text className="text-white text-xs font-bold text-center">
-                  ✓
-                </Text>
-              )}
-            </View>
-          </Pressable>
-
-          {/* زر الحذف */}
-          <TouchableOpacity
-            onPress={() => {
-              setPendingDelete({ id: item.id, type: "task" });
-              setDeleteModalVisible(true);
-            }}
-            className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
-          >
-            <Trash2 color="white" size={20} />
-          </TouchableOpacity>
-        </View>
+          {item.title}
+        </Text>
+        <Text
+          className="mt-1 text-xs"
+          style={{
+            color: secondaryTextColor,
+            textAlign: language === "ar" ? "right" : "left",
+          }}
+        >
+          {dueDateLabel}
+          {dueTimeLabel ? ` · ${dueTimeLabel}` : ""}
+        </Text>
       </Pressable>
+    );
+
+    return (
+      <View
+        className="mb-2 items-center gap-4 rounded-2xl border px-3 py-3"
+        style={{
+          flexDirection: "row",
+          direction: "ltr",
+          backgroundColor: surfaceColor,
+          borderColor: surfaceBorderColor,
+        }}
+      >
+        {language === "ar" ? (
+          <>
+            <View className="flex-row items-center gap-3">
+              {deleteButton}
+              {completionButton}
+            </View>
+            {taskDetails}
+            {priorityIndicator}
+          </>
+        ) : (
+          <>
+            {completionButton}
+            {priorityIndicator}
+            {taskDetails}
+            {deleteButton}
+          </>
+        )}
+      </View>
     );
   };
 
@@ -264,199 +280,229 @@ const ShowAll = () => {
     const repeatText = getRepeatText();
     const reminderTimeText = formatReminderTime();
 
-    return (
-      <Pressable
-        onPressIn={() => handleOpenDetails(item.id)}
-        className={`flex-row justify-between items-center px-4 py-2 mb-3 rounded-[24px] border ${
-          completed
-            ? isDarkMode
-              ? "bg-gray-700 border-gray-600"
-              : "bg-gray-100 border-gray-200"
-            : isDarkMode
-              ? `${mc.darkCard} border-gray-600/50`
-              : `bg-white ${mc.accentBorder}`
-        }`}
-        style={{
-          elevation: 2,
-          shadowColor: "#000",
-          shadowOpacity: 0.05,
-          shadowRadius: 10,
-        }}
+    const flameIcon = (
+      <View
+        className="h-10 w-10 items-center justify-center rounded-full"
+        style={{ backgroundColor: subtleSurfaceColor }}
       >
-        {/* أيقونة الحالة */}
-        <View
-          className={`w-10 h-10 rounded-full items-center justify-center ${
-            completed
-              ? isDarkMode
-                ? "bg-gray-600"
-                : "bg-gray-200"
+        <Flame
+          size={18}
+          color={
+            item.priority === "high"
+              ? "#EF4444"
+              : item.priority === "medium"
+                ? "#F97316"
+                : item.priority === "low"
+                  ? "#10B981"
+                  : palette.accent
+          }
+        />
+      </View>
+    );
+    const completionButton = (
+      <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: completed }}
+          accessibilityLabel={item.title}
+          onPress={() => completeHabit(item.id)}
+          hitSlop={8}
+          className="h-9 w-9 items-center justify-center rounded-full border-2"
+          style={{
+            borderColor: completed
+              ? palette.accent
               : isDarkMode
-                ? mc.darkAccentSoft
-                : mc.accentBg40
-          }`}
+                ? "rgba(255,255,255,0.3)"
+                : "rgba(0,0,0,0.25)",
+            backgroundColor: completed ? palette.accent : "transparent",
+          }}
         >
-          <Flame
-            size={20}
-            color={
-              item.priority === "high"
-                ? "#EF4444"
-                : item.priority === "medium"
-                  ? "#F97316"
-                  : item.priority === "low"
-                    ? "#10B981"
-                    : isDarkMode
-                      ? "#FFFFFF"
-                      : "#000000"
-            }
-          />
-        </View>
-
-        {/* 2. النصوص (العنوان - التكرار - الوقت) */}
-        <View className="mx-3 ml-3 flex-1">
+          {completed && (
+            <Check
+              size={18}
+              color={isDarkMode ? palette.header : palette.accentText}
+            />
+          )}
+      </Pressable>
+    );
+    const deleteButton = (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${t("settings.delete")} ${item.title}`}
+        onPress={() => {
+          setPendingDelete({ id: item.id, type: "habit" });
+          setDeleteModalVisible(true);
+        }}
+        hitSlop={10}
+        className="h-10 w-10 items-center justify-center"
+      >
+        <Trash2 size={20} color="rgba(248,113,113,0.82)" />
+      </Pressable>
+    );
+    const habitDetails = (
+      <Pressable
+        onPress={() => handleOpenDetails(item.id)}
+        className="min-h-12 flex-1 justify-center"
+        style={{ alignItems: language === "ar" ? "flex-end" : "flex-start" }}
+      >
           <Text
-            className={`${isDarkMode ? "font-semibold text-gray-100" : "font-bold text-gray-800"} text-base ${completed ? "line-through text-gray-400" : ""}`}
-            numberOfLines={2}
+            numberOfLines={1}
+            className={`text-[15px] font-bold ${completed ? "line-through" : ""}`}
+            style={{
+              color: completed ? completedTextColor : textColor,
+              textAlign: language === "ar" ? "right" : "left",
+            }}
           >
             {item.title}
           </Text>
-          {repeatText ? (
-            <View
-              className={`flex-row items-center flex-wrap gap-x-1 ${language === "ar" ? "flex-row" : ""}`}
-            >
-              <Text
-                className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
-              >
-                {repeatText}
-              </Text>
-              {reminderTimeText && (
-                <>
-                  <Text
-                    className={`text-[8px] font-black ${isDarkMode ? "text-gray-500" : "text-gray-400"}`}
-                  >
-                    {" | "}
-                  </Text>
-                  <Text
-                    className={`text-[8px] font-black uppercase ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
-                  >
-                    {reminderTimeText}
-                  </Text>
-                </>
-              )}
-            </View>
-          ) : null}
-        </View>
-        <Pressable
-          onPress={() => completeHabit(item.id)}
-          className={`flex-row items-center ${
-            completed
-              ? isDarkMode
-                ? "border-gray-600"
-                : "border-gray-200"
-              : isDarkMode
-                ? "border-gray-600/50"
-                : mc.accentBorder
-          }`}
-        >
-<View
-            className={`w-8 h-8 rounded-md border-2 mx-2 flex-row items-center justify-center ${completed ? "bg-green-700 border-green-700" : isDarkMode ? mc.darkInteractiveBorder : mc.headerBorder}`}
+        {(repeatText || reminderTimeText) && (
+          <Text
+            className="mt-1 text-xs"
+            style={{
+              color: secondaryTextColor,
+              textAlign: language === "ar" ? "right" : "left",
+            }}
           >
-            {completed && (
-              <Text className="text-white text-xs font-bold text-center">
-                ✓
-              </Text>
-            )}
-          </View>
-        </Pressable>
-
-        {/* زر الحذف */}
-        <Pressable
-          onPress={() => {
-            setPendingDelete({ id: item.id, type: "habit" });
-            setDeleteModalVisible(true);
-          }}
-          className="w-10 h-10 rounded-full bg-red-500 items-center justify-center ml-2"
-        >
-          <Trash2 color="white" size={20} />
-        </Pressable>
+            {repeatText}
+            {repeatText && reminderTimeText ? " · " : ""}
+            {reminderTimeText}
+          </Text>
+        )}
       </Pressable>
+    );
+
+    return (
+      <View
+        className="mb-2 items-center gap-4 rounded-2xl border px-3 py-3"
+        style={{
+          flexDirection: "row",
+          direction: "ltr",
+          backgroundColor: surfaceColor,
+          borderColor: surfaceBorderColor,
+        }}
+      >
+        {language === "ar" ? (
+          <>
+            <View className="flex-row items-center gap-3">
+              {deleteButton}
+              {completionButton}
+            </View>
+            {habitDetails}
+            {flameIcon}
+          </>
+        ) : (
+          <>
+            {flameIcon}
+            {habitDetails}
+            {completionButton}
+            {deleteButton}
+          </>
+        )}
+      </View>
     );
   };
 
   return (
     <View
-      className={`flex-1 px-4 py-6 ${isDarkMode ? "bg-screen-dark" : "bg-screen-light"}`}
+      className="flex-1 px-4 py-6"
+      style={{ backgroundColor: screenColor }}
     >
+      <Svg
+        pointerEvents="none"
+        width="100%"
+        height={320}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      >
+        <Defs>
+          <RadialGradient id="modeGlow" cx="50%" cy="0%" rx="80%" ry="100%">
+            <Stop
+              offset="0%"
+              stopColor={palette.accent}
+              stopOpacity={isDarkMode ? "0.14" : "0.05"}
+            />
+            <Stop offset="100%" stopColor={palette.accent} stopOpacity="0" />
+          </RadialGradient>
+        </Defs>
+        <Rect width="100%" height={320} fill="url(#modeGlow)" />
+      </Svg>
       <View className="flex-row items-center justify-center mb-6">
         <Text
-          className={`text-xl font-bold my-6 mlr-3 text-center 
-          ${
-            isDarkMode ? mc.darkInteractiveText : mc.textHeader
-          }`}
+          className={`text-xl font-bold my-6 mlr-3 text-center ${isDarkMode ? mc.darkInteractiveText : mc.textHeader}`}
         >
           {type === "task" ? t("ViewAll.Tasks") : t("ViewAll.Habits")}
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
-          className={
-            "absolute right-4 top-6 p-2 rounded-full " +
-            (isDarkMode ? mc.darkInteractive : mc.headerBg)
-          }
+          accessibilityRole="button"
+          className={`absolute ${language === "ar" ? "left-2" : "right-2"} top-6 p-2`}
         >
-          <ChevronLeft
-            color={isDarkMode ? palette.onInteractive : "#FFFFFF"}
-            size={24}
-          />
+          <ChevronRight color={mutedTextColor} size={20} />
         </TouchableOpacity>
       </View>
 
       {/* 2. السويتش (مبدل مهمة/عادة) */}
       <View
-        className={
-          "flex-row p-1.5 rounded-2xl mb-4 " +
-          (isDarkMode ? mc.darkAccentSoft : "bg-gray-200")
-        }
+        className={`flex-row p-1 rounded-full mb-3 ${segmentedBackground}`}
       >
         <TouchableOpacity
           onPress={() => setType("task")}
-          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${language === "ar" ? "flex-row" : "flex-row-reverse"} space-x-2 ${type === "task" ? (isDarkMode ? mc.darkInteractive : mc.headerBg) : ""}`}
+          accessibilityRole="button"
+          accessibilityState={{ selected: type === "task" }}
+          className={`flex-1 flex-row items-center justify-center gap-2 rounded-full py-3 ${language === "ar" ? "" : "flex-row-reverse"}`}
+          style={{
+            backgroundColor: type === "task" ? palette.accent : "transparent",
+          }}
         >
           <Text
-            className={`font-bold ${type === "task" ? (isDarkMode ? mc.textHeader : "text-white") : "text-gray-400"}`}
+            className="font-bold"
+            style={{ color: type === "task" ? palette.header : mutedTextColor }}
           >
             {t("ViewAll.inProgress")}
           </Text>
           <CheckCircle2
             size={20}
-            color={type === "task" ? (isDarkMode ? palette.onInteractive : "#FFFFFF") : "#9CA3AF"}
+            color={type === "task" ? palette.header : mutedTextColor}
           />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setType("habit")}
-          className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center ${language === "ar" ? "flex-row" : "flex-row-reverse"} ${type === "habit" ? (isDarkMode ? mc.darkInteractive : mc.headerBg) : ""}`}
+          accessibilityRole="button"
+          accessibilityState={{ selected: type === "habit" }}
+          className={`flex-1 flex-row items-center justify-center gap-2 rounded-full py-3 ${language === "ar" ? "" : "flex-row-reverse"}`}
+          style={{
+            backgroundColor: type === "habit" ? palette.accent : "transparent",
+          }}
         >
           <Text
-            className={`font-bold ${type === "habit" ? (isDarkMode ? mc.textHeader : "text-white") : "text-gray-400"}`}
+            className="font-bold"
+            style={{ color: type === "habit" ? palette.header : mutedTextColor }}
           >
             {t("ViewAll.daily routine")}
           </Text>
-          <RefreshCw size={20} color={type === "habit" ? (isDarkMode ? palette.onInteractive : "#FFFFFF") : "#9CA3AF"} />
+          <RefreshCw
+            size={20}
+            color={type === "habit" ? palette.header : mutedTextColor}
+          />
         </TouchableOpacity>
       </View>
       {/* 1. الفلاتر (الكل / مكتملة / غير مكتملة) */}
       <View
-        className={
-          "flex-row p-1.5 rounded-2xl mb-4 " +
-          (isDarkMode ? mc.darkAccentSoft : "bg-gray-200")
-        }
+        className={`flex-row p-1 rounded-full mb-4 ${segmentedBackground}`}
       >
         {["all", "completed", "incompleted"].map((cat) => (
           <TouchableOpacity
             key={cat}
             onPress={() => setCategory(cat)}
-            className={`flex-1 py-2 rounded-xl items-center justify-center ${category === cat ? (isDarkMode ? mc.darkInteractive60 : mc.headerBg) : ""}`}
+            accessibilityRole="button"
+            accessibilityState={{ selected: category === cat }}
+            className="flex-1 py-2.5 rounded-full items-center justify-center"
+            style={{
+              backgroundColor:
+                category === cat ? palette.accent : "transparent",
+            }}
           >
             <Text
-              className={`font-bold text-center text-sm ${category === cat ? (isDarkMode ? mc.textHeader : "text-white") : "text-gray-400"}`}
+              className="font-bold text-center text-sm"
+              style={{ color: category === cat ? palette.header : mutedTextColor }}
             >
               {cat === "all"
                 ? t("ViewAll.all")
@@ -488,22 +534,22 @@ const ShowAll = () => {
             );
             return filteredTasks.length === 0 ? (
               <View className="flex-1 items-center justify-center">
-                <Text className={`${isDarkMode ? "text-gray-200" : "text-gray-600"}`}>{t("ViewAll.No tasks")}</Text>
-                <TouchableOpacity
-                  onPress={openAddTaskSheet}
-                  className={`absolute bottom-6 right-6 min-w-16 min-h-16 px-4 py-3 rounded-full items-center justify-center ${
-                    isDarkMode ? mc.darkInteractive : mc.headerBg
-                  }`}
-                  style={{ elevation: 5 }}
+                <View
+                  className="mb-4 h-16 w-16 items-center justify-center rounded-full"
+                  style={{
+                    backgroundColor: isDarkMode
+                      ? "rgba(255,255,255,0.06)"
+                      : "rgba(15,23,42,0.05)",
+                  }}
                 >
-                  <Text
-                    className={`text-3xl font-bold ${
-                      isDarkMode ? mc.textHeader : "text-white"
-                    }`}
-                  >
-                    +
-                  </Text>
-                </TouchableOpacity>
+                  <CheckCircle2 size={28} color={palette.accent} />
+                </View>
+                <Text
+                  className="text-center font-semibold"
+                  style={{ color: mutedTextColor }}
+                >
+                  {t("ViewAll.No tasks")}
+                </Text>
               </View>
             ) : (
               <FlashList
@@ -537,22 +583,22 @@ const ShowAll = () => {
               );
             return filteredHabits.length === 0 ? (
               <View className="flex-1 items-center justify-center">
-                <Text className={`${isDarkMode ? "text-gray-200" : "text-gray-600"}`}>{t("ViewAll.No habits")}</Text>
-                <TouchableOpacity
-                  onPress={openAddTaskSheet}
-                  className={`absolute bottom-6 right-6 min-w-16 min-h-16 px-4 py-3 rounded-full items-center justify-center ${
-                    isDarkMode ? mc.darkInteractive : mc.headerBg
-                  }`}
-                  style={{ elevation: 5 }}
+                <View
+                  className="mb-4 h-16 w-16 items-center justify-center rounded-full"
+                  style={{
+                    backgroundColor: isDarkMode
+                      ? "rgba(255,255,255,0.06)"
+                      : "rgba(15,23,42,0.05)",
+                  }}
                 >
-                  <Text
-                    className={`text-3xl font-bold ${
-                      isDarkMode ? mc.textHeader : "text-white"
-                    }`}
-                  >
-                    +
-                  </Text>
-                </TouchableOpacity>
+                  <Flame size={28} color={palette.accent} />
+                </View>
+                <Text
+                  className="text-center font-semibold"
+                  style={{ color: mutedTextColor }}
+                >
+                  {t("ViewAll.No habits")}
+                </Text>
               </View>
             ) : (
               <FlashList
@@ -562,6 +608,25 @@ const ShowAll = () => {
               />
             );
           })()}
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={t("home.addTask")}
+        onPress={openAddTaskSheet}
+        activeOpacity={0.85}
+        className="absolute h-[60px] w-[60px] items-center justify-center rounded-full"
+        style={{
+          backgroundColor: palette.accent,
+          bottom: Math.max(insets.bottom, 12) + 16,
+          right: 20,
+          elevation: 8,
+          shadowColor: palette.accent,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.28,
+          shadowRadius: 8,
+        }}
+      >
+        <Plus size={28} color={palette.header} strokeWidth={2.5} />
+      </TouchableOpacity>
       <AddTaskSheet ref={bottomSheetRef} />
       <DetailsSheet ref={detailsSheetRef} itemId={selectedId} />
       <ConfirmationModal

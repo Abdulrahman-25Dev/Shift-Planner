@@ -109,7 +109,7 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
               textSectionTitleColor: isDarkMode ? "#94a3b8" : "#64748b",
               monthTextColor: isDarkMode ? "#e2e8f0" : selectedColor,
               arrowColor: isDarkMode ? "#e2e8f0" : selectedColor,
-              selectedDayTextColor: "#ffffff",
+              selectedDayTextColor: isDarkMode ? "#0f172a" : "#ffffff",
               textDisabledColor: isDarkMode ? "#64748b" : "#9ca3af",
             }}
           />

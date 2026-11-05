@@ -4,6 +4,8 @@ import { Stack, router } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useEffect, useState } from "react";
+import { AppState } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
 import { useColorScheme } from "nativewind";
 import { useAppStore } from "@/store/useAppStore";
 import { supabase } from "@/supabase";
@@ -21,7 +23,8 @@ import {
 
 export default function RootLayout() {
   const { setColorScheme } = useColorScheme();
-  const { isDarkMode, checkAndResetDailyHabits, cancelPastDueNotifications } = useAppStore();
+  const { isDarkMode, checkAndResetDailyHabits, cancelPastDueNotifications } =
+    useAppStore();
   const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
@@ -29,7 +32,7 @@ export default function RootLayout() {
       try {
         // ✅ انقل أمر المنع هنا داخل الـ useEffect ليكون آمناً أثناء البناء
         await SplashScreen.preventAutoHideAsync();
-        
+
         // تشغيل الـ Habits والـ Theme
         checkAndResetDailyHabits();
         cancelPastDueNotifications();
@@ -41,21 +44,23 @@ export default function RootLayout() {
         requestExactAlarmIfNeeded().catch((e) =>
           console.warn("Exact alarm check failed:", e),
         );
-        
+
         // الخدعة: نخفي سبلاش النظام فوراً ليظهر السبلاش المخصص حقك
         await SplashScreen.hideAsync();
       } catch (e) {
         console.warn(e);
       }
     }
-    
+
     handleSplashAndReady();
   }, [checkAndResetDailyHabits, cancelPastDueNotifications]);
 
   // ───── Onboarding redirect ─────
   useEffect(() => {
     if (!appIsReady) return;
-    const hasSeenOnboarding = storage.getBoolean(STORAGE_KEYS.hasSeenOnboarding);
+    const hasSeenOnboarding = storage.getBoolean(
+      STORAGE_KEYS.hasSeenOnboarding,
+    );
     if (!hasSeenOnboarding) {
       router.replace("/onboarding/StuScreen");
     }
@@ -66,11 +71,26 @@ export default function RootLayout() {
     setColorScheme(isDarkMode ? "dark" : "light");
   }, [isDarkMode, setColorScheme]);
 
+  useEffect(() => {
+    const syncAuthRefresh = (state: typeof AppState.currentState) => {
+      if (state === "active") {
+        supabase.auth.startAutoRefresh();
+      } else {
+        supabase.auth.stopAutoRefresh();
+      }
+    };
+    const subscription = AppState.addEventListener("change", syncAuthRefresh);
+    syncAuthRefresh(AppState.currentState);
+    return () => subscription.remove();
+  }, []);
+
   // ───── Auth session → store binding ─────
   useEffect(() => {
     let active = true;
+    let authRevision = 0;
     const applySessionUser = (session: Session | null) => {
       if (!active) return;
+      const revision = ++authRevision;
       const user = session?.user;
       if (user) {
         useAppStore.getState().setUser({
@@ -81,8 +101,13 @@ export default function RootLayout() {
           avatarUrl: (user.user_metadata?.avatar_url as string) ?? undefined,
         });
       } else {
-        // Signed out / no session: clear user-scoped data from the store
-        useAppStore.getState().setUser(null);
+        void NetInfo.fetch()
+          .then(({ isConnected }) => {
+            if (!active || revision !== authRevision || isConnected !== true)
+              return;
+            useAppStore.getState().setUser(null);
+          })
+          .catch((e) => console.warn("Failed to check connectivity:", e));
       }
     };
 
@@ -97,17 +122,17 @@ export default function RootLayout() {
       .catch((e) => console.warn("Failed to restore auth session:", e));
 
     // Keep the store in sync on login / logout / token refresh
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        applySessionUser(session);
-        if (session?.user) {
-          // Reconcile with the server profile and flush any queued edits
-          // (also covers fresh sign-ins, not just cold starts)
-          useAppStore.getState().refreshProfileFromServer();
-          useAppStore.getState().syncPendingProfile();
-        }
-      },
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      applySessionUser(session);
+      if (session?.user) {
+        // Reconcile with the server profile and flush any queued edits
+        // (also covers fresh sign-ins, not just cold starts)
+        useAppStore.getState().refreshProfileFromServer();
+        useAppStore.getState().syncPendingProfile();
+      }
+    });
     return () => {
       active = false;
       subscription.unsubscribe();

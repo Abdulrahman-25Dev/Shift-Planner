@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { createMMKV } from "react-native-mmkv";
 import NetInfo from "@react-native-community/netinfo";
+import { storage } from "../src/services/storage";
 import i18n from "../i18next/i18n";
 import {
   requestPermission,
@@ -15,7 +15,6 @@ import {
 } from "../src/services/profileService";
 import { supabase } from "../supabase";
 
-const storage = createMMKV();
 const storedLanguage = (storage.getString("language") as "ar" | "en") || "ar";
 
 // Offline-first: `user` holds the latest local copy, per-user pending queues
@@ -28,7 +27,7 @@ const pendingProfileKey = (userId?: string) =>
   userId ? `${PENDING_PROFILE_KEY}:${userId}` : PENDING_PROFILE_KEY;
 
 // ============ Interfaces ============
-export type Priority = 'high' | 'medium' | 'low' | 'none';
+export type Priority = "high" | "medium" | "low" | "none";
 export type Mode = "study" | "coding" | "faith";
 
 // Fallback id used when no user is signed in (data stays local-only)
@@ -130,7 +129,9 @@ interface AppState {
 
   // Habits (filtered by current user and mode)
   habits: Habit[];
-  addHabit: (habit: Omit<Habit, "id" | "userId" | "createdAt" | "mode">) => void;
+  addHabit: (
+    habit: Omit<Habit, "id" | "userId" | "createdAt" | "mode">,
+  ) => void;
   removeHabit: (id: string) => void;
   updateHabit: (id: string, updates: Partial<Habit>) => void;
   completeHabit: (id: string) => void;
@@ -186,8 +187,7 @@ const filterByUserAndMode = <T extends { userId?: string; mode?: Mode }>(
   mode: Mode,
 ): T[] => items.filter((item) => item.userId === userId && item.mode === mode);
 
-const initialMode =
-  (storage.getString("app_mode") as Mode) || "study";
+const initialMode = (storage.getString("app_mode") as Mode) || "study";
 
 // Offline-first: hydrate the user profile from MMKV at startup so the UI
 // renders instantly without waiting for any network call.
@@ -204,7 +204,8 @@ const readStoredUser = (): AppUser | null => {
 
 const readPendingProfile = (userId?: string): PendingProfileSync | null => {
   const scopedKey = pendingProfileKey(userId);
-  const raw = storage.getString(scopedKey) ?? storage.getString(PENDING_PROFILE_KEY);
+  const raw =
+    storage.getString(scopedKey) ?? storage.getString(PENDING_PROFILE_KEY);
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as PendingProfileSync;
@@ -350,9 +351,7 @@ export const useAppStore = create<AppState>((set, get) => {
       const newUser: AppUser = {
         ...prev,
         fullName:
-          updates.fullName !== undefined
-            ? updates.fullName
-            : prev.fullName,
+          updates.fullName !== undefined ? updates.fullName : prev.fullName,
         avatarUrl: updates.avatarLocalUri
           ? updates.avatarLocalUri
           : prev.avatarUrl,
@@ -364,7 +363,8 @@ export const useAppStore = create<AppState>((set, get) => {
 
       const pending: PendingProfileSync = {};
       if (updates.fullName !== undefined) pending.fullName = newUser.fullName;
-      if (updates.avatarLocalUri) pending.avatarLocalUri = updates.avatarLocalUri;
+      if (updates.avatarLocalUri)
+        pending.avatarLocalUri = updates.avatarLocalUri;
       if (Object.keys(pending).length === 0) {
         set({ profileSyncState: "idle" });
         return;
@@ -411,9 +411,7 @@ export const useAppStore = create<AppState>((set, get) => {
       const userForSync: AppUser = {
         ...current,
         fullName:
-          pending.fullName !== undefined
-            ? pending.fullName
-            : current.fullName,
+          pending.fullName !== undefined ? pending.fullName : current.fullName,
         avatarUrl: pending.avatarLocalUri
           ? pending.avatarLocalUri
           : current.avatarUrl,
@@ -610,8 +608,16 @@ export const useAppStore = create<AppState>((set, get) => {
     allHabits: initialHabits,
 
     // ============ Filtered Data (by current user and mode) ============
-    tasks: filterByUserAndMode(initialTasks, getUserId(initialUser), initialMode),
-    habits: filterByUserAndMode(initialHabits, getUserId(initialUser), initialMode),
+    tasks: filterByUserAndMode(
+      initialTasks,
+      getUserId(initialUser),
+      initialMode,
+    ),
+    habits: filterByUserAndMode(
+      initialHabits,
+      getUserId(initialUser),
+      initialMode,
+    ),
 
     // ============ Tasks Management ============
     addTask: (task) =>

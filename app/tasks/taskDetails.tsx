@@ -147,7 +147,7 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
         <BottomSheetView className="flex-1 p-6">
           {/* الهيدر: العنوان مع أيقونة النوع */}
           <View className="flex-row-reverse items-center justify-between mb-6">
-            <View className="flex-1 ml-4">
+            <View className="flex-1">
               <Text
                 className={
                   " font-bold mb-3 text-left" +
@@ -295,7 +295,10 @@ export const DetailsSheet = forwardRef<BottomSheetModal, DetailsSheetProps>(
             >
               {t("details.change priority")}
             </Text>
-            <View className="flex-row justify-between">
+            <View
+              className="justify-between"
+              style={{ flexDirection: language === "ar" ? "row" : "row-reverse" }}
+            >
               {(
                 [
                   { value: "none", label: t("priority.none") },

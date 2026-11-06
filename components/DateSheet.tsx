@@ -27,14 +27,12 @@ const formatDateString = (date: Date) => {
 
 const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
   ({ onSave, initialDate, type }, ref) => {
-    const [selectedDate, setSelectedDate] = useState(
-      initialDate ? new Date(initialDate) : new Date(),
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+      () => (initialDate ? new Date(initialDate) : undefined),
     );
 
     React.useEffect(() => {
-      if (initialDate) {
-        setSelectedDate(new Date(initialDate));
-      }
+      setSelectedDate(initialDate ? new Date(initialDate) : undefined);
     }, [initialDate]);
 
     const renderBackdrop = useCallback(
@@ -63,9 +61,19 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
 
     const selectedColor = isDarkMode ? palette.interactive : palette.header;
     const sheetCardBg = isDarkMode ? palette.card : "#FFFFFF";
+    const todayDate = new Date();
+    const todayDateString = formatDateString(todayDate);
+    const selectedDateString = selectedDate
+      ? formatDateString(selectedDate)
+      : undefined;
+    const calendarCurrent = selectedDateString
+      ? selectedDateString >= todayDateString
+        ? selectedDateString
+        : todayDateString
+      : new Date().toISOString().split("T")[0];
 
     const handleConfirm = () => {
-      onSave(new Date(selectedDate));
+      onSave(new Date(selectedDate ?? new Date()));
       (ref as any).current?.dismiss();
     };
 
@@ -89,19 +97,23 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
           </Text>
 
           <Calendar
-            minDate={formatDateString(new Date())}
-            current={formatDateString(selectedDate)}
+            minDate={todayDateString}
+            current={calendarCurrent}
             onDayPress={(day) => {
-              const next = new Date(selectedDate);
+              const next = new Date(selectedDate ?? new Date());
               next.setFullYear(day.year, day.month - 1, day.day);
               setSelectedDate(next);
             }}
-            markedDates={{
-              [formatDateString(selectedDate)]: {
-                selected: true,
-                selectedColor,
-              },
-            }}
+            markedDates={
+              selectedDateString
+                ? {
+                    [selectedDateString]: {
+                      selected: true,
+                      selectedColor,
+                    },
+                  }
+                : {}
+            }
             theme={{
               calendarBackground: isDarkMode ? sheetCardBg : "#ffffff",
               todayTextColor: selectedColor,
@@ -167,7 +179,7 @@ const DateSheet = forwardRef<BottomSheetModal, DateSheetProps>(
         <HabitRepeatSelector
           ref={repeatSheetRef} // 👈 مررنا له السلك هنا
           type={type}
-          initialDate={selectedDate}
+          initialDate={selectedDate ?? new Date()}
           onSave={(date, repeatData) => {
             onSave(date, repeatData);
           }}

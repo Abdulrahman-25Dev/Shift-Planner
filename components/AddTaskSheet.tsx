@@ -57,6 +57,7 @@ export const AddTaskSheet = forwardRef(
     );
 
     const inputBg = isDarkMode ? "bg-white/5" : "bg-slate-100";
+    const inputTextColor = isDarkMode ? "#F3F4F6" : "#111827";
     const labelText = isDarkMode ? mc.darkInteractiveText : "text-gray-500";
     const activePill = isDarkMode ? mc.darkInteractive : "";
     const activePillStyle = {
@@ -139,6 +140,7 @@ export const AddTaskSheet = forwardRef(
                 : t("details.habit title placeholder")
             }
             className={`p-3 rounded-2xl border-0 ${inputBg} font-bold mb-4`}
+            style={{ color: inputTextColor }}
             placeholderTextColor="#9CA3AF"
           />
 
@@ -163,7 +165,11 @@ export const AddTaskSheet = forwardRef(
             onContentSizeChange={(e) =>
               setDescHeight(e.nativeEvent.contentSize.height)
             }
-            style={{ minHeight: 48, height: Math.max(48, descHeight) }}
+            style={{
+              color: inputTextColor,
+              minHeight: 48,
+              height: Math.max(48, descHeight),
+            }}
             className={`p-3 rounded-2xl border-0 ${inputBg} font-bold mb-4`}
             placeholderTextColor="#9CA3AF"
           />
@@ -214,7 +220,12 @@ export const AddTaskSheet = forwardRef(
               >
                 {t("details.select priority")}
               </Text>
-              <View className="flex-row justify-between">
+              <View
+                className="justify-between"
+                style={{
+                  flexDirection: language === "ar" ? "row" : "row-reverse",
+                }}
+              >
                 {[
                   { value: "none", label: t("priority.none") },
                   { value: "low", label: t("priority.low") },

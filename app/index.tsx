@@ -230,7 +230,7 @@ export default function Index() {
           }`}
           style={{
             color: item.completed ? completedTextColor : textColor,
-            textAlign: language === "ar" ? "right" : "left",
+            textAlign: "right",
             writingDirection: language === "ar" ? "rtl" : "ltr",
           }}
         >
@@ -245,7 +245,7 @@ export default function Index() {
           }}
         >
           {dueDateLabel}
-          {dueTimeLabel ? ` · ${dueTimeLabel}` : ""}
+          {dueTimeLabel ? ` | ${dueTimeLabel}` : ""}
         </Text>
       </Pressable>
     );
@@ -271,23 +271,12 @@ export default function Index() {
           borderColor: surfaceBorderColor,
         }}
       >
-        {language === "ar" ? (
-          <>
-            <View className="flex-row items-center gap-3">
-              {deleteButton}
-              {completionButton}
-            </View>
-            {taskDetails}
-            {priorityIndicator}
-          </>
-        ) : (
-          <>
-            {completionButton}
-            {priorityIndicator}
-            {taskDetails}
-            {deleteButton}
-          </>
-        )}
+        <View className="flex-row items-center gap-3">
+          {completionButton}
+          {deleteButton}
+        </View>
+        {taskDetails}
+        {priorityIndicator}
       </View>
     );
   };
@@ -360,14 +349,13 @@ export default function Index() {
       <Pressable
         onPress={() => handleOpenDetails(item.id)}
         className="min-h-12 flex-1 justify-center"
-        style={{ alignItems: language === "ar" ? "flex-end" : "flex-start" }}
       >
         <Text
           numberOfLines={1}
           className={`text-[15px] font-bold ${item.completed ? "line-through" : ""}`}
           style={{
             color: item.completed ? completedTextColor : textColor,
-            textAlign: language === "ar" ? "right" : "left",
+            textAlign: "right",
           }}
         >
           {item.title}
@@ -377,11 +365,11 @@ export default function Index() {
             className="mt-1 text-xs"
             style={{
               color: secondaryTextColor,
-              textAlign: language === "ar" ? "right" : "left",
+              textAlign: "right",
             }}
           >
             {repeatText}
-            {repeatText && reminderTimeText ? " · " : ""}
+            {repeatText && reminderTimeText ? " | " : ""}
             {reminderTimeText}
           </Text>
         )}
@@ -429,28 +417,17 @@ export default function Index() {
         className="mb-2 items-center gap-4 rounded-2xl border px-3 py-3"
         style={{
           flexDirection: "row",
-          direction: "ltr",
+          direction: language === "ar" ? "ltr" : undefined,
           backgroundColor: surfaceColor,
           borderColor: surfaceBorderColor,
         }}
       >
-        {language === "ar" ? (
-          <>
-            <View className="flex-row items-center gap-3">
-              {deleteButton}
-              {completionButton}
-            </View>
-            {habitDetails}
-            {flameIcon}
-          </>
-        ) : (
-          <>
-            {flameIcon}
-            {habitDetails}
-            {completionButton}
-            {deleteButton}
-          </>
-        )}
+        <View className="flex-row items-center gap-3">
+          {completionButton}
+          {deleteButton}
+        </View>
+        {habitDetails}
+        {flameIcon}
       </View>
     );
   };
@@ -537,7 +514,7 @@ export default function Index() {
           borderColor: surfaceBorderColor,
         }}
       >
-        <View style={{ flexDirection: rowDirection }}>
+        <View style={{ flexDirection: "row", direction: "ltr" }}>
           {modeOrder.map((option) => (
             <Pressable
               key={option}
@@ -622,7 +599,8 @@ export default function Index() {
       <View
         className="mt-7 rounded-full p-1"
         style={{
-          flexDirection: rowDirection,
+          flexDirection: "row",
+          direction: "ltr",
           minHeight: 52,
           backgroundColor: subtleSurfaceColor,
           borderWidth: 1,

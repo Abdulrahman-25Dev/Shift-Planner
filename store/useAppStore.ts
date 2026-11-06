@@ -883,23 +883,25 @@ export const useAppStore = create<AppState>((set, get) => {
 
         const target = updatedAllHabits.find((h) => h.id === id);
         if (target) {
-          if (state.notificationsEnabled && target.reminderTime) {
-            try {
-              const d = new Date(target.reminderTime);
-              scheduleHabitNotification(
-                target.id,
-                target.title,
-                target.description || "",
-                d.getHours(),
-                d.getMinutes(),
-                target.repeatType || "daily",
-                target.repeatDays || [],
-                target.mode,
-              );
-            } catch {}
-          } else {
-            cancelNotification(id).catch(() => {});
-          }
+          void (async () => {
+            await cancelNotification(id);
+            if (!state.notificationsEnabled || !target.reminderTime) return;
+
+            const reminderDate = new Date(target.reminderTime);
+            await scheduleHabitNotification(
+              target.id,
+              target.title,
+              target.description || "",
+              reminderDate.getHours(),
+              reminderDate.getMinutes(),
+              target.repeatType || "daily",
+              target.repeatDays || [],
+              target.mode,
+              reminderDate,
+            );
+          })().catch((error) => {
+            console.error(`Failed to update habit notification ${id}:`, error);
+          });
         }
         return {
           allHabits: updatedAllHabits,

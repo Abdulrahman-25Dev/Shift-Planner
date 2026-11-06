@@ -34,7 +34,7 @@ import {
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { useModeTheme, useModeClasses } from "@/src/theme";
 import i18n from "@/i18next/i18n";
-import { ChevronRight } from "lucide-react-native";
+import { ChevronRight, Coffee } from "lucide-react-native";
 
 const getInitials = (user: AppUser | null): string => {
   if (!user) return "?";
@@ -392,6 +392,15 @@ export default function Settings() {
               </Text>
               <Info size={20} color={iconColor} />
             </Pressable>
+            <View
+              className={`min-h-[64px] items-center justify-between border-t px-4 py-3 ${rowDirection}`}
+              style={{ borderTopColor: surfaceBorderColor }}
+            >
+              <Text className={`font-bold ${titleText}`}>
+                {t("settings.buyDeveloperCoffee")}
+              </Text>
+              <Coffee size={20} color={iconColor} />
+            </View>
           </View>
         </View>
       </ScrollView>

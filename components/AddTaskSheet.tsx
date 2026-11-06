@@ -56,21 +56,16 @@ export const AddTaskSheet = forwardRef(
       [],
     );
 
-    const inputBg = isDarkMode ? "bg-white/5" : "bg-slate-100";
-    const inputTextColor = isDarkMode ? "#F3F4F6" : "#111827";
+    const inputBg = isDarkMode
+      ? `${mc.darkAccentSoft} ${mc.textHeader}`
+      : `${mc.accentSoft} ${mc.textHeader}`;
     const labelText = isDarkMode ? mc.darkInteractiveText : "text-gray-500";
-    const activePill = isDarkMode ? mc.darkInteractive : "";
-    const activePillStyle = {
-      backgroundColor: isDarkMode
-        ? `${palette.interactive}CC`
-        : palette.accent,
-    };
-    const activePillText = isDarkMode ? mc.textHeader : "text-slate-900";
-    const activePillIconColor = isDarkMode ? palette.onInteractive : "#0F172A";
-    const pillTrack = isDarkMode ? mc.darkAccentSoft : "bg-slate-100";
+    const activePill = isDarkMode ? mc.darkInteractive : mc.headerBg;
+    const activePillText = isDarkMode ? mc.textHeader : "text-white";
+    const pillTrack = isDarkMode ? mc.darkAccentSoft : "bg-gray-100";
     const unselectedPill = isDarkMode
       ? `${mc.darkInteractiveBorder30} ${mc.darkAccentSoft}`
-      : "border-slate-300 bg-transparent";
+      : `${mc.accentBorder} ${mc.accentBg30}`;
     const iconColor = palette.accentText;
 
     return (
@@ -94,7 +89,6 @@ export const AddTaskSheet = forwardRef(
             <TouchableOpacity
               onPress={() => setType("task")}
               className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-2 ${type === "task" ? activePill : ""}`}
-              style={type === "task" ? activePillStyle : undefined}
             >
               <Text
                 className={`font-bold ${type === "task" ? activePillText : "text-gray-400"}`}
@@ -103,13 +97,12 @@ export const AddTaskSheet = forwardRef(
               </Text>
               <CheckCircle2
                 size={20}
-                color={type === "task" ? activePillIconColor : "#9CA3AF"}
+                color={type === "task" ? (isDarkMode ? palette.onInteractive : "#FFFFFF") : "#9CA3AF"}
               />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setType("habit")}
               className={`flex-1 py-3 gap-2 rounded-xl items-center justify-center flex-row space-x-3 ${type === "habit" ? activePill : ""}`}
-              style={type === "habit" ? activePillStyle : undefined}
             >
               <Text
                 className={`font-bold ${type === "habit" ? activePillText : "text-gray-400"}`}
@@ -118,7 +111,7 @@ export const AddTaskSheet = forwardRef(
               </Text>
               <RefreshCw
                 size={20}
-                color={type === "habit" ? activePillIconColor : "#9CA3AF"}
+                color={type === "habit" ? (isDarkMode ? palette.onInteractive : "#FFFFFF") : "#9CA3AF"}
               />
             </TouchableOpacity>
           </View>
@@ -139,8 +132,7 @@ export const AddTaskSheet = forwardRef(
                 ? t("details.task title placeholder")
                 : t("details.habit title placeholder")
             }
-            className={`p-3 rounded-2xl border-0 ${inputBg} font-bold mb-4`}
-            style={{ color: inputTextColor }}
+            className={`p-3 rounded-2xl ${inputBg} font-bold mb-4`}
             placeholderTextColor="#9CA3AF"
           />
 
@@ -165,18 +157,14 @@ export const AddTaskSheet = forwardRef(
             onContentSizeChange={(e) =>
               setDescHeight(e.nativeEvent.contentSize.height)
             }
-            style={{
-              color: inputTextColor,
-              minHeight: 48,
-              height: Math.max(48, descHeight),
-            }}
-            className={`p-3 rounded-2xl border-0 ${inputBg} font-bold mb-4`}
+            style={{ minHeight: 48, height: Math.max(48, descHeight) }}
+            className={`p-3 rounded-2xl ${inputBg} font-bold mb-4`}
             placeholderTextColor="#9CA3AF"
           />
 
           <View
             className={`flex-row justify-between items-center rounded-2xl p-3 mb-4 ${
-              inputBg
+              isDarkMode ? mc.darkAccentSoft : mc.accentSoft
             }`}
           >
             <View className="flex-1 pr-2">
@@ -220,12 +208,7 @@ export const AddTaskSheet = forwardRef(
               >
                 {t("details.select priority")}
               </Text>
-              <View
-                className="justify-between"
-                style={{
-                  flexDirection: language === "ar" ? "row" : "row-reverse",
-                }}
-              >
+              <View className="flex-row justify-between">
                 {[
                   { value: "none", label: t("priority.none") },
                   { value: "low", label: t("priority.low") },
@@ -242,7 +225,6 @@ export const AddTaskSheet = forwardRef(
                         ? `border-transparent ${activePill}`
                         : unselectedPill
                     }`}
-                    style={priority === item.value ? activePillStyle : undefined}
                   >
                     <Text
                       className={`text-xs ${priority === item.value ? activePillText : isDarkMode ? mc.darkInteractiveText : "text-gray-600"}`}
@@ -261,7 +243,7 @@ export const AddTaskSheet = forwardRef(
               <Pressable
                 onPress={() => dateSheetRef.current?.present()}
                 className={`flex-1 gap-2 p-3 rounded-2xl items-center justify-center ${
-                  inputBg
+                  isDarkMode ? mc.darkAccentSoft : mc.accentSoft
                 }`}
               >
                 <Calendar size={20} color={iconColor} />
@@ -274,7 +256,7 @@ export const AddTaskSheet = forwardRef(
               <Pressable
                 onPress={() => timeSheetRef.current?.present()}
                 className={`flex-1 gap-2 p-3 rounded-2xl items-center justify-center ${
-                  inputBg
+                  isDarkMode ? mc.darkAccentSoft : mc.accentSoft
                 }`}
               >
                 <Clock10 size={20} color={iconColor} />
@@ -348,11 +330,8 @@ export const AddTaskSheet = forwardRef(
                 (ref as React.RefObject<BottomSheet>)?.current?.close();
               }
             }}
-            className="w-full py-4 rounded-[20px] items-center mt-4"
-            style={{
-              backgroundColor: isDarkMode ? `${palette.accent}CC` : palette.accent,
-              elevation: 5,
-            }}
+            className={`w-full py-4 rounded-[20px] items-center mt-4 ${activePill}`}
+            style={{ elevation: 5 }}
           >
             <Text className={`${activePillText} font-black text-lg`}>
               {type === "task" ? t("add.add task") : t("add.add habit")}
